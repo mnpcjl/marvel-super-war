@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vision MOBA - Phase 3D: Facing & Ult Scaling</title>
+    <title>Vision MOBA - Phase 4: Nexus Aggro Fixed</title>
     <style>
         body, html {
             margin: 0; 
@@ -391,7 +391,7 @@
             passiveActive: false, passiveTimer: 0,
             attackStunTimer: 0,
             attackInterval: 0,
-            attackFacingTimer: 0 // NEW: Locks facing direction briefly after attack
+            attackFacingTimer: 0
         };
 
         // --- 3-LANE JUNGLE WALLS ---
@@ -406,28 +406,40 @@
             { x: 1550, y: 500,  w: 90,  h: 250 }
         ];
 
-        // --- NEXUS BASES ---
+        // --- NEXUS BASES (Now with Tower properties) ---
         const allyNexus = {
             x: 400, y: 2000, radius: 55,
-            hp: 2000, maxHp: 2000, team: 'ally'
+            hp: 2000, maxHp: 2000, team: 'ally',
+            range: 450,
+            fireCooldown: 0, fireRate: 1200,
+            currentTarget: null,
+            isNexus: true
         };
         const enemyNexus = {
             x: 2000, y: 400, radius: 55,
-            hp: 2000, maxHp: 2000, team: 'enemy'
+            hp: 2000, maxHp: 2000, team: 'enemy',
+            range: 450,
+            fireCooldown: 0, fireRate: 1200,
+            currentTarget: null,
+            isNexus: true
         };
 
         // --- TOWERS ---
         const allyTower = {
             x: 650, y: 1750, radius: 45, range: 380,
             hp: 1000, maxHp: 1000, team: 'ally',
-            fireCooldown: 0, fireRate: 1400
+            fireCooldown: 0, fireRate: 1400,
+            currentTarget: null
         };
         const enemyTower = {
             x: 1750, y: 650, radius: 45, range: 380,
             hp: 1000, maxHp: 1000, team: 'enemy',
-            fireCooldown: 0, fireRate: 1400
+            fireCooldown: 0, fireRate: 1400,
+            currentTarget: null
         };
-        const towers = [allyTower, enemyTower];
+        
+        // Unified array for targeting logic
+        const structures = [allyTower, enemyTower, allyNexus, enemyNexus];
 
         // --- TEST DUMMY ---
         const dummy = {
@@ -583,6 +595,9 @@
             enemyNexus.hp = enemyNexus.maxHp;
             allyTower.hp = allyTower.maxHp;
             enemyTower.hp = enemyTower.maxHp;
+            
+            structures.forEach(s => s.currentTarget = null);
+            
             minions.length = 0;
             projectiles.length = 0;
             towerShots.length = 0;
@@ -659,7 +674,6 @@
                     const maxDist = 45;
                     const angle = Math.atan2(dy, dx);
                     
-                    // CHANGED: Added attackFacingTimer check so attacks lock facing direction
                     if (activeAim.skillId !== 's3' && player.attackFacingTimer <= 0) {
                         player.angle = angle;
                     }
@@ -760,13 +774,16 @@
         document.getElementById('s2Btn').addEventListener('mousedown', () => {
             if (cooldowns.s2.current > 0) return;
             const smart = getSmartTargetCoords(cooldowns.s2.range);
+            player.angle = Math.atan2(smart.y - player.y, smart.x - player.x);
+            player.attackFacingTimer = 180;
+            player.attackStunTimer = 30;
             beamTracers.push({ targetX: smart.x, targetY: smart.y, duration: 220 });
             slowFields.push({ x: smart.x, y: smart.y, radius: 115, duration: cooldowns.s2.activeDur });
             cooldowns.s2.current = cooldowns.s2.max;
         });
         document.getElementById('s3Btn').addEventListener('mousedown', () => {
             if (cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
-            fireS3Projectile(getSmartTargetCoords(1100).angle, 1100); // PC gets full distance
+            fireS3Projectile(getSmartTargetCoords(1100).angle, 1100); 
         });
         
         document.getElementById('atkBtn').addEventListener('mousedown', () => triggerBasicAttack('all'));
@@ -894,11 +911,19 @@
 
             let target = validTargets[0].entity;
             
-            // CHANGED: Snap to face target and lock facing for 250ms
             player.angle = Math.atan2(target.y - player.y, target.x - player.x);
-            player.attackFacingTimer = 250;
+            player.attackFacingTimer = 180; 
+            player.attackStunTimer = 30;    
 
-            player.attackStunTimer = 55;
+            // Check BOTH Tower and Nexus for aggro switch if Hero is attacked
+            if (target === dummy) {
+                const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
+                if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
+                
+                const distToNexus = Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y);
+                if (distToNexus <= enemyNexus.range) enemyNexus.currentTarget = player;
+            }
+
             player.attackInterval = 380;
             
             let offY = 0;
@@ -925,7 +950,7 @@
                 dx: Math.cos(targetAngle) * 30,
                 dy: Math.sin(targetAngle) * 30,
                 distTraveled: 0,
-                maxDist: dynamicMaxDist, // CHANGED: Dynamic distance based on charge
+                maxDist: dynamicMaxDist,
                 radius: 6,
                 isSniper: true,
                 angle: targetAngle,
@@ -957,11 +982,15 @@
                     targetX = player.x + Math.cos(activeAim.angle) * castDist;
                     targetY = player.y + Math.sin(activeAim.angle) * castDist;
                 }
+                
+                player.angle = Math.atan2(targetY - player.y, targetX - player.x);
+                player.attackFacingTimer = 180;
+                player.attackStunTimer = 30;
+
                 beamTracers.push({ targetX: targetX, targetY: targetY, duration: 220 });
                 slowFields.push({ x: targetX, y: targetY, radius: 115, duration: cooldowns.s2.activeDur });
                 cooldowns.s2.current = cooldowns.s2.max;
             } else if (skill === 's3') {
-                // CHANGED: Calculate dynamic distance
                 const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
                 const dynamicMaxDist = 400 + (chargePct * 700); 
                 fireS3Projectile(activeAim.angle, dynamicMaxDist);
@@ -1008,16 +1037,11 @@
                 if (d <= aggroRange && d < bestDist) { best = player; bestDist = d; }
             }
 
-            for (let t of towers) {
+            // Include structures (Towers + Nexuses)
+            for (let t of structures) {
                 if (t.team === m.team || t.hp <= 0) continue;
                 const d = Math.hypot(t.x - m.x, t.y - m.y);
                 if (d <= aggroRange + t.radius && d < bestDist) { best = t; bestDist = d; }
-            }
-
-            const nexus = m.team === 'ally' ? enemyNexus : allyNexus;
-            if (nexus.hp > 0) {
-                const d = Math.hypot(nexus.x - m.x, nexus.y - m.y);
-                if (d <= aggroRange + nexus.radius && d < bestDist) { best = nexus; bestDist = d; }
             }
             return best;
         }
@@ -1109,36 +1133,53 @@
             updateMinions(dt);
         }
 
-        // --- TOWER LOGIC ---
-        function findTowerTarget(t) {
-            let best = null, bestDist = Infinity;
-
-            for (let m of minions) {
-                if (m.team === t.team || m.hp <= 0) continue;
-                const d = Math.hypot(m.x - t.x, m.y - t.y);
-                if (d <= t.range + m.radius && d < bestDist) { best = m; bestDist = d; }
-            }
-
-            if (t.team === 'enemy' && player.hp > 0) {
-                const d = Math.hypot(player.x - t.x, player.y - t.y);
-                if (d <= t.range + player.radius && d < bestDist) { best = player; bestDist = d; }
-            }
-            return best;
-        }
-
+        // --- TOWER & NEXUS LOGIC (STICKY TARGET) ---
         function updateTowers(dt) {
-            for (let t of towers) {
+            // Iterate through structures (Towers + Nexuses)
+            for (let t of structures) {
                 if (t.hp <= 0) continue;
-                if (t.fireCooldown > 0) t.fireCooldown -= dt;
-                if (t.fireCooldown <= 0) {
-                    const target = findTowerTarget(t);
-                    if (target) {
-                        towerShots.push({
-                            x: t.x, y: t.y - 20, speed: 6.5, radius: 9,
-                            team: t.team, target: target, dmg: 30
-                        });
-                        t.fireCooldown = t.fireRate;
+
+                if (t.currentTarget) {
+                    const d = Math.hypot(t.currentTarget.x - t.x, t.currentTarget.y - t.y);
+                    if (t.currentTarget.hp <= 0) {
+                        t.currentTarget = null;
+                    } else if (t.currentTarget !== player) {
+                        if (d > t.range + 100) t.currentTarget = null;
+                    } else {
+                        if (d > t.range + player.radius) t.currentTarget = null;
                     }
+                }
+
+                if (!t.currentTarget) {
+                    let bestMinion = null;
+                    let minDist = Infinity;
+                    
+                    for (let m of minions) {
+                        if (m.team !== t.team && m.hp > 0) {
+                            const d = Math.hypot(m.x - t.x, m.y - t.y);
+                            if (d <= t.range + m.radius && d < minDist) {
+                                bestMinion = m; minDist = d;
+                            }
+                        }
+                    }
+
+                    if (bestMinion) {
+                        t.currentTarget = bestMinion;
+                    } else if (t.team === 'enemy' && player.hp > 0) {
+                        const d = Math.hypot(player.x - t.x, player.y - t.y);
+                        if (d <= t.range + player.radius) {
+                            t.currentTarget = player;
+                        }
+                    }
+                }
+
+                if (t.fireCooldown > 0) t.fireCooldown -= dt;
+                if (t.fireCooldown <= 0 && t.currentTarget) {
+                    towerShots.push({
+                        x: t.x, y: t.y - 20, speed: 6.5, radius: 9,
+                        team: t.team, target: t.currentTarget, dmg: 30
+                    });
+                    t.fireCooldown = t.fireRate;
                 }
             }
 
@@ -1183,7 +1224,6 @@
         function update(deltaTime) {
             if (gameOver) return;
 
-            // NEW: Decrement facing lock timer
             if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
 
             // S3 aim charge/hold
@@ -1287,7 +1327,6 @@
             }
             camera.zoom += (targetZoom - camera.zoom) * 0.22;
 
-            // Smooth Snap-Back Camera Logic
             if (!camera.isPanning) {
                 camera.offsetX += (0 - camera.offsetX) * 0.12;
                 camera.offsetY += (0 - camera.offsetY) * 0.12;
@@ -1440,18 +1479,20 @@
                 ctx.strokeRect(w.x, w.y, w.w, w.h);
             });
 
-            // Nexuses
+            // Nexuses (Draw shape)
             drawNexus(allyNexus);
             drawNexus(enemyNexus);
 
-            // Towers
-            towers.forEach(t => {
-                if (t.hp <= 0) return;
+            // Towers (Skip Nexuses here since they are drawn above)
+            structures.forEach(t => {
+                if (t.hp <= 0 || t.isNexus) return;
                 ctx.beginPath();
                 ctx.arc(t.x, t.y, t.range, 0, Math.PI * 2);
                 const inRange = Math.hypot(player.x - t.x, player.y - t.y) <= t.range && t.team === 'enemy';
-                ctx.strokeStyle = inRange ? 'rgba(255, 65, 65, 0.55)' : 'rgba(255, 255, 255, 0.1)';
-                ctx.lineWidth = 2;
+                
+                const isAggro = t.team === 'enemy' && t.currentTarget === player;
+                ctx.strokeStyle = isAggro ? 'rgba(255, 0, 0, 0.8)' : (inRange ? 'rgba(255, 65, 65, 0.55)' : 'rgba(255, 255, 255, 0.1)');
+                ctx.lineWidth = isAggro ? 3 : 2;
                 ctx.stroke();
 
                 ctx.beginPath();
@@ -1554,7 +1595,6 @@
                     ctx.lineWidth = 3;
                     ctx.fill(); ctx.stroke();
                 } else if (activeAim.skillId === 's3') {
-                    // CHANGED: Dynamic aiming line length
                     const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
                     const L = 400 + (chargePct * 700);
                     
@@ -1722,6 +1762,7 @@
                 ctx.fillRect(mx + w.x * scale, my + w.y * scale, w.w * scale, w.h * scale);
             });
 
+            // Draw Nexuses on minimap
             ctx.fillStyle = '#2196f3';
             ctx.beginPath();
             ctx.arc(mx + allyNexus.x * scale, my + allyNexus.y * scale, 5, 0, Math.PI * 2);
@@ -1731,8 +1772,9 @@
             ctx.arc(mx + enemyNexus.x * scale, my + enemyNexus.y * scale, 5, 0, Math.PI * 2);
             ctx.fill();
 
-            towers.forEach(t => {
-                if (t.hp <= 0) return;
+            // Draw Towers on minimap (Skip Nexuses)
+            structures.forEach(t => {
+                if (t.hp <= 0 || t.isNexus) return;
                 ctx.fillStyle = t.team === 'ally' ? '#42a5f5' : '#ff4081';
                 ctx.beginPath();
                 ctx.arc(mx + t.x * scale, my + t.y * scale, 3.5, 0, Math.PI * 2);
