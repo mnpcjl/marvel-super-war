@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 10: Progression</title>
+    <title>Marvel Super War - Phase 10.1.1: Surgical Bugfix</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +19,6 @@
         #gameCanvas { display: block; }
         .control-panel { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
         .interactive { pointer-events: auto; }
-
         .joystick-container {
             position: absolute; bottom: 40px; left: 40px;
             width: 130px; height: 130px; background: rgba(255,255,255,0.08);
@@ -31,7 +30,6 @@
             border-radius: 50%; position: absolute;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-
         .abilities-container {
             position: absolute; bottom: 0; right: 0;
             width: 340px; height: 270px; pointer-events: none;
@@ -44,7 +42,7 @@
             font-size: 9px; font-weight: bold; cursor: pointer;
             box-shadow: 0 0 10px rgba(69, 243, 255, 0.25);
             overflow: hidden; touch-action: none; pointer-events: auto;
-            transition: opacity 0.2s, filter 0.2s;
+            transition: opacity 0.2s, filter 0.2s, box-shadow 0.2s;
         }
         #s1Btn { bottom: 24px; right: 178px; }
         #s2Btn { bottom: 112px; right: 145px; }
@@ -77,7 +75,6 @@
         }
         #atkMinionBtn { bottom: 22px; right: 118px; }
         #atkTowerBtn  { bottom: 118px; right: 22px; }
-
         #recallBtn {
             position: absolute; bottom: 24px; right: 262px;
             width: 52px; height: 52px; border-radius: 50%;
@@ -89,7 +86,6 @@
             touch-action: none; pointer-events: auto; cursor: pointer;
         }
         #recallBtn .hotkey { font-size: 8px; color: #aaa; margin-top: 1px; }
-
         .cancel-zone {
             position: absolute;
             top: 16%;
@@ -119,8 +115,6 @@
             border-color: #fff; transform: scale(1.18);
             box-shadow: 0 0 22px rgba(233, 69, 96, 0.85);
         }
-
-        /* Top-center Match HUD (Phase 10) */
         .hud-panel {
             position: absolute;
             top: 12px;
@@ -175,7 +169,6 @@
         .hud-gold { color: #ffd54f; font-weight: bold; font-size: 11px; }
         .hud-level { color: #45f3ff; font-weight: bold; font-size: 11px; }
         .hud-bot { color: #ff8a80; }
-
         .game-over-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.88); z-index: 100;
@@ -192,7 +185,6 @@
             cursor: pointer; font-weight: bold; letter-spacing: 2px;
         }
         .restart-btn:active { transform: scale(0.95); }
-
         #orientation-warning {
             position: fixed; inset: 0; background: #0b0c10; z-index: 99999;
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -284,10 +276,9 @@
             minimapJumpX: 0, minimapJumpY: 0, zoomHoldTimer: 0
         };
 
-        // --- PLAYER (VISION) - starts Lv.1 in Phase 10 ---
         const player = {
             x: 400, y: 2000, radius: 22, team: 'ally', level: 1,
-            baseSpeed: 5, speed: 5, angle: -Math.PI / 4, dx: 0, dy: 0,
+            baseSpeed: 3.3, speed: 3.3, angle: -Math.PI / 4, dx: 0, dy: 0,
             hp: 550, maxHp: 550, autoAtkRange: 340,
             basicAtkDmg: 10,
             xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
@@ -295,7 +286,10 @@
             passiveActive: false, passiveTimer: 0,
             attackStunTimer: 0, attackInterval: 0, attackFacingTimer: 0,
             state: 'ALIVE', respawnTimer: 0, recallTimer: 0,
-            lastDamagedBy: null
+            lastDamagedBy: null,
+            homeguardTimer: 0,
+            empoweredAtks: 0,
+            empoweredTimer: 0
         };
 
         const walls = [
@@ -309,15 +303,15 @@
             { x: 1620, y: 1400, w: 220, h: 80 }
         ];
 
-        const allyNexus  = { x: 400,  y: 2000, radius: 48, hp: 2000, maxHp: 2000, team: 'ally',  range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true };
-        const enemyNexus = { x: 2000, y: 400,  radius: 48, hp: 2000, maxHp: 2000, team: 'enemy', range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true };
+        const allyNexus  = { x: 400,  y: 2000, radius: 48, hp: 2000, maxHp: 2000, team: 'ally',  range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false };
+        const enemyNexus = { x: 2000, y: 400,  radius: 48, hp: 2000, maxHp: 2000, team: 'enemy', range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false };
 
-        const allyTopTower  = { x: 400,  y: 1100, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null };
-        const enemyTopTower = { x: 1300, y: 400,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null };
-        const allyMidTower  = { x: 850,  y: 1550, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null };
-        const enemyMidTower = { x: 1550, y: 850,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null };
-        const allyBotTower  = { x: 1100, y: 2000, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null };
-        const enemyBotTower = { x: 2000, y: 1300, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null };
+        const allyTopTower  = { x: 400,  y: 1100, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
+        const enemyTopTower = { x: 1300, y: 400,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
+        const allyMidTower  = { x: 850,  y: 1550, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
+        const enemyMidTower = { x: 1550, y: 850,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
+        const allyBotTower  = { x: 1100, y: 2000, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
+        const enemyBotTower = { x: 2000, y: 1300, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
         const structures = [allyTopTower, allyMidTower, allyBotTower, enemyTopTower, enemyMidTower, enemyBotTower, allyNexus, enemyNexus];
 
         const minions = [];
@@ -339,6 +333,7 @@
 
         const laneManager = {
             waveTimer: 5000, waveInterval: 20000, minionCap: 24,
+            spawnQueue: [],
             allyTopPath: generateDensePath([{ x: 400, y: 2000 }, { x: 400, y: 400 }, { x: 2000, y: 400 }], 40),
             allyMidPath: generateDensePath([{ x: 400, y: 2000 }, { x: 2000, y: 400 }], 40),
             allyBotPath: generateDensePath([{ x: 400, y: 2000 }, { x: 2000, y: 2000 }, { x: 2000, y: 400 }], 40),
@@ -347,10 +342,9 @@
             enemyBotPath: generateDensePath([{ x: 2000, y: 400 }, { x: 2000, y: 2000 }, { x: 400, y: 2000 }], 40)
         };
 
-        // --- BOT - starts Lv.1 in Phase 10 ---
         const bot = {
             x: 1920, y: 480, radius: 24, team: 'enemy', level: 1,
-            baseSpeed: 3.1, speed: 3.1, angle: (3 * Math.PI) / 4,
+            baseSpeed: 2.85, speed: 2.85, angle: (3 * Math.PI) / 4,
             hp: 550, maxHp: 550, autoAtkRange: 300,
             basicAtkDmg: 10,
             xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
@@ -360,12 +354,14 @@
             path: laneManager.enemyMidPath, waypointIdx: 0,
             isSlowed: false, slowTimer: 0,
             isRecalling: false, recallProgress: 0, recallDuration: 3000,
-            damageRecoilTimer: 0, lastDamagedBy: null
+            damageRecoilTimer: 0, lastDamagedBy: null,
+            homeguardTimer: 0
         };
 
         let lastBotHp = bot.hp;
         let matchStartTime = performance.now();
         let lastTimerSecond = -1;
+        let s3ChargingPC = false;
 
         function createMinion(team, laneIndex, index) {
             let path;
@@ -374,13 +370,16 @@
             } else {
                 path = laneIndex === 0 ? laneManager.enemyTopPath : laneIndex === 1 ? laneManager.enemyMidPath : laneManager.enemyBotPath;
             }
-            const startIdx = Math.min(index + 2, path.length - 1);
+            // Phase 10.1.1 fix #2 — all minions in a wave spawn from the same Nexus gate
+            const startIdx = 2;
             return {
                 x: path[startIdx].x, y: path[startIdx].y,
-                radius: 14, hp: 100, maxHp: 100, speed: 1.6,
+                radius: 14, hp: 100, maxHp: 100,
+                speed: 1.35,
                 attackRange: 45, attackInterval: 900, attackCd: 0, dmg: 12,
                 team: team, path: path, waypointIdx: startIdx,
-                lastDamagedBy: null
+                lastDamagedBy: null,
+                spawnAlpha: 0
             };
         }
 
@@ -388,11 +387,29 @@
             for (let lane = 0; lane < 3; lane++) {
                 const allyPath = lane === 0 ? laneManager.allyTopPath : lane === 1 ? laneManager.allyMidPath : laneManager.allyBotPath;
                 const enemyPath = lane === 0 ? laneManager.enemyTopPath : lane === 1 ? laneManager.enemyMidPath : laneManager.enemyBotPath;
-                const allyCount = minions.filter(m => m.team === 'ally' && m.path === allyPath).length;
-                const enemyCount = minions.filter(m => m.team === 'enemy' && m.path === enemyPath).length;
+                const allyCount = minions.filter(m => m.team === 'ally' && m.path === allyPath).length
+                                + laneManager.spawnQueue.filter(q => q.team === 'ally' && q.laneIndex === lane).length;
+                const enemyCount = minions.filter(m => m.team === 'enemy' && m.path === enemyPath).length
+                                + laneManager.spawnQueue.filter(q => q.team === 'enemy' && q.laneIndex === lane).length;
                 for (let i = 0; i < 3; i++) {
-                    if (allyCount + i < laneManager.minionCap / 3) minions.push(createMinion('ally', lane, i));
-                    if (enemyCount + i < laneManager.minionCap / 3) minions.push(createMinion('enemy', lane, i));
+                    const delay = i * 650;
+                    if (allyCount + i < laneManager.minionCap / 3) {
+                        laneManager.spawnQueue.push({ delay, team: 'ally', laneIndex: lane, minionIdx: i });
+                    }
+                    if (enemyCount + i < laneManager.minionCap / 3) {
+                        laneManager.spawnQueue.push({ delay, team: 'enemy', laneIndex: lane, minionIdx: i });
+                    }
+                }
+            }
+        }
+
+        function processSpawnQueue(dt) {
+            for (let i = laneManager.spawnQueue.length - 1; i >= 0; i--) {
+                const q = laneManager.spawnQueue[i];
+                q.delay -= dt;
+                if (q.delay <= 0) {
+                    minions.push(createMinion(q.team, q.laneIndex, q.minionIdx));
+                    laneManager.spawnQueue.splice(i, 1);
                 }
             }
         }
@@ -400,7 +417,6 @@
         const cooldowns = {
             s1: { max: 7000, current: 0, activeDur: 1500 },
             s2: { max: 5000, current: 0, activeDur: 3500, range: 300 },
-            // S3 starts locked at Lv.1 (maxCharges 0)
             s3: { recastMax: 1000, current: 0, chargeDur: 900, maxChargeHoldLimit: 3000, charges: 0, maxCharges: 0, rechargeMax: 13000, rechargeTimer: 0 }
         };
 
@@ -426,10 +442,8 @@
         let lastTime = performance.now();
         let gameOver = false;
 
-        // HUD change-detection cache
         let lastHudGold = -1, lastHudLevel = -1, lastHudPlayerKills = -1, lastHudBotKills = -1, lastHudXpPct = -1;
 
-        // ====== PHASE 10: PROGRESSION HELPERS ======
         function spawnFloatingText(x, y, text, color, size) {
             floatingTexts.push({
                 x: x + (Math.random() - 0.5) * 24,
@@ -443,23 +457,71 @@
 
         function dealDamage(target, amount, source, showNumber) {
             if (!target || target.hp <= 0) return;
+
+            const isStructure = structures.includes(target);
+            if (isStructure) {
+                const attackerTeam = (source === 'player' || source === 'ally_minion' || source === 'ally_tower') ? 'ally' : 'enemy';
+                const hasFriendlyMinion = minions.some(m =>
+                    m.team === attackerTeam && m.hp > 0 &&
+                    Math.hypot(m.x - target.x, m.y - target.y) <= target.range
+                );
+                if (!hasFriendlyMinion) {
+                    amount = amount * 0.2;
+                }
+            }
+
             const actual = Math.min(amount, target.hp);
             target.hp -= amount;
             target.lastDamagedBy = source;
+
+            if (target === player) {
+                player.recallTimer = 0;
+                player.homeguardTimer = 0;
+            }
+            if (target === bot) {
+                bot.homeguardTimer = 0;
+            }
+
             if (showNumber && actual > 0) {
                 const isPlayerTookDmg = (target === player);
+                const isStructureShielded = isStructure && !minions.some(m =>
+                    m.team === ((source === 'player' || source === 'ally_minion' || source === 'ally_tower') ? 'ally' : 'enemy') &&
+                    m.hp > 0 && Math.hypot(m.x - target.x, m.y - target.y) <= target.range
+                );
                 spawnFloatingText(
                     target.x, target.y - target.radius - 12,
-                    `-${Math.round(actual)}`,
+                    isStructureShielded ? `🛡️ -${Math.round(actual)}` : `-${Math.round(actual)}`,
                     isPlayerTookDmg ? '#ff6b81' : '#ffeb3b',
                     isPlayerTookDmg ? 15 : 14
                 );
             }
+
+            // Phase 10.1.1 fix #3 — team objective reward regardless of last-hit source
+            if (target.hp <= 0 && isStructure && !target.isNexus && !target.rewarded) {
+                target.rewarded = true;
+                visualExplosions.push({ x: target.x, y: target.y, radius: 80, duration: 350 });
+                if (target.team === 'enemy') {
+                    grantGold(player, 150);
+                    grantXP(player, 120, true);
+                    spawnFloatingText(target.x, target.y - 80, 'TOWER DESTROYED! +150g', '#ffd54f', 20);
+                } else if (target.team === 'ally') {
+                    grantGold(bot, 150);
+                    grantXP(bot, 120, true);
+                    spawnFloatingText(target.x, target.y - 80, 'ALLY TOWER LOST!', '#ff4560', 20);
+                }
+            }
         }
 
-        function grantXP(entity, amount) {
+        // Phase 10.1.1 fix #1 — showPopup toggle to suppress passive trickle text
+        function grantXP(entity, amount, showPopup = true) {
+            if (entity.level >= 12) {
+                entity.gold += amount * 0.6;
+                return;
+            }
             entity.xp += amount;
-            spawnFloatingText(entity.x, entity.y - 50, `+${amount} XP`, '#45f3ff', 11);
+            if (showPopup && amount >= 1) {
+                spawnFloatingText(entity.x, entity.y - 50, `+${Math.round(amount)} XP`, '#45f3ff', 11);
+            }
             checkLevelUp(entity);
         }
 
@@ -469,7 +531,7 @@
         }
 
         function checkLevelUp(entity) {
-            while (entity.xp >= entity.xpToNext) {
+            while (entity.xp >= entity.xpToNext && entity.level < 12) {
                 entity.xp -= entity.xpToNext;
                 entity.level += 1;
                 entity.maxHp += 65;
@@ -495,12 +557,17 @@
                 }
                 spawnFloatingText(entity.x, entity.y - 70, 'LEVEL UP!', '#00ff66', 18);
             }
+            if (entity.level >= 12 && entity.xp > 0) {
+                entity.gold += entity.xp * 0.6;
+                entity.xp = 0;
+            }
         }
 
-        function getS3Damage(isMinion) {
+        function getS3Damage(isMinion, chargePct) {
             const lvl = Math.max(0, player.level - 6);
-            const base = isMinion ? 120 : 140;
-            return base + lvl * 10;
+            const base = (isMinion ? 120 : 140) + lvl * 10;
+            const mult = 0.4 + 0.6 * (chargePct !== undefined ? chargePct : 1.0);
+            return base * mult;
         }
 
         function getBotSkillDamage() {
@@ -513,7 +580,6 @@
             return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
 
-        // ====== INIT / RESTART ======
         document.getElementById('restartBtn').addEventListener('click', restartGame);
         function restartGame() {
             player.x = 400; player.y = 2000;
@@ -525,12 +591,15 @@
             player.attackStunTimer = 0; player.attackFacingTimer = 0;
             player.state = 'ALIVE'; player.respawnTimer = 0; player.recallTimer = 0;
             player.lastDamagedBy = null;
+            player.homeguardTimer = 0;
+            player.empoweredAtks = 0;
+            player.empoweredTimer = 0;
             cooldowns.s1.current = 0; cooldowns.s2.current = 0;
             cooldowns.s3.current = 0; cooldowns.s3.charges = 0;
             cooldowns.s3.maxCharges = 0; cooldowns.s3.rechargeTimer = 0;
 
             allyNexus.hp = allyNexus.maxHp; enemyNexus.hp = enemyNexus.maxHp;
-            structures.forEach(s => { s.hp = s.maxHp; s.currentTarget = null; });
+            structures.forEach(s => { s.hp = s.maxHp; s.currentTarget = null; s.rewarded = false; });
 
             bot.x = 1920; bot.y = 480;
             bot.hp = 550; bot.maxHp = 550; bot.level = 1;
@@ -540,11 +609,13 @@
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
             bot.lastDamagedBy = null;
+            bot.homeguardTimer = 0;
 
             minions.length = 0; projectiles.length = 0; botProjectiles.length = 0;
             towerShots.length = 0; slowFields.length = 0; beamTracers.length = 0;
             basicAtkTracers.length = 0; botAtkTracers.length = 0; visualExplosions.length = 0;
             floatingTexts.length = 0;
+            laneManager.spawnQueue.length = 0;
 
             laneManager.waveTimer = 5000; gameOver = false;
             camera.offsetX = 0; camera.offsetY = 0;
@@ -552,6 +623,7 @@
             matchStartTime = performance.now();
             lastTimerSecond = -1;
             lastHudGold = -1; lastHudLevel = -1; lastHudPlayerKills = -1; lastHudBotKills = -1; lastHudXpPct = -1;
+            s3ChargingPC = false;
             document.getElementById('gameOverOverlay').classList.remove('active');
         }
 
@@ -565,6 +637,7 @@
                 document.getElementById('cancelZone').classList.remove('active', 'hovered');
                 activeAim.skillId = null; activeAim.touchId = null;
             }
+            s3ChargingPC = false;
             lastTime = performance.now();
         }
         document.addEventListener('visibilitychange', () => {
@@ -658,7 +731,8 @@
                     const dx = touch.clientX - camera.lastTouchX;
                     const dy = touch.clientY - camera.lastTouchY;
                     let maxPan = 450;
-                    if (activeAim.skillId === 's3' || camera.minimapJumpActive) maxPan = 99999;
+                    // Phase 10.1.1 fix #4 — allow unlimited panning while dead
+                    if (activeAim.skillId === 's3' || camera.minimapJumpActive || player.state === 'DEAD') maxPan = 99999;
                     camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
                     camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
                     camera.lastTouchX = touch.clientX; camera.lastTouchY = touch.clientY;
@@ -688,6 +762,7 @@
         document.getElementById('s2Btn').addEventListener('mousedown', () => {
             if (player.state === 'DEAD' || cooldowns.s2.current > 0) return;
             player.recallTimer = 0;
+            player.homeguardTimer = 0;
             const smart = getSmartTargetCoords(cooldowns.s2.range);
             player.angle = Math.atan2(smart.y - player.y, smart.x - player.x);
             player.attackFacingTimer = 180; player.attackStunTimer = 30;
@@ -697,26 +772,59 @@
         });
         document.getElementById('s3Btn').addEventListener('mousedown', () => {
             if (player.state === 'DEAD' || cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
+            if (player.level < 6) return;
             player.recallTimer = 0;
-            fireS3Projectile(getSmartTargetCoords(1100).angle, 1100);
+            player.homeguardTimer = 0;
+            fireS3Projectile(getSmartTargetCoords(1100).angle, 1100, 1.0);
         });
         document.getElementById('atkBtn').addEventListener('mousedown', () => triggerBasicAttack('all'));
         document.getElementById('atkMinionBtn').addEventListener('mousedown', () => triggerBasicAttack('minion'));
         document.getElementById('atkTowerBtn').addEventListener('mousedown', () => triggerBasicAttack('tower'));
         document.getElementById('recallBtn').addEventListener('mousedown', startRecall);
 
+        function startS3ChargePC() {
+            if (player.state === 'DEAD') return;
+            if (player.level < 6 || cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
+            player.recallTimer = 0;
+            player.homeguardTimer = 0;
+            activeAim.skillId = 's3';
+            activeAim.touchId = -1;
+            activeAim.startX = canvas.width / 2;
+            activeAim.startY = canvas.height / 2;
+            activeAim.currentX = canvas.width / 2;
+            activeAim.currentY = canvas.height / 2;
+            activeAim.chargeTime = 0;
+            activeAim.fullZoomHoldTime = 0;
+            activeAim.isCanceled = false;
+            activeAim.hasMoved = false;
+            activeAim.dragDist = 0;
+            const smart = getSmartTargetCoords(1100);
+            activeAim.angle = smart.angle;
+            player.angle = activeAim.angle;
+            document.getElementById('cancelZone').classList.add('active');
+        }
+
         const keys = {};
         window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
             keys[e.key.toLowerCase()] = true;
             if (e.code === 'Space') { e.preventDefault(); activateSkill1(); }
             if (e.key.toLowerCase() === 'e') document.getElementById('s2Btn').dispatchEvent(new Event('mousedown'));
-            if (e.key.toLowerCase() === 'r') document.getElementById('s3Btn').dispatchEvent(new Event('mousedown'));
+            if (e.key.toLowerCase() === 'r' && !s3ChargingPC) {
+                s3ChargingPC = true;
+                startS3ChargePC();
+            }
             if (e.key.toLowerCase() === 'f') triggerBasicAttack('all');
             if (e.key.toLowerCase() === 'b') startRecall();
-            // Dev-only: K grants 500 XP for testing (undocumented)
             if (e.key.toLowerCase() === 'k') grantXP(player, 500);
         });
-        window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            if (e.key.toLowerCase() === 'r' && s3ChargingPC) {
+                s3ChargingPC = false;
+                if (activeAim.skillId === 's3') resolveSkillRelease();
+            }
+        });
 
         function getSmartTargetCoords(maxRange) {
             let best = null, bestDist = Infinity;
@@ -825,6 +933,7 @@
             player.angle = Math.atan2(target.y - player.y, target.x - player.x);
             player.attackFacingTimer = 180; player.attackStunTimer = 30;
             player.recallTimer = 0;
+            player.homeguardTimer = 0;
             if (target === bot) {
                 structures.forEach(s => {
                     if (s.team === 'enemy' && s.hp > 0 && Math.hypot(player.x - s.x, player.y - s.y) <= s.range) s.currentTarget = player;
@@ -832,8 +941,13 @@
             }
             player.attackInterval = 380;
             let offY = (validTargets[0].type === 'tower') ? -20 : 0;
-            basicAtkTracers.push({ target: target, offsetY: offY, duration: 140 });
-            dealDamage(target, player.basicAtkDmg, 'player', true);
+
+            const isEmpowered = player.empoweredAtks > 0 && player.empoweredTimer > 0;
+            const dmgMult = isEmpowered ? 1.8 : 1.0;
+            if (isEmpowered) player.empoweredAtks -= 1;
+
+            basicAtkTracers.push({ target: target, offsetY: offY, duration: 140, empowered: isEmpowered });
+            dealDamage(target, player.basicAtkDmg * dmgMult, 'player', true);
         }
 
         function consumeS3Charge() {
@@ -844,15 +958,19 @@
             else cooldowns.s3.current = cooldowns.s3.rechargeTimer;
         }
 
-        function fireS3Projectile(targetAngle, dynamicMaxDist) {
+        function fireS3Projectile(targetAngle, dynamicMaxDist, chargePct) {
             const spawnDist = player.radius + 42;
             projectiles.push({
                 x: player.x + Math.cos(targetAngle) * spawnDist, y: player.y + Math.sin(targetAngle) * spawnDist,
                 dx: Math.cos(targetAngle) * 30, dy: Math.sin(targetAngle) * 30,
                 distTraveled: 0, maxDist: dynamicMaxDist, radius: 6,
-                isSniper: true, angle: targetAngle, hitEntities: []
+                isSniper: true, angle: targetAngle, hitEntities: [],
+                chargePct: chargePct
             });
-            consumeS3Charge(); camera.zoomHoldTimer = 800;
+            consumeS3Charge();
+            camera.zoomHoldTimer = 800;
+            player.empoweredAtks = 2;
+            player.empoweredTimer = 5000;
         }
 
         function resolveSkillRelease() {
@@ -864,6 +982,7 @@
                 return;
             }
             player.recallTimer = 0;
+            player.homeguardTimer = 0;
             if (skill === 's2') {
                 let targetX, targetY;
                 if (!activeAim.hasMoved || activeAim.dragDist < 0.25) {
@@ -879,7 +998,7 @@
                 cooldowns.s2.current = cooldowns.s2.max;
             } else if (skill === 's3') {
                 const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
-                fireS3Projectile(activeAim.angle, 400 + (chargePct * 700));
+                fireS3Projectile(activeAim.angle, 400 + (chargePct * 700), chargePct);
             }
         }
 
@@ -887,8 +1006,10 @@
             if (player.state === 'DEAD') return;
             if (skillId === 's3') {
                 if (cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
+                if (player.level < 6) return;
             } else if (cooldowns[skillId].current > 0) return;
             player.recallTimer = 0;
+            player.homeguardTimer = 0;
             const touch = touchEvent.changedTouches[0];
             activeAim.skillId = skillId; activeAim.touchId = touch.identifier;
             activeAim.startX = touch.clientX; activeAim.startY = touch.clientY;
@@ -946,6 +1067,7 @@
             const ff = dt / 16.67;
             for (let m of minions) {
                 if (m.hp <= 0) continue;
+                if (m.spawnAlpha < 1) m.spawnAlpha = Math.min(1, m.spawnAlpha + dt / 500);
                 if (m.attackCd > 0) m.attackCd -= dt;
                 const target = findMinionTarget(m);
                 if (target) {
@@ -1001,7 +1123,6 @@
                 }
             }
             separateMinions();
-            // PHASE 10: award XP/gold BEFORE removing dead minions
             for (let i = minions.length - 1; i >= 0; i--) {
                 const m = minions[i];
                 if (m.hp <= 0) {
@@ -1026,6 +1147,7 @@
         function updateLane(dt) {
             laneManager.waveTimer -= dt;
             if (laneManager.waveTimer <= 0) { spawnMinionWave(); laneManager.waveTimer = laneManager.waveInterval; }
+            processSpawnQueue(dt);
             updateMinions(dt);
         }
 
@@ -1150,9 +1272,13 @@
             if (bot.skillCd > 0) bot.skillCd -= dt;
             if (bot.attackStunTimer > 0) bot.attackStunTimer -= dt;
             if (bot.damageRecoilTimer > 0) bot.damageRecoilTimer -= dt;
+            if (bot.homeguardTimer > 0) bot.homeguardTimer -= dt;
+
+            if (Math.hypot(bot.x - enemyNexus.x, bot.y - enemyNexus.y) <= 220) bot.homeguardTimer = 4000;
 
             const frameFactor = dt / 16.67;
-            const spd = (bot.isSlowed ? bot.baseSpeed * 0.55 : bot.baseSpeed) * frameFactor;
+            const hgMult = 1 + 0.55 * (Math.max(0, bot.homeguardTimer) / 4000);
+            const spd = (bot.isSlowed ? bot.baseSpeed * 0.55 : bot.baseSpeed) * hgMult * frameFactor;
             const isEarlyGame = bot.level <= 3;
 
             if (bot.isRecalling) {
@@ -1192,7 +1318,6 @@
                 return;
             }
 
-            // Smarter S2 slow-field escape: blend radial (60%) + homeward (40%)
             let inSlowField = false;
             for (let f of slowFields) {
                 const dPool = Math.hypot(bot.x - f.x, bot.y - f.y);
@@ -1228,7 +1353,6 @@
 
             let underUntankedAllyTower = false;
             if (isEarlyGame) {
-                // Early game: extra caution — no chasing into any ally tower
                 for (let s of structures) {
                     if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 40) {
                         underUntankedAllyTower = true; break;
@@ -1285,12 +1409,14 @@
 
                 if (target === player && bot.skillCd <= 0 && !player.isInvincible) {
                     bot.angle = aimAngle; bot.attackStunTimer = 160;
+                    bot.homeguardTimer = 0;
                     botProjectiles.push({ x: bot.x, y: bot.y, dx: Math.cos(aimAngle) * 10, dy: Math.sin(aimAngle) * 10, radius: 10, dist: 0, maxDist: 500, dmg: getBotSkillDamage() });
                     bot.skillCd = bot.skillMaxCd;
                 }
 
                 if (d <= bot.autoAtkRange + (target.radius || 0) && bot.attackCd <= 0) {
                     bot.attackStunTimer = 120;
+                    bot.homeguardTimer = 0;
                     botAtkTracers.push({ x1: bot.x, y1: bot.y, x2: target.x, y2: target.y, duration: 130 });
                     dealDamage(target, bot.basicAtkDmg, 'bot', target === player);
                     if (target === player) {
@@ -1347,7 +1473,7 @@
             }
             if (player.level !== lastHudLevel) {
                 lastHudLevel = player.level;
-                document.getElementById('lvlDisplay').innerText = `Lv. ${player.level}`;
+                document.getElementById('lvlDisplay').innerText = player.level >= 12 ? 'Lv. 12 MAX' : `Lv. ${player.level}`;
             }
             if (player.kills !== lastHudPlayerKills) {
                 lastHudPlayerKills = player.kills;
@@ -1357,10 +1483,27 @@
                 lastHudBotKills = bot.kills;
                 document.getElementById('enemyKills').innerText = bot.kills;
             }
-            const pct = Math.round((player.xp / player.xpToNext) * 100);
-            if (pct !== lastHudXpPct) {
-                lastHudXpPct = pct;
-                document.getElementById('xpBar').style.width = `${pct}%`;
+            if (player.level >= 12) {
+                if (lastHudXpPct !== 100) {
+                    lastHudXpPct = 100;
+                    document.getElementById('xpBar').style.width = '100%';
+                    document.getElementById('xpBar').style.background = 'linear-gradient(90deg, #ffd54f, #ff8f00)';
+                }
+            } else {
+                const pct = Math.round((player.xp / player.xpToNext) * 100);
+                if (pct !== lastHudXpPct) {
+                    lastHudXpPct = pct;
+                    document.getElementById('xpBar').style.width = `${pct}%`;
+                    document.getElementById('xpBar').style.background = 'linear-gradient(90deg, #45f3ff, #00ff66)';
+                }
+            }
+            const atkBtn = document.getElementById('atkBtn');
+            if (player.empoweredAtks > 0 && player.empoweredTimer > 0) {
+                atkBtn.style.boxShadow = '0 0 22px rgba(255,213,79,0.9), 0 0 12px rgba(69,243,255,0.7)';
+                atkBtn.style.borderColor = '#ffd54f';
+            } else {
+                atkBtn.style.boxShadow = '';
+                atkBtn.style.borderColor = '';
             }
             if (!gameOver) {
                 const sec = Math.floor((performance.now() - matchStartTime) / 1000);
@@ -1375,16 +1518,23 @@
             if (gameOver) return;
             const dtSec = deltaTime / 1000;
 
-            // Passive trickle
+            // Phase 10.1.1 fix #1 — passive XP never spawns floating text
             if (player.state !== 'DEAD') {
                 player.gold += 2 * dtSec;
-                player.xp += 1.5 * dtSec;
-                checkLevelUp(player);
+                grantXP(player, 1.5 * dtSec, false);
             }
             if (bot.state !== 'DEAD') {
                 bot.gold += 2 * dtSec;
-                bot.xp += 1.5 * dtSec;
-                checkLevelUp(bot);
+                grantXP(bot, 1.5 * dtSec, false);
+            }
+
+            if (player.empoweredTimer > 0) {
+                player.empoweredTimer -= deltaTime;
+                if (player.empoweredTimer <= 0) player.empoweredAtks = 0;
+            }
+            if (player.homeguardTimer > 0) player.homeguardTimer -= deltaTime;
+            if (player.state === 'ALIVE' && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 220) {
+                player.homeguardTimer = 4000;
             }
 
             if (player.state === 'DEAD') {
@@ -1447,7 +1597,8 @@
                 }
                 if (player.attackStunTimer <= 0) {
                     const ultSlow = (activeAim.skillId === 's3') ? 0.65 : 1.0;
-                    const currentSpeed = player.speed * ultSlow;
+                    const hgMult = 1 + 0.55 * (Math.max(0, player.homeguardTimer) / 4000);
+                    const currentSpeed = player.speed * ultSlow * hgMult;
                     const ff = deltaTime / 16.67;
                     const stepX = player.dx * currentSpeed * ff, stepY = player.dy * currentSpeed * ff;
                     let moved = false;
@@ -1464,7 +1615,6 @@
                 } else document.getElementById(`${key}CD`).style.height = '0%';
             });
 
-            // S3 HUD state (locked vs unlocked)
             const s3 = cooldowns.s3;
             if (s3.current > 0) s3.current = Math.max(0, s3.current - deltaTime);
             if (player.level < 6) {
@@ -1500,7 +1650,7 @@
             else if (camera.zoomHoldTimer > 0) { camera.zoomHoldTimer -= deltaTime; targetZoom = 1.0 - (0.28 * Math.min(1, camera.zoomHoldTimer / 500)); }
             camera.zoom += (targetZoom - camera.zoom) * 0.22;
 
-            if (!camera.isPanning && !camera.minimapJumpActive) {
+            if (!camera.isPanning && !camera.minimapJumpActive && player.state !== 'DEAD') {
                 camera.offsetX *= 0.85;
                 camera.offsetY *= 0.85;
                 if (Math.abs(camera.offsetX) < 0.3) camera.offsetX = 0;
@@ -1524,7 +1674,6 @@
             for (let i = botAtkTracers.length - 1; i >= 0; i--) if ((botAtkTracers[i].duration -= deltaTime) <= 0) botAtkTracers.splice(i, 1);
             for (let i = visualExplosions.length - 1; i >= 0; i--) if ((visualExplosions[i].duration -= deltaTime) <= 0) visualExplosions.splice(i, 1);
 
-            // Floating text update
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
                 const ft = floatingTexts[i];
                 ft.y += ft.vy * (deltaTime / 16.67);
@@ -1574,21 +1723,24 @@
                         if (m.team === 'enemy' && m.hp > 0 && !p.hitEntities.includes(m)) {
                             if (Math.hypot(cx - m.x, cy - m.y) < m.radius + p.radius) {
                                 p.hitEntities.push(m);
-                                dealDamage(m, getS3Damage(true), 'player', true);
+                                dealDamage(m, getS3Damage(true, p.chargePct), 'player', true);
                                 visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                             }
                         }
                     }
                     if (bot.state !== 'DEAD' && !p.hitEntities.includes(bot) && Math.hypot(cx - bot.x, cy - bot.y) < bot.radius + p.radius) {
                         p.hitEntities.push(bot);
-                        dealDamage(bot, getS3Damage(false), 'player', true);
+                        dealDamage(bot, getS3Damage(false, p.chargePct), 'player', true);
                         bot.damageRecoilTimer = 400; activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 60, duration: 280 });
                         for (let st of structures) { if (st.team === 'enemy' && st.hp > 0 && Math.hypot(player.x - st.x, player.y - st.y) <= st.range) st.currentTarget = player; }
                         stoppedByHero = true; break;
                     }
                     for (let st of structures) {
-                        if (st.team === 'enemy' && st.hp > 0 && !p.hitEntities.includes(st) && Math.hypot(cx - st.x, cy - st.y) < st.radius + p.radius) p.hitEntities.push(st);
+                        if (st.team === 'enemy' && st.hp > 0 && !p.hitEntities.includes(st) && Math.hypot(cx - st.x, cy - st.y) < st.radius + p.radius) {
+                            p.hitEntities.push(st);
+                            dealDamage(st, getS3Damage(false, p.chargePct) * 0.5, 'player', true);
+                        }
                     }
                 }
                 if (stoppedByHero || p.distTraveled >= p.maxDist) projectiles.splice(i, 1);
@@ -1604,6 +1756,7 @@
                 player.deaths += 1;
                 player.state = 'DEAD'; player.respawnTimer = 6000;
                 player.isInvincible = false; player.passiveActive = false; player.recallTimer = 0;
+                player.empoweredAtks = 0; player.empoweredTimer = 0;
                 activeAim.skillId = null; document.getElementById('cancelZone').classList.remove('active', 'hovered');
                 visualExplosions.push({ x: player.x, y: player.y, radius: 65, duration: 300 });
             }
@@ -1711,10 +1864,12 @@
                 ctx.strokeStyle = '#ffeb3b'; ctx.lineWidth = 4; ctx.stroke();
             });
             basicAtkTracers.forEach(b => {
+                const color = b.empowered ? '#ffd54f' : 'rgba(255, 235, 59, 0.85)';
+                const width = b.empowered ? 9 : 5;
                 ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(b.target.x, b.target.y + b.offsetY);
-                ctx.strokeStyle = 'rgba(255, 235, 59, 0.85)'; ctx.lineWidth = 5; ctx.stroke();
+                ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(b.target.x, b.target.y + b.offsetY);
-                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.strokeStyle = b.empowered ? '#45f3ff' : '#ffffff'; ctx.lineWidth = b.empowered ? 3 : 1.5; ctx.stroke();
             });
             botAtkTracers.forEach(b => {
                 ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2);
@@ -1767,6 +1922,8 @@
             }
 
             minions.forEach(m => {
+                const alpha = m.spawnAlpha !== undefined ? m.spawnAlpha : 1;
+                ctx.globalAlpha = alpha;
                 const baseColor = m.team === 'ally' ? '#2196f3' : '#e53935';
                 const strokeColor = m.team === 'ally' ? '#64b5f6' : '#ef5350';
                 ctx.beginPath(); ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
@@ -1776,6 +1933,7 @@
                     ctx.fillStyle = m.team === 'ally' ? '#64b5f6' : '#ff4141';
                     ctx.fillRect(m.x - 15, m.y - 22, 30 * (m.hp / m.maxHp), 4);
                 }
+                ctx.globalAlpha = 1;
             });
 
             if (bot.state !== 'DEAD') {
@@ -1794,9 +1952,12 @@
                     ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.radius + 14, 0, Math.PI * 2);
                     ctx.strokeStyle = 'rgba(100, 181, 246, 0.25)'; ctx.lineWidth = 2; ctx.stroke();
                 }
+                if (bot.homeguardTimer > 0) {
+                    ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.radius + 6, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(69, 243, 255, 0.5)'; ctx.lineWidth = 2; ctx.stroke();
+                }
                 ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(bot.x - 35, bot.y - 46, 70, 7);
                 ctx.fillStyle = '#ff1744'; ctx.fillRect(bot.x - 35, bot.y - 46, 70 * (bot.hp / bot.maxHp), 7);
-                // Bot level badge
                 ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(bot.x - 20, bot.y - 58, 40, 9);
                 ctx.fillStyle = '#ff8a80'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
                 ctx.fillText(`Lv.${bot.level}`, bot.x, bot.y - 50);
@@ -1806,7 +1967,6 @@
                 ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(player.x - 30, player.y - 42, 60, 6);
                 ctx.fillStyle = player.isInvincible ? '#45f3ff' : '#00ff66';
                 ctx.fillRect(player.x - 30, player.y - 42, 60 * (player.hp / player.maxHp), 6);
-                // Player level badge
                 ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(player.x - 20, player.y - 54, 40, 9);
                 ctx.fillStyle = '#45f3ff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
                 ctx.fillText(`Lv.${player.level}`, player.x, player.y - 46);
@@ -1831,6 +1991,25 @@
                     ctx.beginPath(); ctx.arc(player.x, player.y, player.radius + 12, 0, Math.PI * 2);
                     ctx.strokeStyle = 'rgba(255, 193, 7, 0.6)'; ctx.lineWidth = 3; ctx.stroke();
                 }
+                if (player.homeguardTimer > 0) {
+                    const t = performance.now() * 0.002;
+                    ctx.beginPath(); ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(69, 243, 255, ${0.4 + 0.2 * Math.sin(t * 3)})`;
+                    ctx.lineWidth = 3; ctx.stroke();
+                }
+                if (player.empoweredAtks > 0 && player.empoweredTimer > 0) {
+                    const t = performance.now() * 0.003;
+                    for (let i = 0; i < 2; i++) {
+                        const ang = t + i * Math.PI;
+                        const ox = player.x + Math.cos(ang) * (player.radius + 18);
+                        const oy = player.y + Math.sin(ang) * (player.radius + 18);
+                        ctx.beginPath(); ctx.arc(ox, oy, 5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ffd54f';
+                        ctx.shadowColor = '#45f3ff'; ctx.shadowBlur = 12;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
                 if (player.recallTimer > 0) {
                     const t = performance.now() * 0.001;
                     ctx.save();
@@ -1852,12 +2031,11 @@
                 ctx.fillStyle = s.team === 'ally' ? '#42a5f5' : '#ff1744'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
             });
             visualExplosions.forEach(exp => {
-                const currentRadius = Math.max(0, exp.radius * (1.0 - exp.duration / 280));
+                const currentRadius = Math.max(0, exp.radius * (1.0 - exp.duration / 350));
                 ctx.beginPath(); ctx.arc(exp.x, exp.y, currentRadius, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 235, 59, 0.35)'; ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
             });
 
-            // Floating damage/XP/gold text (world space)
             drawFloatingTexts();
 
             ctx.restore();
