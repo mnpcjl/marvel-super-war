@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 8: Polished Arena</title>
+    <title>Marvel Super War - Phase 9: Recall & Respawn Fixed</title>
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
@@ -69,92 +69,93 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
-        /* Main Ability Buttons Grid */
+        /* True MOBA Radial Arc Layout */
         .abilities-container {
-            position: absolute; 
-            bottom: 30px; 
-            right: 30px;
-            display: grid; 
-            grid-template-columns: repeat(3, 70px);
-            grid-gap: 15px; 
-            align-items: end;
-        }
-        
-        .skill-btn {
-            width: 70px; 
-            height: 70px; 
-            border-radius: 50%;
-            background: #1f2833; 
-            border: 3px solid #45f3ff;
-            color: white; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center;
-            font-size: 10px; 
-            font-weight: bold; 
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(69, 243, 255, 0.2);
-            position: relative; 
-            overflow: hidden;
-            touch-action: none;
-        }
-        
-        .skill-btn .cd-overlay {
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 0%;
-            background: rgba(0, 0, 0, 0.78); 
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 340px;
+            height: 270px;
             pointer-events: none;
         }
-        
-        .skill-btn .hotkey { 
-            font-size: 9px; 
-            color: #aaa; 
-            margin-top: 2px; 
-        }
-        
-        .ammo-badge {
-            position: absolute; 
-            top: 4px; 
-            right: 8px;
-            background: #ffc107; 
-            color: #000; 
-            font-size: 11px;
-            font-weight: 900; 
-            padding: 1px 5px; 
-            border-radius: 8px;
-            z-index: 3; 
-            box-shadow: 0 0 4px #000;
-        }
-        
-        .recharge-bar {
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            height: 4px;
-            background: #ffc107; 
-            width: 0%; 
-            z-index: 3;
+
+        .skill-btn {
+            position: absolute;
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            background: #1f2833;
+            border: 3px solid #45f3ff;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(69, 243, 255, 0.25);
+            overflow: hidden;
+            touch-action: none;
+            pointer-events: auto;
         }
 
+        /* Radial Skill Positions */
+        #s1Btn { bottom: 24px; right: 178px; }
+        #s2Btn { bottom: 112px; right: 145px; }
+        #s3Btn { bottom: 175px; right: 68px; width: 70px; height: 70px; }
+
         #atkBtn {
-            grid-column: 3; 
-            grid-row: 1 / span 2;
-            width: 85px; 
-            height: 85px; 
+            bottom: 25px;
+            right: 25px;
+            width: 84px;
+            height: 84px;
             border-color: #ff4560;
-            background: #4a0e17; 
+            background: #4a0e17;
             font-size: 14px;
         }
 
-        /* Mini Attack Buttons */
+        .skill-btn .cd-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: rgba(0, 0, 0, 0.78);
+            pointer-events: none;
+        }
+
+        .skill-btn .hotkey { font-size: 8px; color: #aaa; margin-top: 2px; }
+
+        .ammo-badge {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: #ffc107;
+            color: #000;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-radius: 8px;
+            z-index: 3;
+            box-shadow: 0 0 4px #000;
+        }
+
+        .recharge-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: #ffc107;
+            width: 0%;
+            z-index: 3;
+        }
+
+        /* Mini Target-Priority Buttons (Tucked neatly around ATK) */
         .mini-atk-btn {
             position: absolute;
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: #2a0a10;
             border: 2px solid #ff4560;
@@ -162,24 +163,40 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
             box-shadow: 0 0 8px rgba(255, 69, 96, 0.4);
             touch-action: none;
             pointer-events: auto;
             text-align: center;
-            line-height: 1.1;
         }
 
-        #atkMinionBtn {
-            bottom: 40px;
-            right: 130px; 
-        }
+        #atkMinionBtn { bottom: 22px; right: 118px; }
+        #atkTowerBtn  { bottom: 118px; right: 22px; }
 
-        #atkTowerBtn {
-            bottom: 130px;
-            right: 40px; 
+        /* Recall Button (Utility slot along bottom edge to the left of S1) */
+        #recallBtn {
+            position: absolute;
+            bottom: 24px;
+            right: 262px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #0d3a7a;
+            border: 2.5px solid #64b5f6;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.4);
+            touch-action: none;
+            pointer-events: auto;
+            flex-direction: column;
+            cursor: pointer;
         }
+        #recallBtn .hotkey { font-size: 8px; color: #aaa; margin-top: 1px; }
 
         .cancel-zone {
             position: absolute; 
@@ -399,6 +416,11 @@
 
         <button class="mini-atk-btn" id="atkMinionBtn">MINION</button>
         <button class="mini-atk-btn" id="atkTowerBtn">TOWER</button>
+        
+        <button id="recallBtn" class="interactive">
+            RECALL
+            <span class="hotkey">[B]</span>
+        </button>
 
         <div class="status-ui interactive">
             <h3>Marvel Super War (<span id="lvlDisplay">Lv. 6</span>)</h3>
@@ -470,7 +492,10 @@
             passiveActive: false, passiveTimer: 0,
             attackStunTimer: 0,
             attackInterval: 0,
-            attackFacingTimer: 0
+            attackFacingTimer: 0,
+            state: 'ALIVE', 
+            respawnTimer: 0,
+            recallTimer: 0
         };
 
         // --- MAP WALLS / JUNGLE ---
@@ -661,6 +686,10 @@
             player.attackInterval = 0;
             player.attackStunTimer = 0;
             player.attackFacingTimer = 0;
+            player.state = 'ALIVE';
+            player.respawnTimer = 0;
+            player.recallTimer = 0;
+            
             cooldowns.s1.current = 0;
             cooldowns.s2.current = 0;
             cooldowns.s3.current = 0;
@@ -727,7 +756,8 @@
                 if (targetEl.closest('.joystick-container') ||
                     targetEl.closest('.abilities-container') ||
                     targetEl.closest('.status-ui') ||
-                    targetEl.closest('.mini-atk-btn')) {
+                    targetEl.closest('.mini-atk-btn') ||
+                    targetEl.closest('#recallBtn')) {
                     continue;
                 }
                 
@@ -850,11 +880,14 @@
         document.getElementById('atkBtn').addEventListener('touchstart', (e) => { e.preventDefault(); triggerBasicAttack('all'); });
         document.getElementById('atkMinionBtn').addEventListener('touchstart', (e) => { e.preventDefault(); triggerBasicAttack('minion'); });
         document.getElementById('atkTowerBtn').addEventListener('touchstart', (e) => { e.preventDefault(); triggerBasicAttack('tower'); });
+        
+        document.getElementById('recallBtn').addEventListener('touchstart', (e) => { e.preventDefault(); startRecall(); });
 
         // --- PC FALLBACKS ---
         document.getElementById('s1Btn').addEventListener('mousedown', activateSkill1);
         document.getElementById('s2Btn').addEventListener('mousedown', () => {
             if (cooldowns.s2.current > 0) return;
+            player.recallTimer = 0; // Cancel Recall
             const smart = getSmartTargetCoords(cooldowns.s2.range);
             player.angle = Math.atan2(smart.y - player.y, smart.x - player.x);
             player.attackFacingTimer = 180;
@@ -862,22 +895,18 @@
             beamTracers.push({ targetX: smart.x, targetY: smart.y, duration: 220 });
             slowFields.push({ x: smart.x, y: smart.y, radius: 115, duration: cooldowns.s2.activeDur });
             cooldowns.s2.current = cooldowns.s2.max;
-            
-            // BUG FIX: Ensure PC S2 triggers tower aggro
-            structures.forEach(st => {
-                if (st.team === 'enemy' && st.hp > 0 && Math.hypot(smart.x - st.x, smart.y - st.y) <= st.range) {
-                    st.currentTarget = player;
-                }
-            });
         });
         document.getElementById('s3Btn').addEventListener('mousedown', () => {
             if (cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
+            player.recallTimer = 0; // Cancel Recall
             fireS3Projectile(getSmartTargetCoords(1100).angle, 1100); 
         });
         
         document.getElementById('atkBtn').addEventListener('mousedown', () => triggerBasicAttack('all'));
         document.getElementById('atkMinionBtn').addEventListener('mousedown', () => triggerBasicAttack('minion'));
         document.getElementById('atkTowerBtn').addEventListener('mousedown', () => triggerBasicAttack('tower'));
+        
+        document.getElementById('recallBtn').addEventListener('mousedown', startRecall);
 
         const keys = {};
         window.addEventListener('keydown', (e) => {
@@ -886,6 +915,7 @@
             if (e.key.toLowerCase() === 'e') document.getElementById('s2Btn').dispatchEvent(new Event('mousedown'));
             if (e.key.toLowerCase() === 'r') document.getElementById('s3Btn').dispatchEvent(new Event('mousedown'));
             if (e.key.toLowerCase() === 'f') triggerBasicAttack('all');
+            if (e.key.toLowerCase() === 'b') startRecall();
         });
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
@@ -957,15 +987,23 @@
         }
 
         function activateSkill1() {
-            if (cooldowns.s1.current > 0) return;
+            if (player.state === 'DEAD' || cooldowns.s1.current > 0) return;
+            player.recallTimer = 0; // Cancel Recall
             player.isInvincible = true;
             player.invincibleTimer = cooldowns.s1.activeDur;
             cooldowns.s1.current = cooldowns.s1.max;
             activatePassive();
         }
+        
+        function startRecall() {
+            if (player.state === 'DEAD' || player.recallTimer > 0) return;
+            if (Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) < 120) return; // Already at base!
+            player.recallTimer = 4000;
+            player.dx = 0; player.dy = 0;
+        }
 
         function triggerBasicAttack(priority) {
-            if (player.attackInterval > 0) return;
+            if (player.state === 'DEAD' || player.attackInterval > 0) return;
             const range = player.autoAtkRange;
             let validTargets = [];
 
@@ -1010,6 +1048,7 @@
             player.angle = Math.atan2(target.y - player.y, target.x - player.x);
             player.attackFacingTimer = 180; 
             player.attackStunTimer = 30;    
+            player.recallTimer = 0; // Cancel recall on attack
 
             if (target === bot) {
                 structures.forEach(s => {
@@ -1065,6 +1104,8 @@
                 if (skill === 's3') { consumeS3Charge(); camera.zoomHoldTimer = 500; }
                 return;
             }
+            
+            player.recallTimer = 0; // Cancel recall on skill release
 
             if (skill === 's2') {
                 let targetX, targetY;
@@ -1092,11 +1133,15 @@
         }
 
         function initSkillAim(skillId, touchEvent) {
+            if (player.state === 'DEAD') return;
             if (skillId === 's3') {
                 if (cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
             } else if (cooldowns[skillId].current > 0) {
                 return;
             }
+            
+            player.recallTimer = 0; // Cancel recall on aim start
+            
             const touch = touchEvent.changedTouches[0];
             activeAim.skillId = skillId;
             activeAim.touchId = touch.identifier;
@@ -1126,7 +1171,7 @@
                 if (d <= aggroRange && d < bestDist) { best = o; bestDist = d; }
             }
 
-            if (m.team === 'enemy' && player.hp > 0 && !player.isInvincible) {
+            if (m.team === 'enemy' && player.hp > 0 && !player.isInvincible && player.state !== 'DEAD') {
                 const d = Math.hypot(player.x - m.x, player.y - m.y);
                 if (d <= aggroRange && d < bestDist) { best = player; bestDist = d; }
             }
@@ -1167,14 +1212,13 @@
                     }
                 }
             }
-            // BUG FIX: Ensure minions never clip into jungle walls
             for (let m of minions) {
                 ejectFromWall(m);
             }
         }
 
         function updateMinions(dt) {
-            const frameFactor = dt / 16.67;
+            const ff = dt / 16.67;
 
             for (let m of minions) {
                 if (m.hp <= 0) continue;
@@ -1186,12 +1230,18 @@
                     const reach = m.attackRange + target.radius;
                     if (d > reach) {
                         const angle = Math.atan2(target.y - m.y, target.x - m.x);
-                        const step = m.speed * frameFactor;
-                        m.x += Math.cos(angle) * step;
-                        m.y += Math.sin(angle) * step;
+                        const stepX = Math.cos(angle) * m.speed * ff;
+                        const stepY = Math.sin(angle) * m.speed * ff;
+                        
+                        if (canMoveTo(m.x + stepX, m.y, m.radius, false)) m.x += stepX;
+                        if (canMoveTo(m.x, m.y + stepY, m.radius, false)) m.y += stepY;
+                        
                     } else if (m.attackCd <= 0) {
                         if (target === player) {
-                            if (!player.isInvincible) player.hp = Math.max(0, player.hp - m.dmg);
+                            if (!player.isInvincible && player.state !== 'DEAD') {
+                                player.hp = Math.max(0, player.hp - m.dmg);
+                                player.recallTimer = 0; // Cancel recall
+                            }
                         } else {
                             target.hp -= m.dmg;
                         }
@@ -1227,9 +1277,11 @@
                         }
                     } else {
                         const angle = Math.atan2(targetNode.y - m.y, targetNode.x - m.x);
-                        const step = m.speed * frameFactor;
-                        m.x += Math.cos(angle) * step;
-                        m.y += Math.sin(angle) * step;
+                        const stepX = Math.cos(angle) * m.speed * ff;
+                        const stepY = Math.sin(angle) * m.speed * ff;
+                        
+                        if (canMoveTo(m.x + stepX, m.y, m.radius, false)) m.x += stepX;
+                        if (canMoveTo(m.x, m.y + stepY, m.radius, false)) m.y += stepY;
                     }
                 }
             }
@@ -1258,7 +1310,7 @@
                 if (t.currentTarget) {
                     const d = Math.hypot(t.currentTarget.x - t.x, t.currentTarget.y - t.y);
                     
-                    if (t.currentTarget === player && player.isInvincible) {
+                    if (t.currentTarget === player && (player.isInvincible || player.state === 'DEAD')) {
                         t.currentTarget = null;
                     } else if (t.currentTarget === bot && bot.state === 'DEAD') {
                         t.currentTarget = null;
@@ -1288,7 +1340,7 @@
                     if (bestMinion) {
                         t.currentTarget = bestMinion;
                     } else {
-                        if (t.team === 'enemy' && player.hp > 0 && !player.isInvincible) {
+                        if (t.team === 'enemy' && player.hp > 0 && !player.isInvincible && player.state !== 'DEAD') {
                             const d = Math.hypot(player.x - t.x, player.y - t.y);
                             if (d <= t.range + player.radius) {
                                 t.currentTarget = player;
@@ -1313,18 +1365,24 @@
                 }
             }
 
+            const ff = dt / 16.67;
             for (let i = towerShots.length - 1; i >= 0; i--) {
                 const s = towerShots[i];
                 if (!s.target || s.target.hp <= 0) { towerShots.splice(i, 1); continue; }
                 
                 if (s.target === bot && bot.state === 'DEAD') { towerShots.splice(i, 1); continue; }
+                if (s.target === player && player.state === 'DEAD') { towerShots.splice(i, 1); continue; }
 
                 const angle = Math.atan2(s.target.y - s.y, s.target.x - s.x);
-                s.x += Math.cos(angle) * s.speed;
-                s.y += Math.sin(angle) * s.speed;
+                s.x += Math.cos(angle) * s.speed * ff;
+                s.y += Math.sin(angle) * s.speed * ff;
+                
                 if (Math.hypot(s.target.x - s.x, s.target.y - s.y) < s.target.radius + s.radius) {
                     if (s.target === player) {
-                        if (!player.isInvincible) player.hp = Math.max(0, player.hp - s.dmg);
+                        if (!player.isInvincible && player.state !== 'DEAD') {
+                            player.hp = Math.max(0, player.hp - s.dmg);
+                            player.recallTimer = 0; // Cancel recall
+                        }
                     } else {
                         s.target.hp -= s.dmg;
                     }
@@ -1425,7 +1483,7 @@
             }
 
             let target = null, bestDist = Infinity;
-            if (player.hp > 0 && !player.isInvincible && !underUntankedAllyTower) {
+            if (player.hp > 0 && !player.isInvincible && player.state !== 'DEAD' && !underUntankedAllyTower) {
                 const dP = Math.hypot(player.x - bot.x, player.y - bot.y);
                 if (dP <= bot.autoAtkRange + 35) {
                     target = player; bestDist = dP;
@@ -1479,7 +1537,10 @@
                     bot.attackStunTimer = 120;
                     botAtkTracers.push({ x1: bot.x, y1: bot.y, x2: target.x, y2: target.y, duration: 130 });
                     if (target === player) {
-                        if (!player.isInvincible) player.hp = Math.max(0, player.hp - 18);
+                        if (!player.isInvincible && player.state !== 'DEAD') {
+                            player.hp = Math.max(0, player.hp - 18);
+                            player.recallTimer = 0; // Cancel recall
+                        }
                         for (let s of structures) {
                             if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range) {
                                 s.currentTarget = bot;
@@ -1530,7 +1591,7 @@
                 txt.innerText = 'VICTORY';
                 txt.className = 'victory';
                 el.classList.add('active');
-            } else if (allyNexus.hp <= 0 || player.hp <= 0) {
+            } else if (allyNexus.hp <= 0) {
                 gameOver = true;
                 const el = document.getElementById('gameOverOverlay');
                 const txt = document.getElementById('gameOverText');
@@ -1544,36 +1605,101 @@
         function update(deltaTime) {
             if (gameOver) return;
 
-            if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
-
-            if (activeAim.skillId === 's3') {
-                if (activeAim.chargeTime < cooldowns.s3.chargeDur) {
-                    activeAim.chargeTime += deltaTime;
-                } else {
-                    activeAim.fullZoomHoldTime += deltaTime;
-                    if (activeAim.fullZoomHoldTime >= cooldowns.s3.maxChargeHoldLimit) {
-                        activeAim.isCanceled = false;
-                        resolveSkillRelease();
+            // 1. Handle Player Respawn (World & Cooldowns keep running!)
+            if (player.state === 'DEAD') {
+                player.respawnTimer -= deltaTime;
+                if (player.respawnTimer <= 0) {
+                    player.state = 'ALIVE';
+                    player.hp = player.maxHp;
+                    player.x = allyNexus.x;
+                    player.y = allyNexus.y;
+                    player.recallTimer = 0;
+                }
+            } else {
+                // 2. Player Alive Logic: Recall, Fountain Heal, Movement
+                if (player.recallTimer > 0) {
+                    player.recallTimer -= deltaTime;
+                    if (player.recallTimer <= 0) {
+                        player.x = allyNexus.x;
+                        player.y = allyNexus.y;
+                        player.recallTimer = 0;
+                        camera.offsetX = 0;
+                        camera.offsetY = 0;
                     }
                 }
-            }
 
-            if (!joyActive) {
-                let kx = 0, ky = 0;
-                if (keys['w']) ky -= 1;
-                if (keys['s']) ky += 1;
-                if (keys['a']) kx -= 1;
-                if (keys['d']) kx += 1;
-                if (kx !== 0 || ky !== 0) {
-                    const kAngle = Math.atan2(ky, kx);
-                    if (activeAim.skillId !== 's3' && player.attackFacingTimer <= 0) player.angle = kAngle;
-                    player.dx = Math.cos(kAngle);
-                    player.dy = Math.sin(kAngle);
-                } else {
-                    player.dx = 0; player.dy = 0;
+                // Base Fountain Healing
+                if (player.hp > 0 && player.hp < player.maxHp && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 220) {
+                    player.hp = Math.min(player.maxHp, player.hp + 0.35 * deltaTime);
+                }
+
+                if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
+
+                if (activeAim.skillId === 's3') {
+                    if (activeAim.chargeTime < cooldowns.s3.chargeDur) {
+                        activeAim.chargeTime += deltaTime;
+                    } else {
+                        activeAim.fullZoomHoldTime += deltaTime;
+                        if (activeAim.fullZoomHoldTime >= cooldowns.s3.maxChargeHoldLimit) {
+                            activeAim.isCanceled = false;
+                            resolveSkillRelease();
+                        }
+                    }
+                }
+
+                if (!joyActive) {
+                    let kx = 0, ky = 0;
+                    if (keys['w']) ky -= 1;
+                    if (keys['s']) ky += 1;
+                    if (keys['a']) kx -= 1;
+                    if (keys['d']) kx += 1;
+                    if (kx !== 0 || ky !== 0) {
+                        const kAngle = Math.atan2(ky, kx);
+                        if (activeAim.skillId !== 's3' && player.attackFacingTimer <= 0) player.angle = kAngle;
+                        player.dx = Math.cos(kAngle);
+                        player.dy = Math.sin(kAngle);
+                        if (player.recallTimer > 0) player.recallTimer = 0;
+                    } else {
+                        player.dx = 0; player.dy = 0;
+                    }
+                }
+
+                if (player.attackInterval > 0) player.attackInterval -= deltaTime;
+                if (player.attackStunTimer > 0) player.attackStunTimer -= deltaTime;
+                if (player.isInvincible) {
+                    player.invincibleTimer -= deltaTime;
+                    if (player.invincibleTimer <= 0) player.isInvincible = false;
+                }
+                if (player.passiveActive) {
+                    player.passiveTimer -= deltaTime;
+                    if (player.passiveTimer <= 0) {
+                        player.passiveActive = false;
+                        player.speed = player.baseSpeed;
+                        ejectFromWall(player);
+                    }
+                }
+
+                if (player.attackStunTimer <= 0) {
+                    const ultSlow = (activeAim.skillId === 's3') ? 0.65 : 1.0;
+                    const currentSpeed = player.speed * ultSlow;
+                    const ff = deltaTime / 16.67; 
+                    const stepX = player.dx * currentSpeed * ff;
+                    const stepY = player.dy * currentSpeed * ff;
+                    
+                    let moved = false;
+                    if (canMoveTo(player.x + stepX, player.y, player.radius, player.passiveActive)) {
+                        player.x += stepX;
+                        if (Math.abs(stepX) > 0.01) moved = true;
+                    }
+                    if (canMoveTo(player.x, player.y + stepY, player.radius, player.passiveActive)) {
+                        player.y += stepY;
+                        if (Math.abs(stepY) > 0.01) moved = true;
+                    }
+                    if (moved && player.recallTimer > 0) player.recallTimer = 0;
                 }
             }
 
+            // 3. Cooldowns, Camera, Minions, Towers, and Bot ALWAYS run (even while Vision is respawning!)
             ['s1', 's2'].forEach(key => {
                 if (cooldowns[key].current > 0) {
                     cooldowns[key].current = Math.max(0, cooldowns[key].current - deltaTime);
@@ -1605,33 +1731,6 @@
                 document.getElementById('s3CD').style.height = `${(s3.current / s3.recastMax) * 100}%`;
             } else {
                 document.getElementById('s3CD').style.height = '0%';
-            }
-
-            if (player.attackInterval > 0) player.attackInterval -= deltaTime;
-            if (player.attackStunTimer > 0) player.attackStunTimer -= deltaTime;
-
-            if (player.isInvincible) {
-                player.invincibleTimer -= deltaTime;
-                if (player.invincibleTimer <= 0) player.isInvincible = false;
-            }
-            if (player.passiveActive) {
-                player.passiveTimer -= deltaTime;
-                if (player.passiveTimer <= 0) {
-                    player.passiveActive = false;
-                    player.speed = player.baseSpeed;
-                    ejectFromWall(player);
-                }
-            }
-
-            if (player.attackStunTimer <= 0) {
-                const ultSlow = (activeAim.skillId === 's3') ? 0.65 : 1.0;
-                const currentSpeed = player.speed * ultSlow;
-                const frameFactor = deltaTime / 16.67; 
-                const stepX = player.dx * currentSpeed * frameFactor;
-                const stepY = player.dy * currentSpeed * frameFactor;
-                
-                if (canMoveTo(player.x + stepX, player.y, player.radius, player.passiveActive)) player.x += stepX;
-                if (canMoveTo(player.x, player.y + stepY, player.radius, player.passiveActive)) player.y += stepY;
             }
 
             let targetZoom = 1.0;
@@ -1682,14 +1781,18 @@
                 if (visualExplosions[i].duration <= 0) visualExplosions.splice(i, 1);
             }
 
+            const ff = deltaTime / 16.67;
+            
             for (let i = botProjectiles.length - 1; i >= 0; i--) {
                 const bp = botProjectiles[i];
-                bp.x += bp.dx; bp.y += bp.dy;
-                bp.dist += Math.hypot(bp.dx, bp.dy);
+                bp.x += bp.dx * ff; 
+                bp.y += bp.dy * ff;
+                bp.dist += Math.hypot(bp.dx * ff, bp.dy * ff);
                 
-                if (player.hp > 0 && Math.hypot(bp.x - player.x, bp.y - player.y) < player.radius + bp.radius) {
+                if (player.hp > 0 && player.state !== 'DEAD' && Math.hypot(bp.x - player.x, bp.y - player.y) < player.radius + bp.radius) {
                     if (!player.isInvincible) {
                         player.hp = Math.max(0, player.hp - bp.dmg);
+                        player.recallTimer = 0; // Cancel recall
                         visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 });
                     }
                     botProjectiles.splice(i, 1);
@@ -1705,7 +1808,7 @@
                 if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
                     bot.isSlowed = true;
                     bot.slowTimer = 500;
-                    bot.hp -= 0.4;
+                    bot.hp -= 0.4 * ff;
                     for (let st of structures) {
                         if (st.team === 'enemy' && st.hp > 0 && Math.hypot(player.x - st.x, player.y - st.y) <= st.range) {
                             st.currentTarget = player;
@@ -1715,7 +1818,7 @@
 
                 for (let m of minions) {
                     if (m.team === 'enemy' && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
-                        m.hp -= 0.4;
+                        m.hp -= 0.4 * ff;
                     }
                 }
                 if (f.duration <= 0) slowFields.splice(i, 1);
@@ -1724,15 +1827,15 @@
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const p = projectiles[i];
                 const prevX = p.x, prevY = p.y;
-                p.x += p.dx; p.y += p.dy;
-                p.distTraveled += Math.hypot(p.dx, p.dy);
+                p.x += p.dx * ff; p.y += p.dy * ff;
+                p.distTraveled += Math.hypot(p.dx * ff, p.dy * ff);
                 let stoppedByHero = false;
 
                 const steps = 5;
                 for (let s = 1; s <= steps; s++) {
                     let t = s / steps;
-                    let cx = prevX + p.dx * t;
-                    let cy = prevY + p.dy * t;
+                    let cx = prevX + p.dx * ff * t;
+                    let cy = prevY + p.dy * ff * t;
 
                     for (let m of minions) {
                         if (m.team === 'enemy' && m.hp > 0 && !p.hitEntities.includes(m)) {
@@ -1768,6 +1871,18 @@
                 }
 
                 if (stoppedByHero || p.distTraveled >= p.maxDist) projectiles.splice(i, 1);
+            }
+            
+            // Handle Player Death
+            if (player.hp <= 0 && player.state !== 'DEAD') {
+                player.state = 'DEAD';
+                player.respawnTimer = 6000;
+                player.isInvincible = false;
+                player.passiveActive = false;
+                player.recallTimer = 0;
+                activeAim.skillId = null;
+                document.getElementById('cancelZone').classList.remove('active', 'hovered');
+                visualExplosions.push({ x: player.x, y: player.y, radius: 65, duration: 300 });
             }
 
             const pState = document.getElementById('passiveState');
@@ -2068,50 +2183,72 @@
                 ctx.fillRect(bot.x - 35, bot.y - 46, 70 * (bot.hp / bot.maxHp), 7);
             }
 
-            ctx.fillStyle = 'rgba(0,0,0,0.6)';
-            ctx.fillRect(player.x - 30, player.y - 42, 60, 6);
-            ctx.fillStyle = player.isInvincible ? '#45f3ff' : '#00ff66';
-            ctx.fillRect(player.x - 30, player.y - 42, 60 * (player.hp / player.maxHp), 6);
+            // Draw Player
+            if (player.state !== 'DEAD') {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(player.x - 30, player.y - 42, 60, 6);
+                ctx.fillStyle = player.isInvincible ? '#45f3ff' : '#00ff66';
+                ctx.fillRect(player.x - 30, player.y - 42, 60 * (player.hp / player.maxHp), 6);
 
-            ctx.save();
-            ctx.translate(player.x, player.y);
-            ctx.rotate(player.angle);
-            if (!player.isInvincible && !player.passiveActive) {
+                ctx.save();
+                ctx.translate(player.x, player.y);
+                ctx.rotate(player.angle);
+                if (!player.isInvincible && !player.passiveActive) {
+                    ctx.beginPath();
+                    ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
+                    ctx.fillStyle = '#ffc107';
+                    ctx.fill();
+                }
                 ctx.beginPath();
-                ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
-                ctx.fillStyle = '#ffc107';
+                ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+                if (player.isInvincible) {
+                    ctx.fillStyle = 'rgba(69, 243, 255, 0.2)';
+                    ctx.strokeStyle = '#45f3ff';
+                    ctx.lineWidth = 4;
+                    ctx.fill(); ctx.stroke();
+                } else if (player.passiveActive) {
+                    ctx.fillStyle = 'rgba(69, 243, 255, 0.15)';
+                    ctx.strokeStyle = '#45f3ff';
+                    ctx.lineWidth = 3;
+                    ctx.fill(); ctx.stroke();
+                } else {
+                    ctx.fillStyle = '#2e7d32';
+                    ctx.strokeStyle = '#66bb6a';
+                    ctx.lineWidth = 4;
+                    ctx.fill(); ctx.stroke();
+                }
+                ctx.beginPath();
+                ctx.arc(10, 0, 5, 0, Math.PI * 2);
+                ctx.fillStyle = player.passiveActive ? 'rgba(255, 235, 59, 0.5)' : '#ffeb3b';
                 ctx.fill();
-            }
-            ctx.beginPath();
-            ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-            if (player.isInvincible) {
-                ctx.fillStyle = 'rgba(69, 243, 255, 0.2)';
-                ctx.strokeStyle = '#45f3ff';
-                ctx.lineWidth = 4;
-                ctx.fill(); ctx.stroke();
-            } else if (player.passiveActive) {
-                ctx.fillStyle = 'rgba(69, 243, 255, 0.15)';
-                ctx.strokeStyle = '#45f3ff';
-                ctx.lineWidth = 3;
-                ctx.fill(); ctx.stroke();
-            } else {
-                ctx.fillStyle = '#2e7d32';
-                ctx.strokeStyle = '#66bb6a';
-                ctx.lineWidth = 4;
-                ctx.fill(); ctx.stroke();
-            }
-            ctx.beginPath();
-            ctx.arc(10, 0, 5, 0, Math.PI * 2);
-            ctx.fillStyle = player.passiveActive ? 'rgba(255, 235, 59, 0.5)' : '#ffeb3b';
-            ctx.fill();
-            ctx.restore();
+                ctx.restore();
 
-            if (player.isInvincible) {
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, player.radius + 12, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255, 193, 7, 0.6)';
-                ctx.lineWidth = 3;
-                ctx.stroke();
+                if (player.isInvincible) {
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, player.radius + 12, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 193, 7, 0.6)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+                
+                // Draw Recall Bar & Circle
+                if (player.recallTimer > 0) {
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, player.radius + 16 + Math.sin(performance.now() * 0.01) * 4, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#64b5f6';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([8, 6]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                    ctx.fillRect(player.x - 35, player.y - 60, 70, 10);
+                    ctx.fillStyle = '#64b5f6';
+                    ctx.fillRect(player.x - 35, player.y - 60, 70 * (1 - player.recallTimer / 4000), 10);
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(player.x - 35, player.y - 60, 70, 10);
+                }
             }
 
             towerShots.forEach(s => {
@@ -2137,6 +2274,16 @@
 
             ctx.restore();
             drawMiniMap();
+            
+            // Respawn UI Overlay
+            if (player.state === 'DEAD') {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(0, canvas.height / 2 - 40, canvas.width, 80);
+                ctx.fillStyle = '#e94560';
+                ctx.font = 'bold 32px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`RESPAWNING IN ${Math.ceil(player.respawnTimer / 1000)}s`, canvas.width / 2, canvas.height / 2 + 10);
+            }
         }
 
         function drawNexus(n) {
@@ -2208,10 +2355,12 @@
                 ctx.fill();
             }
 
-            ctx.fillStyle = '#00ff66';
-            ctx.beginPath();
-            ctx.arc(mx + player.x * scale, my + player.y * scale, 4, 0, Math.PI * 2);
-            ctx.fill();
+            if (player.state !== 'DEAD') {
+                ctx.fillStyle = '#00ff66';
+                ctx.beginPath();
+                ctx.arc(mx + player.x * scale, my + player.y * scale, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.strokeStyle = 'rgba(255,255,255,0.45)';
             ctx.lineWidth = 1;
