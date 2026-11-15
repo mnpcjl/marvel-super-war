@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vision MOBA - Phase 4: Nexus Aggro Fixed</title>
+    <title>Vision MOBA - Phase 5: Polish & Visual Fixes</title>
     <style>
         body, html {
             margin: 0; 
@@ -406,7 +406,7 @@
             { x: 1550, y: 500,  w: 90,  h: 250 }
         ];
 
-        // --- NEXUS BASES (Now with Tower properties) ---
+        // --- NEXUS BASES ---
         const allyNexus = {
             x: 400, y: 2000, radius: 55,
             hp: 2000, maxHp: 2000, team: 'ally',
@@ -438,7 +438,6 @@
             currentTarget: null
         };
         
-        // Unified array for targeting logic
         const structures = [allyTower, enemyTower, allyNexus, enemyNexus];
 
         // --- TEST DUMMY ---
@@ -507,8 +506,7 @@
                 dmg: 12,
                 team: team,
                 path: path,
-                waypointIdx: 0,
-                pathIndexOffset: index
+                waypointIdx: index 
             };
         }
 
@@ -915,7 +913,6 @@
             player.attackFacingTimer = 180; 
             player.attackStunTimer = 30;    
 
-            // Check BOTH Tower and Nexus for aggro switch if Hero is attacked
             if (target === dummy) {
                 const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
                 if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
@@ -1037,7 +1034,6 @@
                 if (d <= aggroRange && d < bestDist) { best = player; bestDist = d; }
             }
 
-            // Include structures (Towers + Nexuses)
             for (let t of structures) {
                 if (t.team === m.team || t.hp <= 0) continue;
                 const d = Math.hypot(t.x - m.x, t.y - m.y);
@@ -1096,7 +1092,22 @@
                         m.attackCd = m.attackInterval;
                     }
                 } else {
-                    let targetIdx = Math.min(m.path.length - 1, m.waypointIdx + m.pathIndexOffset);
+                    let closestIdx = m.waypointIdx;
+                    let minDist = Infinity;
+                    
+                    for (let i = Math.max(0, m.waypointIdx - 5); i < Math.min(m.path.length, m.waypointIdx + 20); i++) {
+                        let d = Math.hypot(m.path[i].x - m.x, m.path[i].y - m.y);
+                        if (d < minDist) {
+                            minDist = d;
+                            closestIdx = i;
+                        }
+                    }
+                    
+                    if (closestIdx > m.waypointIdx) {
+                        m.waypointIdx = closestIdx;
+                    }
+
+                    let targetIdx = Math.min(m.path.length - 1, m.waypointIdx);
                     let targetNode = m.path[targetIdx];
                     
                     if (!targetNode) {
@@ -1133,15 +1144,18 @@
             updateMinions(dt);
         }
 
-        // --- TOWER & NEXUS LOGIC (STICKY TARGET) ---
+        // --- TOWER & NEXUS LOGIC ---
         function updateTowers(dt) {
-            // Iterate through structures (Towers + Nexuses)
             for (let t of structures) {
                 if (t.hp <= 0) continue;
 
                 if (t.currentTarget) {
                     const d = Math.hypot(t.currentTarget.x - t.x, t.currentTarget.y - t.y);
-                    if (t.currentTarget.hp <= 0) {
+                    
+                    // BUG FIX 1: Drop aggro if player is invincible (S1)
+                    if (t.currentTarget === player && player.isInvincible) {
+                        t.currentTarget = null;
+                    } else if (t.currentTarget.hp <= 0) {
                         t.currentTarget = null;
                     } else if (t.currentTarget !== player) {
                         if (d > t.range + 100) t.currentTarget = null;
@@ -1165,7 +1179,7 @@
 
                     if (bestMinion) {
                         t.currentTarget = bestMinion;
-                    } else if (t.team === 'enemy' && player.hp > 0) {
+                    } else if (t.team === 'enemy' && player.hp > 0 && !player.isInvincible) {
                         const d = Math.hypot(player.x - t.x, player.y - t.y);
                         if (d <= t.range + player.radius) {
                             t.currentTarget = player;
@@ -1379,6 +1393,12 @@
                     dummy.isSlowed = true;
                     dummy.slowTimer = 500;
                     dummy.hp -= 0.4;
+                    
+                    // BUG FIX 2: S2 triggers aggro
+                    const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
+                    if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
+                    const distToNexus = Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y);
+                    if (distToNexus <= enemyNexus.range) enemyNexus.currentTarget = player;
                 }
                 for (let m of minions) {
                     if (m.team === 'enemy' && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
@@ -1414,6 +1434,12 @@
                         dummy.hp -= 120;
                         activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
+                        
+                        // BUG FIX 2: S3 triggers aggro
+                        const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
+                        if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
+                        const distToNexus = Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y);
+                        if (distToNexus <= enemyNexus.range) enemyNexus.currentTarget = player;
                     }
                     if (!p.hitEntities.includes(enemyTower) && Math.hypot(cx - enemyTower.x, cy - enemyTower.y) < enemyTower.radius + p.radius) {
                         p.hitEntities.push(enemyTower);
@@ -1464,11 +1490,18 @@
             ctx.lineWidth = 160;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            
+            // Top Lane
             ctx.beginPath(); ctx.moveTo(400, 2000); ctx.lineTo(400, 400); ctx.lineTo(2000, 400); ctx.stroke();
+            // Bot Lane
             ctx.beginPath(); ctx.moveTo(400, 2000); ctx.lineTo(2000, 2000); ctx.lineTo(2000, 400); ctx.stroke();
+            // BUG FIX 4: Mid Lane
+            ctx.beginPath(); ctx.moveTo(400, 2000); ctx.lineTo(2000, 400); ctx.stroke();
+            
+            // BUG FIX 4: River (Perpendicular to mid lane)
             ctx.strokeStyle = 'rgba(0, 188, 212, 0.08)';
             ctx.lineWidth = 140;
-            ctx.beginPath(); ctx.moveTo(200, 2200); ctx.lineTo(2200, 200); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(200, 200); ctx.lineTo(2200, 2200); ctx.stroke();
 
             // Walls
             walls.forEach(w => {
@@ -1483,9 +1516,10 @@
             drawNexus(allyNexus);
             drawNexus(enemyNexus);
 
-            // Towers (Skip Nexuses here since they are drawn above)
+            // Towers & Nexus Rings
             structures.forEach(t => {
-                if (t.hp <= 0 || t.isNexus) return;
+                if (t.hp <= 0) return;
+
                 ctx.beginPath();
                 ctx.arc(t.x, t.y, t.range, 0, Math.PI * 2);
                 const inRange = Math.hypot(player.x - t.x, player.y - t.y) <= t.range && t.team === 'enemy';
@@ -1495,18 +1529,33 @@
                 ctx.lineWidth = isAggro ? 3 : 2;
                 ctx.stroke();
 
-                ctx.beginPath();
-                ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
-                ctx.fillStyle = t.team === 'ally' ? '#0d3a7a' : '#880e4f';
-                ctx.strokeStyle = t.team === 'ally' ? '#2196f3' : '#ff4081';
-                ctx.lineWidth = 4;
-                ctx.fill();
-                ctx.stroke();
+                // BUG FIX 3: Draw Aggro Laser for all structures
+                if (isAggro) {
+                    ctx.beginPath();
+                    ctx.moveTo(t.x, t.y);
+                    ctx.lineTo(player.x, player.y);
+                    ctx.strokeStyle = 'rgba(255, 65, 65, 0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
 
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(t.x - 50, t.y - 65, 100, 8);
-                ctx.fillStyle = t.team === 'ally' ? '#2196f3' : '#ff4081';
-                ctx.fillRect(t.x - 50, t.y - 65, 100 * (t.hp / t.maxHp), 8);
+                // Only draw the tower body/HP bar if it's NOT a Nexus
+                if (!t.isNexus) {
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = t.team === 'ally' ? '#0d3a7a' : '#880e4f';
+                    ctx.strokeStyle = t.team === 'ally' ? '#2196f3' : '#ff4081';
+                    ctx.lineWidth = 4;
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillRect(t.x - 50, t.y - 65, 100, 8);
+                    ctx.fillStyle = t.team === 'ally' ? '#2196f3' : '#ff4081';
+                    ctx.fillRect(t.x - 50, t.y - 65, 100 * (t.hp / t.maxHp), 8);
+                }
             });
 
             // S2 pools + tracers
@@ -1762,7 +1811,6 @@
                 ctx.fillRect(mx + w.x * scale, my + w.y * scale, w.w * scale, w.h * scale);
             });
 
-            // Draw Nexuses on minimap
             ctx.fillStyle = '#2196f3';
             ctx.beginPath();
             ctx.arc(mx + allyNexus.x * scale, my + allyNexus.y * scale, 5, 0, Math.PI * 2);
@@ -1772,7 +1820,6 @@
             ctx.arc(mx + enemyNexus.x * scale, my + enemyNexus.y * scale, 5, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw Towers on minimap (Skip Nexuses)
             structures.forEach(t => {
                 if (t.hp <= 0 || t.isNexus) return;
                 ctx.fillStyle = t.team === 'ally' ? '#42a5f5' : '#ff4081';
