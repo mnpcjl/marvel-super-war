@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vision MOBA - Phase 3C: Minion Pathing & Beam Fixes</title>
+    <title>Vision MOBA - Phase 3D: Facing & Ult Scaling</title>
     <style>
         body, html {
             margin: 0; 
@@ -390,7 +390,8 @@
             isInvincible: false, invincibleTimer: 0,
             passiveActive: false, passiveTimer: 0,
             attackStunTimer: 0,
-            attackInterval: 0
+            attackInterval: 0,
+            attackFacingTimer: 0 // NEW: Locks facing direction briefly after attack
         };
 
         // --- 3-LANE JUNGLE WALLS ---
@@ -495,7 +496,7 @@
                 team: team,
                 path: path,
                 waypointIdx: 0,
-                pathIndexOffset: index // 0, 1, 2
+                pathIndexOffset: index
             };
         }
 
@@ -572,6 +573,7 @@
             player.speed = player.baseSpeed;
             player.attackInterval = 0;
             player.attackStunTimer = 0;
+            player.attackFacingTimer = 0;
             cooldowns.s1.current = 0;
             cooldowns.s2.current = 0;
             cooldowns.s3.current = 0;
@@ -657,7 +659,10 @@
                     const maxDist = 45;
                     const angle = Math.atan2(dy, dx);
                     
-                    if (activeAim.skillId !== 's3') player.angle = angle;
+                    // CHANGED: Added attackFacingTimer check so attacks lock facing direction
+                    if (activeAim.skillId !== 's3' && player.attackFacingTimer <= 0) {
+                        player.angle = angle;
+                    }
                     
                     if (dist < maxDist) {
                         joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
@@ -761,7 +766,7 @@
         });
         document.getElementById('s3Btn').addEventListener('mousedown', () => {
             if (cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
-            fireS3Projectile(getSmartTargetCoords(1100).angle);
+            fireS3Projectile(getSmartTargetCoords(1100).angle, 1100); // PC gets full distance
         });
         
         document.getElementById('atkBtn').addEventListener('mousedown', () => triggerBasicAttack('all'));
@@ -851,7 +856,6 @@
             const range = player.autoAtkRange;
             let validTargets = [];
 
-            // Gather all valid targets
             for (let m of minions) {
                 if (m.team === 'enemy' && m.hp > 0) {
                     const d = Math.hypot(m.x - player.x, m.y - player.y);
@@ -873,7 +877,6 @@
 
             if (validTargets.length === 0) return;
 
-            // Sort by Priority
             validTargets.sort((a, b) => {
                 let scoreA = 99, scoreB = 99;
                 if (priority === 'all') {
@@ -891,8 +894,9 @@
 
             let target = validTargets[0].entity;
             
-            // Snap to face the target
+            // CHANGED: Snap to face target and lock facing for 250ms
             player.angle = Math.atan2(target.y - player.y, target.x - player.x);
+            player.attackFacingTimer = 250;
 
             player.attackStunTimer = 55;
             player.attackInterval = 380;
@@ -913,7 +917,7 @@
             else cooldowns.s3.current = cooldowns.s3.rechargeTimer;
         }
 
-        function fireS3Projectile(targetAngle) {
+        function fireS3Projectile(targetAngle, dynamicMaxDist) {
             const spawnDist = player.radius + 42;
             projectiles.push({
                 x: player.x + Math.cos(targetAngle) * spawnDist,
@@ -921,7 +925,7 @@
                 dx: Math.cos(targetAngle) * 30,
                 dy: Math.sin(targetAngle) * 30,
                 distTraveled: 0,
-                maxDist: 1100,
+                maxDist: dynamicMaxDist, // CHANGED: Dynamic distance based on charge
                 radius: 6,
                 isSniper: true,
                 angle: targetAngle,
@@ -957,7 +961,10 @@
                 slowFields.push({ x: targetX, y: targetY, radius: 115, duration: cooldowns.s2.activeDur });
                 cooldowns.s2.current = cooldowns.s2.max;
             } else if (skill === 's3') {
-                fireS3Projectile(activeAim.angle);
+                // CHANGED: Calculate dynamic distance
+                const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
+                const dynamicMaxDist = 400 + (chargePct * 700); 
+                fireS3Projectile(activeAim.angle, dynamicMaxDist);
             }
         }
 
@@ -1028,7 +1035,6 @@
                     let minDist = m1.radius + m2.radius;
                     
                     if (dist > 0 && dist < minDist) {
-                        // Weakened push force to keep them on the track
                         let push = (minDist - dist) * 0.15; 
                         let pushX = (dx / dist) * push;
                         let pushY = (dy / dist) * push;
@@ -1066,12 +1072,10 @@
                         m.attackCd = m.attackInterval;
                     }
                 } else {
-                    // Dense Path Formation Logic
                     let targetIdx = Math.min(m.path.length - 1, m.waypointIdx + m.pathIndexOffset);
                     let targetNode = m.path[targetIdx];
                     
                     if (!targetNode) {
-                        // Reached end of path, target Nexus directly
                         targetNode = m.team === 'ally' ? enemyNexus : allyNexus;
                     }
 
@@ -1179,6 +1183,9 @@
         function update(deltaTime) {
             if (gameOver) return;
 
+            // NEW: Decrement facing lock timer
+            if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
+
             // S3 aim charge/hold
             if (activeAim.skillId === 's3') {
                 if (activeAim.chargeTime < cooldowns.s3.chargeDur) {
@@ -1201,7 +1208,7 @@
                 if (keys['d']) kx += 1;
                 if (kx !== 0 || ky !== 0) {
                     const kAngle = Math.atan2(ky, kx);
-                    if (activeAim.skillId !== 's3') player.angle = kAngle;
+                    if (activeAim.skillId !== 's3' && player.attackFacingTimer <= 0) player.angle = kAngle;
                     player.dx = Math.cos(kAngle);
                     player.dy = Math.sin(kAngle);
                 } else {
@@ -1348,14 +1355,12 @@
                 p.x += p.dx; p.y += p.dy;
                 p.distTraveled += Math.hypot(p.dx, p.dy);
 
-                // 5-Step Swept Collision
                 const steps = 5;
                 for (let s = 1; s <= steps; s++) {
                     let t = s / steps;
                     let cx = p.x - p.dx + p.dx * t;
                     let cy = p.y - p.dy + p.dy * t;
 
-                    // Check ALL minions
                     for (let m of minions) {
                         if (m.team === 'enemy' && !p.hitEntities.includes(m)) {
                             if (Math.hypot(cx - m.x, cy - m.y) < m.radius + p.radius) {
@@ -1365,18 +1370,15 @@
                             }
                         }
                     }
-                    // Check Dummy (Hero)
                     if (!p.hitEntities.includes(dummy) && Math.hypot(cx - dummy.x, cy - dummy.y) < dummy.radius + p.radius) {
                         p.hitEntities.push(dummy);
                         dummy.hp -= 120;
                         activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                     }
-                    // Check Tower (Passes through, 0 dmg, NO EXPLOSION)
                     if (!p.hitEntities.includes(enemyTower) && Math.hypot(cx - enemyTower.x, cy - enemyTower.y) < enemyTower.radius + p.radius) {
                         p.hitEntities.push(enemyTower);
                     }
-                    // Check Nexus (Passes through, 0 dmg, NO EXPLOSION)
                     if (!p.hitEntities.includes(enemyNexus) && Math.hypot(cx - enemyNexus.x, cy - enemyNexus.y) < enemyNexus.radius + p.radius) {
                         p.hitEntities.push(enemyNexus);
                     }
@@ -1387,7 +1389,6 @@
 
             if (dummy.hp <= 0) dummy.hp = dummy.maxHp;
 
-            // Passive UI
             const pState = document.getElementById('passiveState');
             if (player.passiveActive) {
                 pState.innerText = `Passive: ACTIVE (${(player.passiveTimer / 1000).toFixed(1)}s)`;
@@ -1553,9 +1554,12 @@
                     ctx.lineWidth = 3;
                     ctx.fill(); ctx.stroke();
                 } else if (activeAim.skillId === 's3') {
-                    const L = 1100, ms = 0.35;
-                    const cp = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
-                    const cs = ms * (1 - cp);
+                    // CHANGED: Dynamic aiming line length
+                    const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
+                    const L = 400 + (chargePct * 700);
+                    
+                    const ms = 0.35;
+                    const cs = ms * (1 - chargePct);
                     const aL = activeAim.angle - cs;
                     const aR = activeAim.angle + cs;
                     ctx.lineWidth = 1.5;
