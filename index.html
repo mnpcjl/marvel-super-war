@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vision MOBA - Phase 2E: Passive Balance</title>
+    <title>Vision MOBA - Phase 3C: Minion Pathing & Beam Fixes</title>
     <style>
         body, html {
             margin: 0; 
@@ -438,39 +438,53 @@
 
         // --- MINIONS & LANE MANAGER ---
         const minions = [];
+        
+        function generateDensePath(points, spacing) {
+            const path = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                const steps = Math.max(1, Math.floor(dist / spacing));
+                for (let j = 0; j < steps; j++) {
+                    const t = j / steps;
+                    path.push({
+                        x: p1.x + (p2.x - p1.x) * t,
+                        y: p1.y + (p2.y - p1.y) * t
+                    });
+                }
+            }
+            path.push(points[points.length - 1]);
+            return path;
+        }
+
         const laneManager = {
             waveTimer: 5000,
             waveInterval: 15000,
             minionCap: 12,
             allySpawnPos: { x: 400, y: 2000 },
             enemySpawnPos: { x: 2000, y: 400 },
-            allyWaypoints: [
-                { x: 800,  y: 1600 },
+            allyPath: generateDensePath([
+                { x: 400, y: 2000 },
+                { x: 800, y: 1600 },
                 { x: 1200, y: 1200 },
-                { x: 1600, y: 800  },
-                { x: 2000, y: 400  }
-            ],
-            enemyWaypoints: [
-                { x: 1600, y: 800  },
+                { x: 1600, y: 800 },
+                { x: 2000, y: 400 }
+            ], 40),
+            enemyPath: generateDensePath([
+                { x: 2000, y: 400 },
+                { x: 1600, y: 800 },
                 { x: 1200, y: 1200 },
-                { x: 800,  y: 1600 },
-                { x: 400,  y: 2000 }
-            ]
+                { x: 800, y: 1600 },
+                { x: 400, y: 2000 }
+            ], 40)
         };
 
         function createMinion(team, index) {
-            const spawn = team === 'ally' ? laneManager.allySpawnPos : laneManager.enemySpawnPos;
-            const wps = team === 'ally' ? laneManager.allyWaypoints : laneManager.enemyWaypoints;
-            const wp0 = wps[0];
-            const spawnAngle = Math.atan2(wp0.y - spawn.y, wp0.x - spawn.x);
-            const perpX = -Math.sin(spawnAngle);
-            const perpY = Math.cos(spawnAngle);
-            
-            const offset = index * 40;
-            
+            const path = team === 'ally' ? laneManager.allyPath : laneManager.enemyPath;
             return {
-                x: spawn.x + perpX * offset,
-                y: spawn.y + perpY * offset,
+                x: path[0].x,
+                y: path[0].y,
                 radius: 14,
                 hp: 100, maxHp: 100,
                 speed: 1.6,
@@ -479,9 +493,9 @@
                 attackCd: 0,
                 dmg: 12,
                 team: team,
-                waypoints: wps,
+                path: path,
                 waypointIdx: 0,
-                indexInWave: index 
+                pathIndexOffset: index // 0, 1, 2
             };
         }
 
@@ -876,6 +890,10 @@
             });
 
             let target = validTargets[0].entity;
+            
+            // Snap to face the target
+            player.angle = Math.atan2(target.y - player.y, target.x - player.x);
+
             player.attackStunTimer = 55;
             player.attackInterval = 380;
             
@@ -904,7 +922,7 @@
                 dy: Math.sin(targetAngle) * 30,
                 distTraveled: 0,
                 maxDist: 1100,
-                radius: 4,
+                radius: 6,
                 isSniper: true,
                 angle: targetAngle,
                 hitEntities: [] 
@@ -1010,7 +1028,8 @@
                     let minDist = m1.radius + m2.radius;
                     
                     if (dist > 0 && dist < minDist) {
-                        let push = (minDist - dist) * 0.25; 
+                        // Weakened push force to keep them on the track
+                        let push = (minDist - dist) * 0.15; 
                         let pushX = (dx / dist) * push;
                         let pushY = (dy / dist) * push;
                         m1.x += pushX;
@@ -1047,27 +1066,25 @@
                         m.attackCd = m.attackInterval;
                     }
                 } else {
-                    const wp = m.waypoints[m.waypointIdx];
-                    if (wp) {
-                        // --- SINGLE FILE FORMATION LOGIC ---
-                        let nextWp = m.waypoints[m.waypointIdx + 1] || wp;
-                        let dirX = nextWp.x - wp.x;
-                        let dirY = nextWp.y - wp.y;
-                        let len = Math.hypot(dirX, dirY);
-                        if (len > 0) { dirX /= len; dirY /= len; }
-                        
-                        let targetX = wp.x - dirX * (m.indexInWave * 40);
-                        let targetY = wp.y - dirY * (m.indexInWave * 40);
-                        
-                        const d = Math.hypot(targetX - m.x, targetY - m.y);
-                        if (d < 20) { 
+                    // Dense Path Formation Logic
+                    let targetIdx = Math.min(m.path.length - 1, m.waypointIdx + m.pathIndexOffset);
+                    let targetNode = m.path[targetIdx];
+                    
+                    if (!targetNode) {
+                        // Reached end of path, target Nexus directly
+                        targetNode = m.team === 'ally' ? enemyNexus : allyNexus;
+                    }
+
+                    const d = Math.hypot(targetNode.x - m.x, targetNode.y - m.y);
+                    if (d < 25) { 
+                        if (m.waypointIdx < m.path.length - 1) {
                             m.waypointIdx++;
-                        } else {
-                            const angle = Math.atan2(targetY - m.y, targetX - m.x);
-                            const step = m.speed * frameFactor;
-                            m.x += Math.cos(angle) * step;
-                            m.y += Math.sin(angle) * step;
                         }
+                    } else {
+                        const angle = Math.atan2(targetNode.y - m.y, targetNode.x - m.x);
+                        const step = m.speed * frameFactor;
+                        m.x += Math.cos(angle) * step;
+                        m.y += Math.sin(angle) * step;
                     }
                 }
             }
@@ -1344,7 +1361,6 @@
                             if (Math.hypot(cx - m.x, cy - m.y) < m.radius + p.radius) {
                                 p.hitEntities.push(m);
                                 m.hp -= 120;
-                                // REMOVED: activatePassive(); - Minions no longer trigger passive
                                 visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                             }
                         }
@@ -1353,18 +1369,16 @@
                     if (!p.hitEntities.includes(dummy) && Math.hypot(cx - dummy.x, cy - dummy.y) < dummy.radius + p.radius) {
                         p.hitEntities.push(dummy);
                         dummy.hp -= 120;
-                        activatePassive(); // STILL ACTIVE FOR HEROES
+                        activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                     }
-                    // Check Tower (Passes through, 0 dmg)
+                    // Check Tower (Passes through, 0 dmg, NO EXPLOSION)
                     if (!p.hitEntities.includes(enemyTower) && Math.hypot(cx - enemyTower.x, cy - enemyTower.y) < enemyTower.radius + p.radius) {
                         p.hitEntities.push(enemyTower);
-                        visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                     }
-                    // Check Nexus (Passes through, 0 dmg)
+                    // Check Nexus (Passes through, 0 dmg, NO EXPLOSION)
                     if (!p.hitEntities.includes(enemyNexus) && Math.hypot(cx - enemyNexus.x, cy - enemyNexus.y) < enemyNexus.radius + p.radius) {
                         p.hitEntities.push(enemyNexus);
-                        visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                     }
                 }
 
@@ -1492,21 +1506,19 @@
                     ctx.save();
                     ctx.translate(p.x, p.y);
                     ctx.rotate(p.angle);
-                    ctx.beginPath(); ctx.rect(-50, -5, 50, 10);
+                    
+                    ctx.beginPath(); ctx.rect(-50, -8, 50, 16); 
                     ctx.fillStyle = 'rgba(255, 235, 59, 0.35)';
                     ctx.shadowColor = '#ffeb3b';
                     ctx.shadowBlur = 20;
                     ctx.fill();
-                    ctx.beginPath(); ctx.rect(-50, -2.2, 50, 4.4);
+                    
+                    ctx.beginPath(); ctx.rect(-50, -4, 50, 8); 
                     ctx.fillStyle = '#ffeb3b';
                     ctx.fill();
-                    ctx.beginPath(); ctx.rect(-50, -0.9, 50, 1.8);
+                    
+                    ctx.beginPath(); ctx.rect(-50, -1.5, 50, 3); 
                     ctx.fillStyle = '#ffffff';
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.moveTo(0, -5); ctx.lineTo(12, 0); ctx.lineTo(0, 5); ctx.closePath();
-                    ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 14;
                     ctx.fill();
                     ctx.restore();
                 }
