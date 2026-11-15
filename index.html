@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War</title>
+    <title>Marvel Super War - Advanced AI Hero</title>
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
@@ -12,6 +12,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body, html {
             margin: 0; 
             padding: 0; 
@@ -217,7 +221,7 @@
             border-radius: 8px; 
             border: 1px solid rgba(69, 243, 255, 0.4);
             pointer-events: auto; 
-            min-width: 185px; 
+            min-width: 190px; 
             text-align: right;
         }
         
@@ -230,6 +234,13 @@
         #passiveState { 
             font-size: 11px; 
             color: #ffeb3b; 
+            font-weight: bold; 
+            margin-bottom: 4px; 
+        }
+
+        #botStateText {
+            font-size: 11px; 
+            color: #ff8a80; 
             font-weight: bold; 
             margin-bottom: 6px; 
         }
@@ -303,9 +314,9 @@
         /* Orientation Blocker */
         #orientation-warning {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            inset: 0;
             background: #0b0c10;
-            z-index: 9999;
+            z-index: 99999;
             display: none;
             flex-direction: column;
             align-items: center;
@@ -317,10 +328,23 @@
         #orientation-warning h2 {
             color: #45f3ff;
             margin-bottom: 20px;
+            font-size: 24px;
         }
         #orientation-warning p {
             color: #aaa;
             font-size: 16px;
+            max-width: 300px;
+        }
+        #orientation-warning .rotate-icon {
+            font-size: 48px; 
+            margin-top: 20px; 
+            transform: rotate(90deg);
+            animation: spin 3s infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
         }
         @media (orientation: portrait) {
             #orientation-warning {
@@ -334,7 +358,7 @@
     <div id="orientation-warning">
         <h2>Please Rotate Your Device</h2>
         <p>Marvel Super War requires landscape mode to play.</p>
-        <div style="font-size: 48px; margin-top: 20px; transform: rotate(90deg);">📱</div>
+        <div class="rotate-icon">📱</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -379,6 +403,7 @@
         <div class="status-ui interactive">
             <h3>Marvel Super War (<span id="lvlDisplay">Lv. 6</span>)</h3>
             <div id="passiveState">Passive: INACTIVE</div>
+            <div id="botStateText">AI Bot: PUSHING</div>
             <button class="lvl-btn" id="toggleLvlBtn">Toggle Lv.6 / Lv.12</button>
         </div>
     </div>
@@ -494,7 +519,7 @@
         
         const structures = [allyTower, enemyTower, allyNexus, enemyNexus];
 
-        // --- MINIONS & LANE MANAGER (Moved above bot to fix TDZ error) ---
+        // --- MINIONS & LANE MANAGER ---
         const minions = [];
         
         function generateDensePath(points, spacing) {
@@ -540,15 +565,16 @@
 
         // --- ENEMY AI HERO (BOT) ---
         const bot = {
-            x: 2000, y: 400, // Spawns at enemy base
-            radius: 22,
+            x: 1920, y: 480, // Spawns slightly in front of enemy base
+            radius: 24,
             team: 'enemy',
-            baseSpeed: 4, speed: 4,
-            angle: Math.PI / 4,
+            baseSpeed: 4.2, speed: 4.2,
+            angle: (3 * Math.PI) / 4,
             hp: 800, maxHp: 800,
-            attackRange: 340,
-            attackCd: 0,
-            state: 'MARCH',
+            autoAtkRange: 310,
+            attackCd: 0, attackInterval: 750,
+            skillCd: 2000, skillMaxCd: 5500, // Plasma Bolt cooldown
+            state: 'PUSHING',
             respawnTimer: 0,
             path: laneManager.enemyPath, 
             waypointIdx: 0,
@@ -600,10 +626,12 @@
         };
 
         const projectiles = [];
+        const botProjectiles = [];
         const towerShots = [];
         const slowFields = [];
         const beamTracers = [];
         const basicAtkTracers = [];
+        const botAtkTracers = [];
         const visualExplosions = [];
 
         // --- AIM STATE ---
@@ -660,19 +688,23 @@
             structures.forEach(s => s.currentTarget = null);
             
             // Reset Bot
-            bot.x = 2000; bot.y = 400;
+            bot.x = 1920; bot.y = 480;
             bot.hp = bot.maxHp;
-            bot.state = 'MARCH';
+            bot.state = 'PUSHING';
             bot.waypointIdx = 0;
             bot.respawnTimer = 0;
             bot.isSlowed = false;
+            bot.attackCd = 0;
+            bot.skillCd = 2000;
             
             minions.length = 0;
             projectiles.length = 0;
+            botProjectiles.length = 0;
             towerShots.length = 0;
             slowFields.length = 0;
             beamTracers.length = 0;
             basicAtkTracers.length = 0;
+            botAtkTracers.length = 0;
             visualExplosions.length = 0;
             laneManager.waveTimer = 5000;
             gameOver = false;
@@ -869,16 +901,21 @@
         // --- HELPERS ---
         function getSmartTargetCoords(maxRange) {
             let best = null, bestDist = Infinity;
-            for (let m of minions) {
-                if (m.team === 'enemy') {
-                    const d = Math.hypot(m.x - player.x, m.y - player.y);
-                    if (d <= maxRange && d < bestDist) { best = m; bestDist = d; }
-                }
-            }
             
-            if (bot.state !== 'DEAD') {
+            // Priority 1: Enemy Hero (Bot)
+            if (bot.state !== 'DEAD' && bot.hp > 0) {
                 const dBot = Math.hypot(bot.x - player.x, bot.y - player.y);
-                if (dBot <= maxRange + bot.radius && dBot < bestDist) { best = bot; bestDist = dBot; }
+                if (dBot <= maxRange + bot.radius) { best = bot; bestDist = dBot; }
+            }
+
+            // Priority 2: Minions
+            if (!best) {
+                for (let m of minions) {
+                    if (m.team === 'enemy' && m.hp > 0) {
+                        const d = Math.hypot(m.x - player.x, m.y - player.y);
+                        if (d <= maxRange && d < bestDist) { best = m; bestDist = d; }
+                    }
+                }
             }
 
             if (best) {
@@ -1103,7 +1140,7 @@
                 if (d <= aggroRange && d < bestDist) { best = o; bestDist = d; }
             }
 
-            if (m.team === 'enemy' && player.hp > 0) {
+            if (m.team === 'enemy' && player.hp > 0 && !player.isInvincible) {
                 const d = Math.hypot(player.x - m.x, player.y - m.y);
                 if (d <= aggroRange && d < bestDist) { best = player; bestDist = d; }
             }
@@ -1307,105 +1344,156 @@
         }
 
         // --- BOT AI LOGIC ---
+        function moveBotToward(tx, ty, spd) {
+            const ang = Math.atan2(ty - bot.y, tx - bot.x);
+            bot.angle = ang;
+            const sx = Math.cos(ang) * spd, sy = Math.sin(ang) * spd;
+            if (canMoveTo(bot.x + sx, bot.y, bot.radius, false)) bot.x += sx;
+            if (canMoveTo(bot.x, bot.y + sy, bot.radius, false)) bot.y += sy;
+        }
+
         function updateBot(dt) {
-            if (bot.state === 'DEAD') {
+            const botUI = document.getElementById('botStateText');
+            
+            if (bot.hp <= 0) {
+                if (bot.state !== 'DEAD') {
+                    bot.state = 'DEAD';
+                    bot.respawnTimer = 6000;
+                    visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
+                }
                 bot.respawnTimer -= dt;
+                botUI.innerText = `AI Bot: DEAD (${Math.ceil(bot.respawnTimer / 1000)}s)`;
                 if (bot.respawnTimer <= 0) {
-                    bot.state = 'MARCH';
-                    bot.x = enemyNexus.x;
-                    bot.y = enemyNexus.y;
                     bot.hp = bot.maxHp;
+                    bot.x = 1920; bot.y = 480;
+                    bot.state = 'PUSHING';
                     bot.waypointIdx = 0;
+                    bot.isSlowed = false;
                 }
                 return;
             }
 
-            if (bot.isSlowed) {
-                bot.slowTimer -= dt;
-                if (bot.slowTimer <= 0) bot.isSlowed = false;
+            if (bot.isSlowed && (bot.slowTimer -= dt) <= 0) bot.isSlowed = false;
+            if (bot.attackCd > 0) bot.attackCd -= dt;
+            if (bot.skillCd > 0) bot.skillCd -= dt;
+
+            const spd = (bot.isSlowed ? bot.baseSpeed * 0.4 : bot.baseSpeed) * (dt / 16.67);
+
+            // State Transitions (Aggressive Tweaks)
+            if (bot.hp < bot.maxHp * 0.15) {
+                bot.state = 'RETREATING';
+            } else if (bot.state === 'RETREATING' && bot.hp >= bot.maxHp * 0.75) {
+                bot.state = 'PUSHING';
             }
 
-            const speed = bot.isSlowed ? bot.baseSpeed * 0.5 : bot.baseSpeed;
-            const frameFactor = dt / 16.67;
-            const step = speed * frameFactor;
-
-            if (bot.hp <= bot.maxHp * 0.25 && bot.state !== 'RETREAT') {
-                bot.state = 'RETREAT';
-            }
-
-            if (bot.state === 'RETREAT') {
-                const distToBase = Math.hypot(bot.x - enemyNexus.x, bot.y - enemyNexus.y);
-                if (distToBase < 60) {
-                    bot.hp += 5 * frameFactor;
-                    if (bot.hp >= bot.maxHp) bot.state = 'MARCH';
-                } else {
-                    const angle = Math.atan2(enemyNexus.y - bot.y, enemyNexus.x - bot.x);
-                    bot.x += Math.cos(angle) * step;
-                    bot.y += Math.sin(angle) * step;
-                    bot.angle = angle;
-                }
-                return;
-            }
-
-            let isInDanger = false;
+            // Dodge S2 Pool
             for (let f of slowFields) {
-                if (Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius) {
-                    isInDanger = true;
-                    const angleAway = Math.atan2(bot.y - f.y, bot.x - f.x);
-                    bot.x += Math.cos(angleAway) * step * 1.5;
-                    bot.y += Math.sin(angleAway) * step * 1.5;
-                    break;
+                if (Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
+                    moveBotToward(bot.x + (bot.x - f.x), bot.y + (bot.y - f.y), spd);
+                    return;
                 }
             }
-            if (isInDanger) return;
 
-            let target = null;
-            let bestDist = Infinity;
-
-            const dPlayer = Math.hypot(player.x - bot.x, player.y - bot.y);
-            if (dPlayer <= bot.attackRange && player.hp > 0 && !player.isInvincible) {
-                target = player; bestDist = dPlayer;
+            if (bot.state === 'RETREATING') {
+                const dHome = Math.hypot(1920 - bot.x, 480 - bot.y);
+                if (dHome > 45) {
+                    moveBotToward(1920, 480, spd);
+                    botUI.innerText = 'AI Bot: RETREATING';
+                } else {
+                    bot.hp = Math.min(bot.maxHp, bot.hp + 0.35 * dt);
+                    botUI.innerText = 'AI Bot: HEALING AT BASE';
+                }
+                return;
             }
 
-            for (let m of minions) {
-                if (m.team === 'ally' && m.hp > 0) {
-                    const d = Math.hypot(m.x - bot.x, m.y - bot.y);
-                    if (d <= bot.attackRange && d < bestDist) {
-                        target = m; bestDist = d;
+            // Target Scanning
+            let target = null, bestDist = Infinity;
+            if (player.hp > 0 && !player.isInvincible) {
+                const dP = Math.hypot(player.x - bot.x, player.y - bot.y);
+                const underAllyTower = (allyTower.hp > 0 && Math.hypot(bot.x - allyTower.x, bot.y - allyTower.y) <= allyTower.range);
+                if (dP <= bot.autoAtkRange + 40 && (!underAllyTower || allyTower.currentTarget !== bot)) {
+                    target = player; bestDist = dP;
+                }
+            }
+            if (!target) {
+                for (let m of minions) {
+                    if (m.team === 'ally' && m.hp > 0) {
+                        const d = Math.hypot(m.x - bot.x, m.y - bot.y);
+                        if (d <= bot.autoAtkRange + 20 && d < bestDist) { target = m; bestDist = d; }
+                    }
+                }
+            }
+            if (!target) {
+                for (let st of [allyTower, allyNexus]) {
+                    if (st.hp > 0) {
+                        const d = Math.hypot(st.x - bot.x, st.y - bot.y);
+                        const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - st.x, m.y - st.y) <= st.range);
+                        if (d <= bot.autoAtkRange + st.radius && tanking) { target = st; bestDist = d; break; }
                     }
                 }
             }
 
             if (target) {
+                bot.state = 'ATTACKING';
+                botUI.innerText = 'AI Bot: ATTACKING';
+                const d = Math.hypot(target.x - bot.x, target.y - bot.y);
                 bot.angle = Math.atan2(target.y - bot.y, target.x - bot.x);
-                if (bot.attackCd <= 0) {
-                    bot.attackCd = 800;
+
+                // Aggressive Kiting: Only step back if extremely close (100px)
+                if (target === player && d < 100) {
+                    moveBotToward(1920, 480, spd * 0.8);
+                } else if (d > bot.autoAtkRange + (target.radius || 0)) {
+                    moveBotToward(target.x, target.y, spd);
+                }
+
+                // Cast Skillshot on Player
+                if (target === player && bot.skillCd <= 0 && !player.isInvincible) {
+                    botProjectiles.push({
+                        x: bot.x, y: bot.y,
+                        dx: Math.cos(bot.angle) * 11, dy: Math.sin(bot.angle) * 11,
+                        radius: 10, dist: 0, maxDist: 520, dmg: 95
+                    });
+                    bot.skillCd = bot.skillMaxCd;
+                }
+
+                // Basic Attack
+                if (d <= bot.autoAtkRange + (target.radius || 0) && bot.attackCd <= 0) {
+                    botAtkTracers.push({ x1: bot.x, y1: bot.y, x2: target.x, y2: target.y, duration: 130 });
                     if (target === player) {
-                        if (!player.isInvincible) player.hp -= 15;
-                        const dTower = Math.hypot(bot.x - allyTower.x, bot.y - allyTower.y);
-                        if (dTower <= allyTower.range) allyTower.currentTarget = bot;
+                        if (!player.isInvincible) player.hp = Math.max(0, player.hp - 18);
+                        if (allyTower.hp > 0 && Math.hypot(bot.x - allyTower.x, bot.y - allyTower.y) <= allyTower.range) allyTower.currentTarget = bot;
+                        if (allyNexus.hp > 0 && Math.hypot(bot.x - allyNexus.x, bot.y - allyNexus.y) <= allyNexus.range) allyNexus.currentTarget = bot;
                     } else {
-                        target.hp -= 15;
+                        target.hp -= 22;
                     }
-                    basicAtkTracers.push({ target: target, offsetY: 0, duration: 140, isBot: true });
+                    bot.attackCd = bot.attackInterval;
                 }
             } else {
-                let targetIdx = Math.min(bot.path.length - 1, bot.waypointIdx);
-                let targetNode = bot.path[targetIdx];
-                
-                if (!targetNode) targetNode = allyNexus;
-
-                const d = Math.hypot(targetNode.x - bot.x, targetNode.y - bot.y);
-                if (d < 25) {
-                    if (bot.waypointIdx < bot.path.length - 1) bot.waypointIdx++;
-                } else {
-                    const angle = Math.atan2(targetNode.y - bot.y, targetNode.x - bot.x);
-                    bot.angle = angle;
-                    bot.x += Math.cos(angle) * step;
-                    bot.y += Math.sin(angle) * step;
+                bot.state = 'PUSHING';
+                botUI.innerText = 'AI Bot: PUSHING';
+                // Wait for minions to tank tower
+                for (let st of [allyTower, allyNexus]) {
+                    if (st.hp > 0) {
+                        const dSt = Math.hypot(st.x - bot.x, st.y - bot.y);
+                        const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - st.x, m.y - st.y) <= st.range);
+                        if (dSt <= st.range + 35 && !tanking) {
+                            if (dSt < st.range + 10) moveBotToward(1920, 480, spd);
+                            return;
+                        }
+                    }
                 }
+                
+                // Follow Path
+                const path = laneManager.enemyPath;
+                let closest = bot.waypointIdx, minD = Infinity;
+                for (let i = 0; i < path.length; i++) {
+                    const d = Math.hypot(path[i].x - bot.x, path[i].y - bot.y);
+                    if (d < minD) { minD = d; closest = i; }
+                }
+                bot.waypointIdx = Math.min(path.length - 1, closest + 2);
+                const node = path[bot.waypointIdx];
+                if (Math.hypot(node.x - bot.x, node.y - bot.y) > 20) moveBotToward(node.x, node.y, spd);
             }
-            if (bot.attackCd > 0) bot.attackCd -= dt;
         }
 
         // --- GAME OVER CHECK ---
@@ -1559,11 +1647,33 @@
                 basicAtkTracers[i].duration -= deltaTime;
                 if (basicAtkTracers[i].duration <= 0) basicAtkTracers.splice(i, 1);
             }
+            for (let i = botAtkTracers.length - 1; i >= 0; i--) {
+                botAtkTracers[i].duration -= deltaTime;
+                if (botAtkTracers[i].duration <= 0) botAtkTracers.splice(i, 1);
+            }
             for (let i = visualExplosions.length - 1; i >= 0; i--) {
                 visualExplosions[i].duration -= deltaTime;
                 if (visualExplosions[i].duration <= 0) visualExplosions.splice(i, 1);
             }
 
+            // Bot Projectiles
+            for (let i = botProjectiles.length - 1; i >= 0; i--) {
+                const bp = botProjectiles[i];
+                bp.x += bp.dx; bp.y += bp.dy;
+                bp.dist += Math.hypot(bp.dx, bp.dy);
+                
+                if (player.hp > 0 && Math.hypot(bp.x - player.x, bp.y - player.y) < player.radius + bp.radius) {
+                    if (!player.isInvincible) {
+                        player.hp = Math.max(0, player.hp - bp.dmg);
+                        visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 });
+                    }
+                    botProjectiles.splice(i, 1);
+                    continue;
+                }
+                if (bp.dist >= bp.maxDist) botProjectiles.splice(i, 1);
+            }
+
+            // S2 Pools
             for (let i = slowFields.length - 1; i >= 0; i--) {
                 const f = slowFields[i];
                 f.duration -= deltaTime;
@@ -1582,19 +1692,23 @@
                 if (f.duration <= 0) slowFields.splice(i, 1);
             }
 
+            // S3 Projectiles
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const p = projectiles[i];
+                const prevX = p.x, prevY = p.y;
                 p.x += p.dx; p.y += p.dy;
                 p.distTraveled += Math.hypot(p.dx, p.dy);
+                let stoppedByHero = false;
 
                 const steps = 5;
                 for (let s = 1; s <= steps; s++) {
                     let t = s / steps;
-                    let cx = p.x - p.dx + p.dx * t;
-                    let cy = p.y - p.dy + p.dy * t;
+                    let cx = prevX + p.dx * t;
+                    let cy = prevY + p.dy * t;
 
+                    // Minions
                     for (let m of minions) {
-                        if (m.team === 'enemy' && !p.hitEntities.includes(m)) {
+                        if (m.team === 'enemy' && m.hp > 0 && !p.hitEntities.includes(m)) {
                             if (Math.hypot(cx - m.x, cy - m.y) < m.radius + p.radius) {
                                 p.hitEntities.push(m);
                                 m.hp -= 120;
@@ -1603,20 +1717,23 @@
                         }
                     }
                     
+                    // Hero (Bot)
                     if (bot.state !== 'DEAD' && !p.hitEntities.includes(bot) && Math.hypot(cx - bot.x, cy - bot.y) < bot.radius + p.radius) {
                         p.hitEntities.push(bot);
-                        bot.hp -= 120;
+                        bot.hp -= 140;
                         activatePassive();
-                        visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
+                        visualExplosions.push({ x: cx, y: cy, radius: 60, duration: 280 });
                         
                         const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
                         if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
                         const distToNexus = Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y);
                         if (distToNexus <= enemyNexus.range) enemyNexus.currentTarget = player;
 
-                        p.distTraveled = p.maxDist;
+                        stoppedByHero = true;
+                        break;
                     }
 
+                    // Structures (Pass-through)
                     if (!p.hitEntities.includes(enemyTower) && Math.hypot(cx - enemyTower.x, cy - enemyTower.y) < enemyTower.radius + p.radius) {
                         p.hitEntities.push(enemyTower);
                     }
@@ -1625,15 +1742,7 @@
                     }
                 }
 
-                if (p.distTraveled >= p.maxDist) projectiles.splice(i, 1);
-            }
-
-            if (bot.hp <= 0 && bot.state !== 'DEAD') {
-                bot.state = 'DEAD';
-                bot.respawnTimer = 5000;
-                bot.x = -9999;
-                bot.y = -9999;
-                structures.forEach(s => { if (s.currentTarget === bot) s.currentTarget = null; });
+                if (stoppedByHero || p.distTraveled >= p.maxDist) projectiles.splice(i, 1);
             }
 
             const pState = document.getElementById('passiveState');
@@ -1749,27 +1858,39 @@
                 ctx.stroke();
             });
             basicAtkTracers.forEach(b => {
-                if (b.isBot) {
-                    ctx.beginPath();
-                    ctx.moveTo(bot.x, bot.y);
-                    ctx.lineTo(b.target.x, b.target.y + b.offsetY);
-                    ctx.strokeStyle = 'rgba(255, 69, 96, 0.85)';
-                    ctx.lineWidth = 5;
-                    ctx.stroke();
-                } else {
-                    ctx.beginPath();
-                    ctx.moveTo(player.x, player.y);
-                    ctx.lineTo(b.target.x, b.target.y + b.offsetY);
-                    ctx.strokeStyle = 'rgba(255, 235, 59, 0.85)';
-                    ctx.lineWidth = 5;
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(player.x, player.y);
-                    ctx.lineTo(b.target.x, b.target.y + b.offsetY);
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 1.5;
-                    ctx.stroke();
-                }
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y);
+                ctx.lineTo(b.target.x, b.target.y + b.offsetY);
+                ctx.strokeStyle = 'rgba(255, 235, 59, 0.85)';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y);
+                ctx.lineTo(b.target.x, b.target.y + b.offsetY);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+            
+            // Draw Bot Tracers
+            botAtkTracers.forEach(b => {
+                ctx.beginPath();
+                ctx.moveTo(b.x1, b.y1);
+                ctx.lineTo(b.x2, b.y2);
+                ctx.strokeStyle = 'rgba(255, 65, 65, 0.85)';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            });
+
+            // Draw Bot Projectiles
+            botProjectiles.forEach(bp => {
+                ctx.beginPath();
+                ctx.arc(bp.x, bp.y, bp.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff1744';
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
             });
 
             projectiles.forEach(p => {
@@ -1862,30 +1983,42 @@
                 }
             });
 
+            // Draw Enemy AI Hero (Bot)
             if (bot.state !== 'DEAD') {
-                ctx.beginPath();
-                ctx.arc(bot.x, bot.y, bot.radius, 0, Math.PI * 2);
-                ctx.fillStyle = bot.isSlowed ? '#0288d1' : '#e53935';
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 3;
-                ctx.fill();
-                ctx.stroke();
-                
                 ctx.save();
                 ctx.translate(bot.x, bot.y);
                 ctx.rotate(bot.angle);
+                
+                // Cape
                 ctx.beginPath();
                 ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
-                ctx.fillStyle = '#4a0e17';
+                ctx.fillStyle = '#880e4f';
                 ctx.fill();
+
+                // Body
+                ctx.beginPath();
+                ctx.arc(0, 0, bot.radius, 0, Math.PI * 2);
+                ctx.fillStyle = bot.isSlowed ? '#0288d1' : '#c62828';
+                ctx.strokeStyle = '#ff8a80';
+                ctx.lineWidth = 4;
+                ctx.fill(); ctx.stroke();
+
+                // Gem
+                ctx.beginPath();
+                ctx.arc(10, 0, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#00e5ff';
+                ctx.fill();
+                
                 ctx.restore();
 
+                // HP Bar
                 ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(bot.x - 35, bot.y - 48, 70, 7);
-                ctx.fillStyle = '#ff4141';
-                ctx.fillRect(bot.x - 35, bot.y - 48, 70 * (bot.hp / bot.maxHp), 7);
+                ctx.fillRect(bot.x - 35, bot.y - 46, 70, 7);
+                ctx.fillStyle = '#ff1744';
+                ctx.fillRect(bot.x - 35, bot.y - 46, 70 * (bot.hp / bot.maxHp), 7);
             }
 
+            // Draw Player
             ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.fillRect(player.x - 30, player.y - 42, 60, 6);
             ctx.fillStyle = player.isInvincible ? '#45f3ff' : '#00ff66';
@@ -1943,8 +2076,10 @@
             });
 
             visualExplosions.forEach(exp => {
+                // Clamp radius to avoid negative values (Fixes IndexSizeError)
+                const currentRadius = Math.max(0, exp.radius * (1.0 - exp.duration / 280));
                 ctx.beginPath();
-                ctx.arc(exp.x, exp.y, exp.radius * (1.0 - exp.duration / 260), 0, Math.PI * 2);
+                ctx.arc(exp.x, exp.y, currentRadius, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 235, 59, 0.35)';
                 ctx.strokeStyle = '#ffc107';
                 ctx.lineWidth = 3;
@@ -2019,7 +2154,7 @@
             });
 
             if (bot.state !== 'DEAD') {
-                ctx.fillStyle = '#e53935';
+                ctx.fillStyle = '#ff1744';
                 ctx.beginPath();
                 ctx.arc(mx + bot.x * scale, my + bot.y * scale, 4, 0, Math.PI * 2);
                 ctx.fill();
