@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 9.5.2: Cancel & Bot Polish</title>
+    <title>Marvel Super War - Phase 10: Progression</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -44,6 +44,7 @@
             font-size: 9px; font-weight: bold; cursor: pointer;
             box-shadow: 0 0 10px rgba(69, 243, 255, 0.25);
             overflow: hidden; touch-action: none; pointer-events: auto;
+            transition: opacity 0.2s, filter 0.2s;
         }
         #s1Btn { bottom: 24px; right: 178px; }
         #s2Btn { bottom: 112px; right: 145px; }
@@ -89,7 +90,6 @@
         }
         #recallBtn .hotkey { font-size: 8px; color: #aaa; margin-top: 1px; }
 
-        /* Compact Circular MOBA Cancel Button (Top-Right above Skill Arc) */
         .cancel-zone {
             position: absolute;
             top: 16%;
@@ -113,34 +113,68 @@
             pointer-events: none;
             box-shadow: 0 0 12px rgba(233, 69, 96, 0.25);
         }
-        .cancel-zone.active {
-            opacity: 1;
-            transform: scale(1);
-        }
+        .cancel-zone.active { opacity: 1; transform: scale(1); }
         .cancel-zone.hovered {
-            background: rgba(233, 69, 96, 0.88);
-            color: #fff;
-            border-color: #fff;
-            transform: scale(1.18);
+            background: rgba(233, 69, 96, 0.88); color: #fff;
+            border-color: #fff; transform: scale(1.18);
             box-shadow: 0 0 22px rgba(233, 69, 96, 0.85);
         }
 
-        .status-ui {
-            position: absolute; top: 15px; left: 50%;
+        /* Top-center Match HUD (Phase 10) */
+        .hud-panel {
+            position: absolute;
+            top: 12px;
+            left: 50%;
             transform: translateX(-50%);
-            background: rgba(11, 12, 16, 0.85); padding: 8px 14px;
-            border-radius: 8px; border: 1px solid rgba(69, 243, 255, 0.4);
-            pointer-events: auto; text-align: center; min-width: 220px;
+            background: rgba(11, 12, 16, 0.92);
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(69, 243, 255, 0.5);
+            pointer-events: none;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
-        .status-ui h3 { margin: 0 0 3px 0; font-size: 12px; color: #45f3ff; }
-        #passiveState { font-size: 10px; color: #ffeb3b; font-weight: bold; margin-bottom: 2px; }
-        #botStateText { font-size: 10px; color: #ff8a80; font-weight: bold; margin-bottom: 4px; }
-        .lvl-btn {
-            background: #263238; color: #45f3ff; border: 1px solid #45f3ff;
-            border-radius: 4px; padding: 2px 8px; font-size: 9px;
-            cursor: pointer; font-weight: bold;
+        .hud-row-1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 3px;
         }
-        .lvl-btn:active { transform: scale(0.95); }
+        .kills-ally { color: #45f3ff; }
+        .kills-enemy { color: #ff4560; }
+        .hud-timer {
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1.5px;
+            font-size: 13px;
+        }
+        .hud-xp-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 4px 0;
+        }
+        .hud-xp-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #45f3ff, #00ff66);
+            transition: width 0.25s ease-out;
+        }
+        .hud-row-2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #ccc;
+            gap: 10px;
+        }
+        .hud-gold { color: #ffd54f; font-weight: bold; font-size: 11px; }
+        .hud-level { color: #45f3ff; font-weight: bold; font-size: 11px; }
+        .hud-bot { color: #ff8a80; }
 
         .game-over-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -199,7 +233,7 @@
             <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div>RADIATION<span class="hotkey">[E]</span></button>
             <button class="skill-btn" id="s3Btn">
                 <div class="cd-overlay" id="s3CD"></div>
-                <div class="ammo-badge" id="s3AmmoBadge">2</div>
+                <div class="ammo-badge" id="s3AmmoBadge">L6</div>
                 <div class="recharge-bar" id="s3RechargeBar"></div>
                 SOLAR BEAM<span class="hotkey">[R]</span>
             </button>
@@ -210,11 +244,18 @@
         <button class="mini-atk-btn" id="atkTowerBtn">TOWER</button>
         <button id="recallBtn" class="interactive">RECALL<span class="hotkey">[B]</span></button>
 
-        <div class="status-ui interactive">
-            <h3>Marvel Super War (<span id="lvlDisplay">Lv. 6</span>)</h3>
-            <div id="passiveState">Passive: INACTIVE</div>
-            <div id="botStateText">AI Bot: PUSHING</div>
-            <button class="lvl-btn" id="toggleLvlBtn">Toggle Lv.6 / Lv.12</button>
+        <div class="hud-panel" id="hudPanel">
+            <div class="hud-row-1">
+                <span class="kills-ally" id="allyKills">0</span>
+                <span class="hud-timer" id="matchTimer">00:00</span>
+                <span class="kills-enemy" id="enemyKills">0</span>
+            </div>
+            <div class="hud-xp-bar"><div class="hud-xp-fill" id="xpBar"></div></div>
+            <div class="hud-row-2">
+                <span class="hud-gold" id="goldDisplay">💰 0</span>
+                <span class="hud-level" id="lvlDisplay">Lv. 1</span>
+                <span class="hud-bot" id="botStateText">AI: PUSH</span>
+            </div>
         </div>
     </div>
 
@@ -243,14 +284,18 @@
             minimapJumpX: 0, minimapJumpY: 0, zoomHoldTimer: 0
         };
 
+        // --- PLAYER (VISION) - starts Lv.1 in Phase 10 ---
         const player = {
-            x: 400, y: 2000, radius: 22, team: 'ally', level: 6,
+            x: 400, y: 2000, radius: 22, team: 'ally', level: 1,
             baseSpeed: 5, speed: 5, angle: -Math.PI / 4, dx: 0, dy: 0,
-            hp: 800, maxHp: 800, autoAtkRange: 340,
+            hp: 550, maxHp: 550, autoAtkRange: 340,
+            basicAtkDmg: 10,
+            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
             isInvincible: false, invincibleTimer: 0,
             passiveActive: false, passiveTimer: 0,
             attackStunTimer: 0, attackInterval: 0, attackFacingTimer: 0,
-            state: 'ALIVE', respawnTimer: 0, recallTimer: 0
+            state: 'ALIVE', respawnTimer: 0, recallTimer: 0,
+            lastDamagedBy: null
         };
 
         const walls = [
@@ -302,20 +347,25 @@
             enemyBotPath: generateDensePath([{ x: 2000, y: 400 }, { x: 2000, y: 2000 }, { x: 400, y: 2000 }], 40)
         };
 
+        // --- BOT - starts Lv.1 in Phase 10 ---
         const bot = {
-            x: 1920, y: 480, radius: 24, team: 'enemy',
+            x: 1920, y: 480, radius: 24, team: 'enemy', level: 1,
             baseSpeed: 3.1, speed: 3.1, angle: (3 * Math.PI) / 4,
-            hp: 800, maxHp: 800, autoAtkRange: 300,
+            hp: 550, maxHp: 550, autoAtkRange: 300,
+            basicAtkDmg: 10,
+            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
             attackCd: 0, attackInterval: 850, attackStunTimer: 0,
             skillCd: 2000, skillMaxCd: 5500,
             state: 'PUSHING', respawnTimer: 0,
             path: laneManager.enemyMidPath, waypointIdx: 0,
             isSlowed: false, slowTimer: 0,
             isRecalling: false, recallProgress: 0, recallDuration: 3000,
-            damageRecoilTimer: 0
+            damageRecoilTimer: 0, lastDamagedBy: null
         };
 
         let lastBotHp = bot.hp;
+        let matchStartTime = performance.now();
+        let lastTimerSecond = -1;
 
         function createMinion(team, laneIndex, index) {
             let path;
@@ -329,7 +379,8 @@
                 x: path[startIdx].x, y: path[startIdx].y,
                 radius: 14, hp: 100, maxHp: 100, speed: 1.6,
                 attackRange: 45, attackInterval: 900, attackCd: 0, dmg: 12,
-                team: team, path: path, waypointIdx: startIdx
+                team: team, path: path, waypointIdx: startIdx,
+                lastDamagedBy: null
             };
         }
 
@@ -349,7 +400,8 @@
         const cooldowns = {
             s1: { max: 7000, current: 0, activeDur: 1500 },
             s2: { max: 5000, current: 0, activeDur: 3500, range: 300 },
-            s3: { recastMax: 1000, current: 0, chargeDur: 900, maxChargeHoldLimit: 3000, charges: 2, maxCharges: 2, rechargeMax: 13000, rechargeTimer: 0 }
+            // S3 starts locked at Lv.1 (maxCharges 0)
+            s3: { recastMax: 1000, current: 0, chargeDur: 900, maxChargeHoldLimit: 3000, charges: 0, maxCharges: 0, rechargeMax: 13000, rechargeTimer: 0 }
         };
 
         const projectiles = [];
@@ -360,6 +412,7 @@
         const basicAtkTracers = [];
         const botAtkTracers = [];
         const visualExplosions = [];
+        const floatingTexts = [];
 
         const activeAim = {
             skillId: null, touchId: null, startX: 0, startY: 0, currentX: 0, currentY: 0,
@@ -373,46 +426,132 @@
         let lastTime = performance.now();
         let gameOver = false;
 
-        function toggleLevel() {
-            if (player.level < 12) {
-                player.level = 12;
-                cooldowns.s3.maxCharges = 3;
-                cooldowns.s3.charges = 3;
-                cooldowns.s3.current = 0;
-                cooldowns.s3.rechargeTimer = 0;
-            } else {
-                player.level = 6;
-                cooldowns.s3.maxCharges = 2;
-                cooldowns.s3.charges = Math.min(2, cooldowns.s3.charges);
-                cooldowns.s3.current = 0;
-                cooldowns.s3.rechargeTimer = 0;
-            }
-            document.getElementById('lvlDisplay').innerText = `Lv. ${player.level}`;
-            document.getElementById('s3AmmoBadge').innerText = cooldowns.s3.charges;
-        }
-        document.getElementById('toggleLvlBtn').addEventListener('click', toggleLevel);
+        // HUD change-detection cache
+        let lastHudGold = -1, lastHudLevel = -1, lastHudPlayerKills = -1, lastHudBotKills = -1, lastHudXpPct = -1;
 
+        // ====== PHASE 10: PROGRESSION HELPERS ======
+        function spawnFloatingText(x, y, text, color, size) {
+            floatingTexts.push({
+                x: x + (Math.random() - 0.5) * 24,
+                y: y,
+                text: text, color: color, size: size,
+                vy: -0.6,
+                life: 900,
+                maxLife: 900
+            });
+        }
+
+        function dealDamage(target, amount, source, showNumber) {
+            if (!target || target.hp <= 0) return;
+            const actual = Math.min(amount, target.hp);
+            target.hp -= amount;
+            target.lastDamagedBy = source;
+            if (showNumber && actual > 0) {
+                const isPlayerTookDmg = (target === player);
+                spawnFloatingText(
+                    target.x, target.y - target.radius - 12,
+                    `-${Math.round(actual)}`,
+                    isPlayerTookDmg ? '#ff6b81' : '#ffeb3b',
+                    isPlayerTookDmg ? 15 : 14
+                );
+            }
+        }
+
+        function grantXP(entity, amount) {
+            entity.xp += amount;
+            spawnFloatingText(entity.x, entity.y - 50, `+${amount} XP`, '#45f3ff', 11);
+            checkLevelUp(entity);
+        }
+
+        function grantGold(entity, amount) {
+            entity.gold += amount;
+            spawnFloatingText(entity.x, entity.y - 30, `+${amount}g`, '#ffd54f', 12);
+        }
+
+        function checkLevelUp(entity) {
+            while (entity.xp >= entity.xpToNext) {
+                entity.xp -= entity.xpToNext;
+                entity.level += 1;
+                entity.maxHp += 65;
+                entity.hp = Math.min(entity.maxHp, entity.hp + 65);
+                entity.basicAtkDmg += 3.5;
+                entity.xpToNext = 100 + entity.level * 40;
+
+                if (entity === player) {
+                    if (entity.level === 6) {
+                        cooldowns.s3.maxCharges = 2;
+                        cooldowns.s3.charges = 2;
+                        cooldowns.s3.current = 0;
+                        cooldowns.s3.rechargeTimer = 0;
+                        spawnFloatingText(entity.x, entity.y - 90, 'SOLAR BEAM UNLOCKED!', '#ffc107', 16);
+                    }
+                    if (entity.level === 12) {
+                        cooldowns.s3.maxCharges = 3;
+                        cooldowns.s3.charges = 3;
+                        cooldowns.s3.current = 0;
+                        cooldowns.s3.rechargeTimer = 0;
+                        spawnFloatingText(entity.x, entity.y - 90, '3RD CHARGE UNLOCKED!', '#ffc107', 16);
+                    }
+                }
+                spawnFloatingText(entity.x, entity.y - 70, 'LEVEL UP!', '#00ff66', 18);
+            }
+        }
+
+        function getS3Damage(isMinion) {
+            const lvl = Math.max(0, player.level - 6);
+            const base = isMinion ? 120 : 140;
+            return base + lvl * 10;
+        }
+
+        function getBotSkillDamage() {
+            return 45 + (bot.level - 1) * 5;
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        // ====== INIT / RESTART ======
         document.getElementById('restartBtn').addEventListener('click', restartGame);
         function restartGame() {
-            player.x = 400; player.y = 2000; player.hp = player.maxHp;
+            player.x = 400; player.y = 2000;
+            player.hp = 550; player.maxHp = 550; player.level = 1;
+            player.xp = 0; player.xpToNext = 140; player.gold = 0;
+            player.kills = 0; player.deaths = 0; player.basicAtkDmg = 10;
             player.isInvincible = false; player.passiveActive = false;
             player.speed = player.baseSpeed; player.attackInterval = 0;
             player.attackStunTimer = 0; player.attackFacingTimer = 0;
             player.state = 'ALIVE'; player.respawnTimer = 0; player.recallTimer = 0;
-            cooldowns.s1.current = 0; cooldowns.s2.current = 0; cooldowns.s3.current = 0;
-            cooldowns.s3.charges = cooldowns.s3.maxCharges; cooldowns.s3.rechargeTimer = 0;
+            player.lastDamagedBy = null;
+            cooldowns.s1.current = 0; cooldowns.s2.current = 0;
+            cooldowns.s3.current = 0; cooldowns.s3.charges = 0;
+            cooldowns.s3.maxCharges = 0; cooldowns.s3.rechargeTimer = 0;
+
             allyNexus.hp = allyNexus.maxHp; enemyNexus.hp = enemyNexus.maxHp;
             structures.forEach(s => { s.hp = s.maxHp; s.currentTarget = null; });
-            bot.x = 1920; bot.y = 480; bot.hp = bot.maxHp;
+
+            bot.x = 1920; bot.y = 480;
+            bot.hp = 550; bot.maxHp = 550; bot.level = 1;
+            bot.xp = 0; bot.xpToNext = 140; bot.gold = 0;
+            bot.kills = 0; bot.deaths = 0; bot.basicAtkDmg = 10;
             bot.state = 'PUSHING'; bot.waypointIdx = 0; bot.respawnTimer = 0;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
+            bot.lastDamagedBy = null;
+
             minions.length = 0; projectiles.length = 0; botProjectiles.length = 0;
             towerShots.length = 0; slowFields.length = 0; beamTracers.length = 0;
             basicAtkTracers.length = 0; botAtkTracers.length = 0; visualExplosions.length = 0;
+            floatingTexts.length = 0;
+
             laneManager.waveTimer = 5000; gameOver = false;
             camera.offsetX = 0; camera.offsetY = 0;
             lastBotHp = bot.hp;
+            matchStartTime = performance.now();
+            lastTimerSecond = -1;
+            lastHudGold = -1; lastHudLevel = -1; lastHudPlayerKills = -1; lastHudBotKills = -1; lastHudXpPct = -1;
             document.getElementById('gameOverOverlay').classList.remove('active');
         }
 
@@ -461,7 +600,7 @@
                 }
                 const targetEl = touch.target;
                 if (targetEl.closest('.joystick-container') || targetEl.closest('.abilities-container') ||
-                    targetEl.closest('.status-ui') || targetEl.closest('.mini-atk-btn') || targetEl.closest('#recallBtn')) continue;
+                    targetEl.closest('.hud-panel') || targetEl.closest('.mini-atk-btn') || targetEl.closest('#recallBtn')) continue;
                 if (!camera.isPanning) {
                     e.preventDefault();
                     camera.isPanning = true;
@@ -502,7 +641,6 @@
                         if (activeAim.skillId === 's3') player.angle = activeAim.angle;
                     }
                     activeAim.dragDist = Math.min(1.0, Math.hypot(dx, dy) / 60);
-                    // Circular distance check for the compact cancel button
                     const cancelEl = document.getElementById('cancelZone');
                     const cr = cancelEl.getBoundingClientRect();
                     const ccx = cr.left + cr.width / 2;
@@ -575,7 +713,8 @@
             if (e.key.toLowerCase() === 'r') document.getElementById('s3Btn').dispatchEvent(new Event('mousedown'));
             if (e.key.toLowerCase() === 'f') triggerBasicAttack('all');
             if (e.key.toLowerCase() === 'b') startRecall();
-            if (e.key.toLowerCase() === 'l') toggleLevel();
+            // Dev-only: K grants 500 XP for testing (undocumented)
+            if (e.key.toLowerCase() === 'k') grantXP(player, 500);
         });
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
@@ -694,10 +833,11 @@
             player.attackInterval = 380;
             let offY = (validTargets[0].type === 'tower') ? -20 : 0;
             basicAtkTracers.push({ target: target, offsetY: offY, duration: 140 });
-            target.hp -= 20;
+            dealDamage(target, player.basicAtkDmg, 'player', true);
         }
 
         function consumeS3Charge() {
+            if (cooldowns.s3.charges <= 0) return;
             if (cooldowns.s3.charges === cooldowns.s3.maxCharges) cooldowns.s3.rechargeTimer = cooldowns.s3.rechargeMax;
             cooldowns.s3.charges -= 1;
             if (cooldowns.s3.charges > 0) cooldowns.s3.current = cooldowns.s3.recastMax;
@@ -826,11 +966,8 @@
                             if (canMoveTo(m.x + slideX, m.y, m.radius, false)) m.x += slideX;
                         }
                     } else if (m.attackCd <= 0) {
-                        if (target === player) {
-                            if (!player.isInvincible && player.state !== 'DEAD') {
-                                player.hp = Math.max(0, player.hp - m.dmg); player.recallTimer = 0;
-                            }
-                        } else target.hp -= m.dmg;
+                        const src = m.team === 'ally' ? 'ally_minion' : 'enemy_minion';
+                        dealDamage(target, m.dmg, src, false);
                         m.attackCd = m.attackInterval;
                     }
                 } else {
@@ -864,7 +1001,26 @@
                 }
             }
             separateMinions();
-            for (let i = minions.length - 1; i >= 0; i--) if (minions[i].hp <= 0) minions.splice(i, 1);
+            // PHASE 10: award XP/gold BEFORE removing dead minions
+            for (let i = minions.length - 1; i >= 0; i--) {
+                const m = minions[i];
+                if (m.hp <= 0) {
+                    if (m.team === 'enemy') {
+                        const dP = Math.hypot(player.x - m.x, player.y - m.y);
+                        if (dP <= 450) {
+                            grantXP(player, 35);
+                            grantGold(player, m.lastDamagedBy === 'player' ? 40 : 22);
+                        }
+                    } else if (m.team === 'ally') {
+                        const dB = Math.hypot(bot.x - m.x, bot.y - m.y);
+                        if (dB <= 450) {
+                            grantXP(bot, 35);
+                            grantGold(bot, m.lastDamagedBy === 'bot' ? 40 : 22);
+                        }
+                    }
+                    minions.splice(i, 1);
+                }
+            }
         }
 
         function updateLane(dt) {
@@ -923,11 +1079,8 @@
                 const angle = Math.atan2(s.target.y - s.y, s.target.x - s.x);
                 s.x += Math.cos(angle) * s.speed * ff; s.y += Math.sin(angle) * s.speed * ff;
                 if (Math.hypot(s.target.x - s.x, s.target.y - s.y) < s.target.radius + s.radius) {
-                    if (s.target === player) {
-                        if (!player.isInvincible && player.state !== 'DEAD') {
-                            player.hp = Math.max(0, player.hp - s.dmg); player.recallTimer = 0;
-                        }
-                    } else s.target.hp -= s.dmg;
+                    const src = s.team === 'ally' ? 'ally_tower' : 'enemy_tower';
+                    dealDamage(s.target, s.dmg, src, s.target === player);
                     towerShots.splice(i, 1);
                 }
             }
@@ -971,16 +1124,24 @@
             const botUI = document.getElementById('botStateText');
             if (bot.hp <= 0) {
                 if (bot.state !== 'DEAD') {
+                    if (bot.lastDamagedBy === 'player') {
+                        player.kills += 1;
+                        grantXP(player, 180);
+                        grantGold(player, 200);
+                        spawnFloatingText(bot.x, bot.y - 90, 'KILL!', '#ffd54f', 22);
+                    }
+                    bot.deaths += 1;
                     bot.state = 'DEAD'; bot.respawnTimer = 6000;
                     bot.isRecalling = false; bot.recallProgress = 0;
                     visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
                 }
                 bot.respawnTimer -= dt;
-                botUI.innerText = `AI Bot: DEAD (${Math.ceil(bot.respawnTimer / 1000)}s)`;
+                botUI.innerText = `AI: DEAD ${Math.ceil(bot.respawnTimer / 1000)}s`;
                 if (bot.respawnTimer <= 0) {
                     bot.hp = bot.maxHp; bot.x = 1920; bot.y = 480;
                     bot.state = 'PUSHING'; bot.waypointIdx = 0; bot.isSlowed = false;
                     bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
+                    bot.lastDamagedBy = null;
                 }
                 return;
             }
@@ -992,14 +1153,15 @@
 
             const frameFactor = dt / 16.67;
             const spd = (bot.isSlowed ? bot.baseSpeed * 0.55 : bot.baseSpeed) * frameFactor;
+            const isEarlyGame = bot.level <= 3;
 
             if (bot.isRecalling) {
                 if (!isBotSafeToRecall() || bot.damageRecoilTimer > 0) {
                     bot.isRecalling = false; bot.recallProgress = 0;
-                    botUI.innerText = 'AI Bot: RECALL INTERRUPTED';
+                    botUI.innerText = 'AI: RECALL INTERRUPTED';
                 } else {
                     bot.recallProgress += dt;
-                    botUI.innerText = `AI Bot: RECALLING (${Math.ceil((bot.recallDuration - bot.recallProgress) / 1000)}s)`;
+                    botUI.innerText = `AI: RECALL ${Math.ceil((bot.recallDuration - bot.recallProgress) / 1000)}s`;
                     if (bot.recallProgress >= bot.recallDuration) {
                         bot.x = 1920; bot.y = 480;
                         bot.isRecalling = false; bot.recallProgress = 0;
@@ -1020,11 +1182,12 @@
             }
 
             const towerTargetingBot = structures.some(s => s.team === 'ally' && s.hp > 0 && s.currentTarget === bot);
-            if (bot.hp < bot.maxHp * 0.25) bot.state = 'RETREATING';
+            const retreatThreshold = isEarlyGame ? 0.4 : 0.25;
+            if (bot.hp < bot.maxHp * retreatThreshold) bot.state = 'RETREATING';
             else if (bot.state === 'RETREATING' && bot.hp >= bot.maxHp * 0.85 && !towerTargetingBot) bot.state = 'PUSHING';
 
             if (towerTargetingBot) {
-                botUI.innerText = 'AI Bot: FALLING BACK';
+                botUI.innerText = 'AI: FALLBACK';
                 moveBotToward(1920, 480, spd, true, true);
                 return;
             }
@@ -1055,19 +1218,28 @@
                 const dHome = Math.hypot(1920 - bot.x, 480 - bot.y);
                 if (dHome > 45) {
                     if (!inSlowField) moveBotToward(1920, 480, spd, true, false);
-                    botUI.innerText = 'AI Bot: RETREATING';
+                    botUI.innerText = 'AI: RETREAT';
                 } else {
                     bot.hp = Math.min(bot.maxHp, bot.hp + 0.35 * dt);
-                    botUI.innerText = 'AI Bot: HEALING AT BASE';
+                    botUI.innerText = 'AI: HEAL';
                 }
                 return;
             }
 
             let underUntankedAllyTower = false;
-            for (let s of structures) {
-                if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 20) {
-                    const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range);
-                    if (!tanking) { underUntankedAllyTower = true; break; }
+            if (isEarlyGame) {
+                // Early game: extra caution — no chasing into any ally tower
+                for (let s of structures) {
+                    if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 40) {
+                        underUntankedAllyTower = true; break;
+                    }
+                }
+            } else {
+                for (let s of structures) {
+                    if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 20) {
+                        const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range);
+                        if (!tanking) { underUntankedAllyTower = true; break; }
+                    }
                 }
             }
 
@@ -1095,7 +1267,7 @@
             }
 
             if (target) {
-                bot.state = 'ATTACKING'; botUI.innerText = 'AI Bot: ATTACKING';
+                bot.state = 'ATTACKING'; botUI.innerText = 'AI: ATTACK';
                 const d = Math.hypot(target.x - bot.x, target.y - bot.y);
                 const aimAngle = Math.atan2(target.y - bot.y, target.x - bot.x);
                 rotateBotToward(aimAngle, 0.3);
@@ -1113,25 +1285,23 @@
 
                 if (target === player && bot.skillCd <= 0 && !player.isInvincible) {
                     bot.angle = aimAngle; bot.attackStunTimer = 160;
-                    botProjectiles.push({ x: bot.x, y: bot.y, dx: Math.cos(aimAngle) * 10, dy: Math.sin(aimAngle) * 10, radius: 10, dist: 0, maxDist: 500, dmg: 95 });
+                    botProjectiles.push({ x: bot.x, y: bot.y, dx: Math.cos(aimAngle) * 10, dy: Math.sin(aimAngle) * 10, radius: 10, dist: 0, maxDist: 500, dmg: getBotSkillDamage() });
                     bot.skillCd = bot.skillMaxCd;
                 }
 
                 if (d <= bot.autoAtkRange + (target.radius || 0) && bot.attackCd <= 0) {
                     bot.attackStunTimer = 120;
                     botAtkTracers.push({ x1: bot.x, y1: bot.y, x2: target.x, y2: target.y, duration: 130 });
+                    dealDamage(target, bot.basicAtkDmg, 'bot', target === player);
                     if (target === player) {
-                        if (!player.isInvincible && player.state !== 'DEAD') {
-                            player.hp = Math.max(0, player.hp - 18); player.recallTimer = 0;
-                        }
                         for (let s of structures) {
                             if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range) s.currentTarget = bot;
                         }
-                    } else target.hp -= 22;
+                    }
                     bot.attackCd = bot.attackInterval;
                 }
             } else {
-                bot.state = 'PUSHING'; botUI.innerText = 'AI Bot: PUSHING';
+                bot.state = 'PUSHING'; botUI.innerText = 'AI: PUSH';
                 for (let st of structures) {
                     if (st.team === 'ally' && st.hp > 0) {
                         const dSt = Math.hypot(st.x - bot.x, st.y - bot.y);
@@ -1169,8 +1339,53 @@
             }
         }
 
+        function updateHUD() {
+            const floorGold = Math.floor(player.gold);
+            if (floorGold !== lastHudGold) {
+                lastHudGold = floorGold;
+                document.getElementById('goldDisplay').innerText = `💰 ${floorGold}`;
+            }
+            if (player.level !== lastHudLevel) {
+                lastHudLevel = player.level;
+                document.getElementById('lvlDisplay').innerText = `Lv. ${player.level}`;
+            }
+            if (player.kills !== lastHudPlayerKills) {
+                lastHudPlayerKills = player.kills;
+                document.getElementById('allyKills').innerText = player.kills;
+            }
+            if (bot.kills !== lastHudBotKills) {
+                lastHudBotKills = bot.kills;
+                document.getElementById('enemyKills').innerText = bot.kills;
+            }
+            const pct = Math.round((player.xp / player.xpToNext) * 100);
+            if (pct !== lastHudXpPct) {
+                lastHudXpPct = pct;
+                document.getElementById('xpBar').style.width = `${pct}%`;
+            }
+            if (!gameOver) {
+                const sec = Math.floor((performance.now() - matchStartTime) / 1000);
+                if (sec !== lastTimerSecond) {
+                    lastTimerSecond = sec;
+                    document.getElementById('matchTimer').innerText = formatTime(sec);
+                }
+            }
+        }
+
         function update(deltaTime) {
             if (gameOver) return;
+            const dtSec = deltaTime / 1000;
+
+            // Passive trickle
+            if (player.state !== 'DEAD') {
+                player.gold += 2 * dtSec;
+                player.xp += 1.5 * dtSec;
+                checkLevelUp(player);
+            }
+            if (bot.state !== 'DEAD') {
+                bot.gold += 2 * dtSec;
+                bot.xp += 1.5 * dtSec;
+                checkLevelUp(bot);
+            }
 
             if (player.state === 'DEAD') {
                 player.respawnTimer -= deltaTime;
@@ -1181,17 +1396,13 @@
                     player.isInvincible = false; player.passiveActive = false;
                     player.speed = player.baseSpeed;
                     player.attackStunTimer = 0; player.attackInterval = 0; player.attackFacingTimer = 0;
+                    player.lastDamagedBy = null;
                     cooldowns.s1.current = 0;
                     cooldowns.s2.current = 0;
                     cooldowns.s3.current = 0;
                     cooldowns.s3.charges = cooldowns.s3.maxCharges;
                     cooldowns.s3.rechargeTimer = 0;
                     camera.offsetX = 0; camera.offsetY = 0;
-                    document.getElementById('s1CD').style.height = '0%';
-                    document.getElementById('s2CD').style.height = '0%';
-                    document.getElementById('s3CD').style.height = '0%';
-                    document.getElementById('s3AmmoBadge').innerText = cooldowns.s3.maxCharges;
-                    document.getElementById('s3RechargeBar').style.width = '0%';
                 }
             } else {
                 if (player.recallTimer > 0) {
@@ -1252,18 +1463,37 @@
                     document.getElementById(`${key}CD`).style.height = `${(cooldowns[key].current / cooldowns[key].max) * 100}%`;
                 } else document.getElementById(`${key}CD`).style.height = '0%';
             });
+
+            // S3 HUD state (locked vs unlocked)
             const s3 = cooldowns.s3;
             if (s3.current > 0) s3.current = Math.max(0, s3.current - deltaTime);
-            if (s3.charges < s3.maxCharges) {
-                s3.rechargeTimer -= deltaTime;
-                if (s3.rechargeTimer <= 0) { s3.charges += 1; s3.rechargeTimer = (s3.charges < s3.maxCharges) ? s3.rechargeMax : 0; }
-                document.getElementById('s3RechargeBar').style.width = `${((s3.rechargeMax - s3.rechargeTimer) / s3.rechargeMax) * 100}%`;
-            } else document.getElementById('s3RechargeBar').style.width = '0%';
-            document.getElementById('s3AmmoBadge').innerText = s3.charges;
-            document.getElementById('s3AmmoBadge').style.background = s3.charges > 0 ? '#ffc107' : '#e94560';
-            if (s3.charges === 0) document.getElementById('s3CD').style.height = `${(s3.rechargeTimer / s3.rechargeMax) * 100}%`;
-            else if (s3.current > 0) document.getElementById('s3CD').style.height = `${(s3.current / s3.recastMax) * 100}%`;
-            else document.getElementById('s3CD').style.height = '0%';
+            if (player.level < 6) {
+                document.getElementById('s3Btn').style.opacity = '0.4';
+                document.getElementById('s3Btn').style.filter = 'grayscale(100%)';
+                document.getElementById('s3AmmoBadge').innerText = 'L6';
+                document.getElementById('s3AmmoBadge').style.background = '#666';
+                document.getElementById('s3CD').style.height = '100%';
+                document.getElementById('s3RechargeBar').style.width = '0%';
+            } else {
+                document.getElementById('s3Btn').style.opacity = '1';
+                document.getElementById('s3Btn').style.filter = 'none';
+                if (s3.charges < s3.maxCharges) {
+                    s3.rechargeTimer -= deltaTime;
+                    if (s3.rechargeTimer <= 0) { s3.charges += 1; s3.rechargeTimer = (s3.charges < s3.maxCharges) ? s3.rechargeMax : 0; }
+                    document.getElementById('s3RechargeBar').style.width = `${((s3.rechargeMax - s3.rechargeTimer) / s3.rechargeMax) * 100}%`;
+                } else {
+                    document.getElementById('s3RechargeBar').style.width = '0%';
+                }
+                document.getElementById('s3AmmoBadge').innerText = s3.charges;
+                document.getElementById('s3AmmoBadge').style.background = s3.charges > 0 ? '#ffc107' : '#e94560';
+                if (s3.charges === 0 && s3.rechargeTimer > 0) {
+                    document.getElementById('s3CD').style.height = `${(s3.rechargeTimer / s3.rechargeMax) * 100}%`;
+                } else if (s3.current > 0) {
+                    document.getElementById('s3CD').style.height = `${(s3.current / s3.recastMax) * 100}%`;
+                } else {
+                    document.getElementById('s3CD').style.height = '0%';
+                }
+            }
 
             let targetZoom = 1.0;
             if (activeAim.skillId === 's3') targetZoom = 1.0 - (Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur) * 0.28);
@@ -1294,23 +1524,41 @@
             for (let i = botAtkTracers.length - 1; i >= 0; i--) if ((botAtkTracers[i].duration -= deltaTime) <= 0) botAtkTracers.splice(i, 1);
             for (let i = visualExplosions.length - 1; i >= 0; i--) if ((visualExplosions[i].duration -= deltaTime) <= 0) visualExplosions.splice(i, 1);
 
+            // Floating text update
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y += ft.vy * (deltaTime / 16.67);
+                ft.life -= deltaTime;
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+
             const ff = deltaTime / 16.67;
             for (let i = botProjectiles.length - 1; i >= 0; i--) {
                 const bp = botProjectiles[i];
                 bp.x += bp.dx * ff; bp.y += bp.dy * ff; bp.dist += Math.hypot(bp.dx * ff, bp.dy * ff);
                 if (player.hp > 0 && player.state !== 'DEAD' && Math.hypot(bp.x - player.x, bp.y - player.y) < player.radius + bp.radius) {
-                    if (!player.isInvincible) { player.hp = Math.max(0, player.hp - bp.dmg); player.recallTimer = 0; visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 }); }
+                    if (!player.isInvincible) {
+                        dealDamage(player, bp.dmg, 'bot', true);
+                        visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 });
+                    }
                     botProjectiles.splice(i, 1); continue;
                 }
                 if (bp.dist >= bp.maxDist) botProjectiles.splice(i, 1);
             }
             for (let i = slowFields.length - 1; i >= 0; i--) {
                 const f = slowFields[i]; f.duration -= deltaTime;
+                const s2Dps = 25 + (player.level - 1) * 5;
+                const s2TickDmg = s2Dps * (deltaTime / 1000);
                 if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
-                    bot.isSlowed = true; bot.slowTimer = 500; bot.hp -= 0.4 * ff;
+                    bot.isSlowed = true; bot.slowTimer = 500;
+                    dealDamage(bot, s2TickDmg, 'player', false);
                     for (let st of structures) { if (st.team === 'enemy' && st.hp > 0 && Math.hypot(player.x - st.x, player.y - st.y) <= st.range) st.currentTarget = player; }
                 }
-                for (let m of minions) { if (m.team === 'enemy' && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) m.hp -= 0.4 * ff; }
+                for (let m of minions) {
+                    if (m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
+                        dealDamage(m, s2TickDmg, 'player', false);
+                    }
+                }
                 if (f.duration <= 0) slowFields.splice(i, 1);
             }
             for (let i = projectiles.length - 1; i >= 0; i--) {
@@ -1325,13 +1573,16 @@
                     for (let m of minions) {
                         if (m.team === 'enemy' && m.hp > 0 && !p.hitEntities.includes(m)) {
                             if (Math.hypot(cx - m.x, cy - m.y) < m.radius + p.radius) {
-                                p.hitEntities.push(m); m.hp -= 120;
+                                p.hitEntities.push(m);
+                                dealDamage(m, getS3Damage(true), 'player', true);
                                 visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                             }
                         }
                     }
                     if (bot.state !== 'DEAD' && !p.hitEntities.includes(bot) && Math.hypot(cx - bot.x, cy - bot.y) < bot.radius + p.radius) {
-                        p.hitEntities.push(bot); bot.hp -= 140; bot.damageRecoilTimer = 400; activatePassive();
+                        p.hitEntities.push(bot);
+                        dealDamage(bot, getS3Damage(false), 'player', true);
+                        bot.damageRecoilTimer = 400; activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 60, duration: 280 });
                         for (let st of structures) { if (st.team === 'enemy' && st.hp > 0 && Math.hypot(player.x - st.x, player.y - st.y) <= st.range) st.currentTarget = player; }
                         stoppedByHero = true; break;
@@ -1344,17 +1595,38 @@
             }
 
             if (player.hp <= 0 && player.state !== 'DEAD') {
+                if (player.lastDamagedBy === 'bot') {
+                    bot.kills += 1;
+                    grantXP(bot, 180);
+                    grantGold(bot, 200);
+                    spawnFloatingText(player.x, player.y - 90, 'SLAIN', '#ff4560', 20);
+                }
+                player.deaths += 1;
                 player.state = 'DEAD'; player.respawnTimer = 6000;
                 player.isInvincible = false; player.passiveActive = false; player.recallTimer = 0;
                 activeAim.skillId = null; document.getElementById('cancelZone').classList.remove('active', 'hovered');
                 visualExplosions.push({ x: player.x, y: player.y, radius: 65, duration: 300 });
             }
 
-            const pState = document.getElementById('passiveState');
-            if (player.passiveActive) { pState.innerText = `Passive: ACTIVE (${(player.passiveTimer / 1000).toFixed(1)}s)`; pState.style.color = '#00ff66'; }
-            else { pState.innerText = 'Passive: INACTIVE'; pState.style.color = '#ffeb3b'; }
-
+            updateHUD();
             checkGameOver();
+        }
+
+        function drawFloatingTexts() {
+            floatingTexts.forEach(ft => {
+                const alpha = Math.min(1, (ft.life / ft.maxLife) * 2);
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.font = `bold ${ft.size}px "Segoe UI", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+                ctx.lineWidth = 3;
+                ctx.strokeText(ft.text, ft.x, ft.y);
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            });
         }
 
         function draw() {
@@ -1524,12 +1796,20 @@
                 }
                 ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(bot.x - 35, bot.y - 46, 70, 7);
                 ctx.fillStyle = '#ff1744'; ctx.fillRect(bot.x - 35, bot.y - 46, 70 * (bot.hp / bot.maxHp), 7);
+                // Bot level badge
+                ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(bot.x - 20, bot.y - 58, 40, 9);
+                ctx.fillStyle = '#ff8a80'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(`Lv.${bot.level}`, bot.x, bot.y - 50);
             }
 
             if (player.state !== 'DEAD') {
                 ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(player.x - 30, player.y - 42, 60, 6);
                 ctx.fillStyle = player.isInvincible ? '#45f3ff' : '#00ff66';
                 ctx.fillRect(player.x - 30, player.y - 42, 60 * (player.hp / player.maxHp), 6);
+                // Player level badge
+                ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(player.x - 20, player.y - 54, 40, 9);
+                ctx.fillStyle = '#45f3ff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(`Lv.${player.level}`, player.x, player.y - 46);
                 ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
                 ctx.beginPath(); ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
                 if (player.isInvincible) ctx.fillStyle = 'rgba(69, 243, 255, 0.75)';
@@ -1561,9 +1841,9 @@
                     ctx.strokeStyle = 'rgba(100, 181, 246, 0.2)'; ctx.lineWidth = 1;
                     ctx.beginPath(); ctx.arc(player.x, player.y, player.radius + 38 + Math.sin(t * 1.2) * 3, 0, Math.PI * 2); ctx.stroke();
                     ctx.restore();
-                    ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(player.x - 35, player.y - 60, 70, 10);
-                    ctx.fillStyle = '#64b5f6'; ctx.fillRect(player.x - 35, player.y - 60, 70 * (1 - player.recallTimer / 4000), 10);
-                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(player.x - 35, player.y - 60, 70, 10);
+                    ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(player.x - 35, player.y - 70, 70, 10);
+                    ctx.fillStyle = '#64b5f6'; ctx.fillRect(player.x - 35, player.y - 70, 70 * (1 - player.recallTimer / 4000), 10);
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(player.x - 35, player.y - 70, 70, 10);
                 }
             }
 
@@ -1576,6 +1856,9 @@
                 ctx.beginPath(); ctx.arc(exp.x, exp.y, currentRadius, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 235, 59, 0.35)'; ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
             });
+
+            // Floating damage/XP/gold text (world space)
+            drawFloatingTexts();
 
             ctx.restore();
             drawMiniMap();
