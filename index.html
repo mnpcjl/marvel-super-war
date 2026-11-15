@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vision MOBA - Phase 5: Polish & Visual Fixes</title>
+    <title>Vision MOBA - Phase 6: AI Hero & Beam Fixes</title>
     <style>
         body, html {
             margin: 0; 
@@ -440,15 +440,7 @@
         
         const structures = [allyTower, enemyTower, allyNexus, enemyNexus];
 
-        // --- TEST DUMMY ---
-        const dummy = {
-            x: 2200, y: 2200, radius: 28,
-            hp: 400, maxHp: 400,
-            speed: 1.5, dir: 1,
-            isSlowed: false, slowTimer: 0
-        };
-
-        // --- MINIONS & LANE MANAGER ---
+        // --- MINIONS & LANE MANAGER (Moved above bot to fix TDZ error) ---
         const minions = [];
         
         function generateDensePath(points, spacing) {
@@ -490,6 +482,23 @@
                 { x: 800, y: 1600 },
                 { x: 400, y: 2000 }
             ], 40)
+        };
+
+        // --- ENEMY AI HERO (BOT) ---
+        const bot = {
+            x: 2000, y: 400, // Spawns at enemy base
+            radius: 22,
+            team: 'enemy',
+            baseSpeed: 4, speed: 4,
+            angle: Math.PI / 4,
+            hp: 800, maxHp: 800,
+            attackRange: 340,
+            attackCd: 0,
+            state: 'MARCH',
+            respawnTimer: 0,
+            path: laneManager.enemyPath, 
+            waypointIdx: 0,
+            isSlowed: false, slowTimer: 0
         };
 
         function createMinion(team, index) {
@@ -596,6 +605,14 @@
             
             structures.forEach(s => s.currentTarget = null);
             
+            // Reset Bot
+            bot.x = 2000; bot.y = 400;
+            bot.hp = bot.maxHp;
+            bot.state = 'MARCH';
+            bot.waypointIdx = 0;
+            bot.respawnTimer = 0;
+            bot.isSlowed = false;
+            
             minions.length = 0;
             projectiles.length = 0;
             towerShots.length = 0;
@@ -628,7 +645,6 @@
                 const touch = e.changedTouches[i];
                 const x = touch.clientX, y = touch.clientY;
                 
-                // Minimap tap
                 if (x >= 20 && x <= 150 && y >= 20 && y <= 150) {
                     e.preventDefault();
                     camera.minimapJumpActive = true;
@@ -637,7 +653,6 @@
                     continue;
                 }
                 
-                // Ignore UI buttons
                 const targetEl = touch.target;
                 if (targetEl.closest('.joystick-container') ||
                     targetEl.closest('.abilities-container') ||
@@ -646,7 +661,6 @@
                     continue;
                 }
                 
-                // Start Panning
                 if (!camera.isPanning) {
                     e.preventDefault(); 
                     camera.isPanning = true;
@@ -807,8 +821,12 @@
                     if (d <= maxRange && d < bestDist) { best = m; bestDist = d; }
                 }
             }
-            const dDummy = Math.hypot(dummy.x - player.x, dummy.y - player.y);
-            if (dDummy <= maxRange + dummy.radius && dDummy < bestDist) { best = dummy; bestDist = dDummy; }
+            
+            if (bot.state !== 'DEAD') {
+                const dBot = Math.hypot(bot.x - player.x, bot.y - player.y);
+                if (dBot <= maxRange + bot.radius && dBot < bestDist) { best = bot; bestDist = dBot; }
+            }
+
             if (best) {
                 return { x: best.x, y: best.y, angle: Math.atan2(best.y - player.y, best.x - player.x) };
             }
@@ -877,10 +895,12 @@
                     if (d <= range + m.radius) validTargets.push({ entity: m, type: 'minion', dist: d });
                 }
             }
-            if (dummy.hp > 0) {
-                const d = Math.hypot(dummy.x - player.x, dummy.y - player.y);
-                if (d <= range + dummy.radius) validTargets.push({ entity: dummy, type: 'hero', dist: d });
+            
+            if (bot.state !== 'DEAD' && bot.hp > 0) {
+                const d = Math.hypot(bot.x - player.x, bot.y - player.y);
+                if (d <= range + bot.radius) validTargets.push({ entity: bot, type: 'hero', dist: d });
             }
+            
             if (enemyTower.hp > 0) {
                 const d = Math.hypot(enemyTower.x - player.x, enemyTower.y - player.y);
                 if (d <= range + enemyTower.radius) validTargets.push({ entity: enemyTower, type: 'tower', dist: d });
@@ -913,7 +933,7 @@
             player.attackFacingTimer = 180; 
             player.attackStunTimer = 30;    
 
-            if (target === dummy) {
+            if (target === bot) {
                 const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
                 if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
                 
@@ -1034,6 +1054,11 @@
                 if (d <= aggroRange && d < bestDist) { best = player; bestDist = d; }
             }
 
+            if (m.team === 'ally' && bot.state !== 'DEAD' && bot.hp > 0) {
+                const d = Math.hypot(bot.x - m.x, bot.y - m.y);
+                if (d <= aggroRange && d < bestDist) { best = bot; bestDist = d; }
+            }
+
             for (let t of structures) {
                 if (t.team === m.team || t.hp <= 0) continue;
                 const d = Math.hypot(t.x - m.x, t.y - m.y);
@@ -1152,15 +1177,17 @@
                 if (t.currentTarget) {
                     const d = Math.hypot(t.currentTarget.x - t.x, t.currentTarget.y - t.y);
                     
-                    // BUG FIX 1: Drop aggro if player is invincible (S1)
                     if (t.currentTarget === player && player.isInvincible) {
+                        t.currentTarget = null;
+                    } else if (t.currentTarget === bot && bot.state === 'DEAD') {
                         t.currentTarget = null;
                     } else if (t.currentTarget.hp <= 0) {
                         t.currentTarget = null;
-                    } else if (t.currentTarget !== player) {
+                    } else if (t.currentTarget !== player && t.currentTarget !== bot) {
                         if (d > t.range + 100) t.currentTarget = null;
                     } else {
-                        if (d > t.range + player.radius) t.currentTarget = null;
+                        const targetRadius = t.currentTarget === player ? player.radius : bot.radius;
+                        if (d > t.range + targetRadius) t.currentTarget = null;
                     }
                 }
 
@@ -1179,10 +1206,18 @@
 
                     if (bestMinion) {
                         t.currentTarget = bestMinion;
-                    } else if (t.team === 'enemy' && player.hp > 0 && !player.isInvincible) {
-                        const d = Math.hypot(player.x - t.x, player.y - t.y);
-                        if (d <= t.range + player.radius) {
-                            t.currentTarget = player;
+                    } else {
+                        if (t.team === 'enemy' && player.hp > 0 && !player.isInvincible) {
+                            const d = Math.hypot(player.x - t.x, player.y - t.y);
+                            if (d <= t.range + player.radius) {
+                                t.currentTarget = player;
+                            }
+                        }
+                        if (t.team === 'ally' && bot.state !== 'DEAD' && bot.hp > 0) {
+                            const d = Math.hypot(bot.x - t.x, bot.y - t.y);
+                            if (d <= t.range + bot.radius) {
+                                t.currentTarget = bot;
+                            }
                         }
                     }
                 }
@@ -1200,6 +1235,9 @@
             for (let i = towerShots.length - 1; i >= 0; i--) {
                 const s = towerShots[i];
                 if (!s.target || s.target.hp <= 0) { towerShots.splice(i, 1); continue; }
+                
+                if (s.target === bot && bot.state === 'DEAD') { towerShots.splice(i, 1); continue; }
+
                 const angle = Math.atan2(s.target.y - s.y, s.target.x - s.x);
                 s.x += Math.cos(angle) * s.speed;
                 s.y += Math.sin(angle) * s.speed;
@@ -1212,6 +1250,108 @@
                     towerShots.splice(i, 1);
                 }
             }
+        }
+
+        // --- BOT AI LOGIC ---
+        function updateBot(dt) {
+            if (bot.state === 'DEAD') {
+                bot.respawnTimer -= dt;
+                if (bot.respawnTimer <= 0) {
+                    bot.state = 'MARCH';
+                    bot.x = enemyNexus.x;
+                    bot.y = enemyNexus.y;
+                    bot.hp = bot.maxHp;
+                    bot.waypointIdx = 0;
+                }
+                return;
+            }
+
+            if (bot.isSlowed) {
+                bot.slowTimer -= dt;
+                if (bot.slowTimer <= 0) bot.isSlowed = false;
+            }
+
+            const speed = bot.isSlowed ? bot.baseSpeed * 0.5 : bot.baseSpeed;
+            const frameFactor = dt / 16.67;
+            const step = speed * frameFactor;
+
+            if (bot.hp <= bot.maxHp * 0.25 && bot.state !== 'RETREAT') {
+                bot.state = 'RETREAT';
+            }
+
+            if (bot.state === 'RETREAT') {
+                const distToBase = Math.hypot(bot.x - enemyNexus.x, bot.y - enemyNexus.y);
+                if (distToBase < 60) {
+                    bot.hp += 5 * frameFactor;
+                    if (bot.hp >= bot.maxHp) bot.state = 'MARCH';
+                } else {
+                    const angle = Math.atan2(enemyNexus.y - bot.y, enemyNexus.x - bot.x);
+                    bot.x += Math.cos(angle) * step;
+                    bot.y += Math.sin(angle) * step;
+                    bot.angle = angle;
+                }
+                return;
+            }
+
+            let isInDanger = false;
+            for (let f of slowFields) {
+                if (Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius) {
+                    isInDanger = true;
+                    const angleAway = Math.atan2(bot.y - f.y, bot.x - f.x);
+                    bot.x += Math.cos(angleAway) * step * 1.5;
+                    bot.y += Math.sin(angleAway) * step * 1.5;
+                    break;
+                }
+            }
+            if (isInDanger) return;
+
+            let target = null;
+            let bestDist = Infinity;
+
+            const dPlayer = Math.hypot(player.x - bot.x, player.y - bot.y);
+            if (dPlayer <= bot.attackRange && player.hp > 0 && !player.isInvincible) {
+                target = player; bestDist = dPlayer;
+            }
+
+            for (let m of minions) {
+                if (m.team === 'ally' && m.hp > 0) {
+                    const d = Math.hypot(m.x - bot.x, m.y - bot.y);
+                    if (d <= bot.attackRange && d < bestDist) {
+                        target = m; bestDist = d;
+                    }
+                }
+            }
+
+            if (target) {
+                bot.angle = Math.atan2(target.y - bot.y, target.x - bot.x);
+                if (bot.attackCd <= 0) {
+                    bot.attackCd = 800;
+                    if (target === player) {
+                        if (!player.isInvincible) player.hp -= 15;
+                        const dTower = Math.hypot(bot.x - allyTower.x, bot.y - allyTower.y);
+                        if (dTower <= allyTower.range) allyTower.currentTarget = bot;
+                    } else {
+                        target.hp -= 15;
+                    }
+                    basicAtkTracers.push({ target: target, offsetY: 0, duration: 140, isBot: true });
+                }
+            } else {
+                let targetIdx = Math.min(bot.path.length - 1, bot.waypointIdx);
+                let targetNode = bot.path[targetIdx];
+                
+                if (!targetNode) targetNode = allyNexus;
+
+                const d = Math.hypot(targetNode.x - bot.x, targetNode.y - bot.y);
+                if (d < 25) {
+                    if (bot.waypointIdx < bot.path.length - 1) bot.waypointIdx++;
+                } else {
+                    const angle = Math.atan2(targetNode.y - bot.y, targetNode.x - bot.x);
+                    bot.angle = angle;
+                    bot.x += Math.cos(angle) * step;
+                    bot.y += Math.sin(angle) * step;
+                }
+            }
+            if (bot.attackCd > 0) bot.attackCd -= dt;
         }
 
         // --- GAME OVER CHECK ---
@@ -1240,7 +1380,6 @@
 
             if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
 
-            // S3 aim charge/hold
             if (activeAim.skillId === 's3') {
                 if (activeAim.chargeTime < cooldowns.s3.chargeDur) {
                     activeAim.chargeTime += deltaTime;
@@ -1253,7 +1392,6 @@
                 }
             }
 
-            // Keyboard fallback
             if (!joyActive) {
                 let kx = 0, ky = 0;
                 if (keys['w']) ky -= 1;
@@ -1270,7 +1408,6 @@
                 }
             }
 
-            // Cooldowns
             ['s1', 's2'].forEach(key => {
                 if (cooldowns[key].current > 0) {
                     cooldowns[key].current = Math.max(0, cooldowns[key].current - deltaTime);
@@ -1320,7 +1457,6 @@
                 }
             }
 
-            // Player movement
             if (player.attackStunTimer <= 0) {
                 const ultSlow = (activeAim.skillId === 's3') ? 0.65 : 1.0;
                 const currentSpeed = player.speed * ultSlow;
@@ -1330,7 +1466,6 @@
                 if (canMoveTo(player.x, player.y + stepY, player.radius, player.passiveActive)) player.y += stepY;
             }
 
-            // Camera zoom
             let targetZoom = 1.0;
             if (activeAim.skillId === 's3') {
                 const cp = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
@@ -1358,20 +1493,10 @@
             camera.x = Math.max(0, Math.min(WORLD.width - (canvas.width / camera.zoom), camera.x));
             camera.y = Math.max(0, Math.min(WORLD.height - (canvas.height / camera.zoom), camera.y));
 
-            // Dummy patrol
-            const dSpeed = dummy.isSlowed ? dummy.speed * 0.35 : dummy.speed;
-            dummy.x += dSpeed * dummy.dir;
-            if (dummy.x > 2250 || dummy.x < 2150) dummy.dir *= -1;
-            if (dummy.isSlowed) {
-                dummy.slowTimer -= deltaTime;
-                if (dummy.slowTimer <= 0) dummy.isSlowed = false;
-            }
-
-            // Lane + towers
             updateLane(deltaTime);
             updateTowers(deltaTime);
+            updateBot(deltaTime);
 
-            // Tracer decays
             for (let i = beamTracers.length - 1; i >= 0; i--) {
                 beamTracers[i].duration -= deltaTime;
                 if (beamTracers[i].duration <= 0) beamTracers.splice(i, 1);
@@ -1385,21 +1510,16 @@
                 if (visualExplosions[i].duration <= 0) visualExplosions.splice(i, 1);
             }
 
-            // S2 pools
             for (let i = slowFields.length - 1; i >= 0; i--) {
                 const f = slowFields[i];
                 f.duration -= deltaTime;
-                if (Math.hypot(dummy.x - f.x, dummy.y - f.y) < f.radius + dummy.radius) {
-                    dummy.isSlowed = true;
-                    dummy.slowTimer = 500;
-                    dummy.hp -= 0.4;
-                    
-                    // BUG FIX 2: S2 triggers aggro
-                    const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
-                    if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
-                    const distToNexus = Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y);
-                    if (distToNexus <= enemyNexus.range) enemyNexus.currentTarget = player;
+                
+                if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
+                    bot.isSlowed = true;
+                    bot.slowTimer = 500;
+                    bot.hp -= 0.4;
                 }
+
                 for (let m of minions) {
                     if (m.team === 'enemy' && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
                         m.hp -= 0.4;
@@ -1408,7 +1528,6 @@
                 if (f.duration <= 0) slowFields.splice(i, 1);
             }
 
-            // S3 projectiles
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const p = projectiles[i];
                 p.x += p.dx; p.y += p.dy;
@@ -1429,18 +1548,21 @@
                             }
                         }
                     }
-                    if (!p.hitEntities.includes(dummy) && Math.hypot(cx - dummy.x, cy - dummy.y) < dummy.radius + p.radius) {
-                        p.hitEntities.push(dummy);
-                        dummy.hp -= 120;
+                    
+                    if (bot.state !== 'DEAD' && !p.hitEntities.includes(bot) && Math.hypot(cx - bot.x, cy - bot.y) < bot.radius + p.radius) {
+                        p.hitEntities.push(bot);
+                        bot.hp -= 120;
                         activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                         
-                        // BUG FIX 2: S3 triggers aggro
                         const distToTower = Math.hypot(player.x - enemyTower.x, player.y - enemyTower.y);
                         if (distToTower <= enemyTower.range) enemyTower.currentTarget = player;
                         const distToNexus = Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y);
                         if (distToNexus <= enemyNexus.range) enemyNexus.currentTarget = player;
+
+                        p.distTraveled = p.maxDist;
                     }
+
                     if (!p.hitEntities.includes(enemyTower) && Math.hypot(cx - enemyTower.x, cy - enemyTower.y) < enemyTower.radius + p.radius) {
                         p.hitEntities.push(enemyTower);
                     }
@@ -1452,7 +1574,13 @@
                 if (p.distTraveled >= p.maxDist) projectiles.splice(i, 1);
             }
 
-            if (dummy.hp <= 0) dummy.hp = dummy.maxHp;
+            if (bot.hp <= 0 && bot.state !== 'DEAD') {
+                bot.state = 'DEAD';
+                bot.respawnTimer = 5000;
+                bot.x = -9999;
+                bot.y = -9999;
+                structures.forEach(s => { if (s.currentTarget === bot) s.currentTarget = null; });
+            }
 
             const pState = document.getElementById('passiveState');
             if (player.passiveActive) {
@@ -1475,7 +1603,6 @@
             ctx.scale(camera.zoom, camera.zoom);
             ctx.translate(-camera.x, -camera.y);
 
-            // Grid
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
             ctx.lineWidth = 1;
             for (let x = 0; x <= WORLD.width; x += WORLD.gridSize) {
@@ -1485,25 +1612,19 @@
                 ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD.width, y); ctx.stroke();
             }
 
-            // Lanes + river
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
             ctx.lineWidth = 160;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             
-            // Top Lane
             ctx.beginPath(); ctx.moveTo(400, 2000); ctx.lineTo(400, 400); ctx.lineTo(2000, 400); ctx.stroke();
-            // Bot Lane
             ctx.beginPath(); ctx.moveTo(400, 2000); ctx.lineTo(2000, 2000); ctx.lineTo(2000, 400); ctx.stroke();
-            // BUG FIX 4: Mid Lane
             ctx.beginPath(); ctx.moveTo(400, 2000); ctx.lineTo(2000, 400); ctx.stroke();
             
-            // BUG FIX 4: River (Perpendicular to mid lane)
             ctx.strokeStyle = 'rgba(0, 188, 212, 0.08)';
             ctx.lineWidth = 140;
             ctx.beginPath(); ctx.moveTo(200, 200); ctx.lineTo(2200, 2200); ctx.stroke();
 
-            // Walls
             walls.forEach(w => {
                 ctx.fillStyle = player.passiveActive ? 'rgba(69, 243, 255, 0.18)' : '#1e272c';
                 ctx.strokeStyle = player.passiveActive ? '#45f3ff' : '#37474f';
@@ -1512,11 +1633,9 @@
                 ctx.strokeRect(w.x, w.y, w.w, w.h);
             });
 
-            // Nexuses (Draw shape)
             drawNexus(allyNexus);
             drawNexus(enemyNexus);
 
-            // Towers & Nexus Rings
             structures.forEach(t => {
                 if (t.hp <= 0) return;
 
@@ -1525,15 +1644,16 @@
                 const inRange = Math.hypot(player.x - t.x, player.y - t.y) <= t.range && t.team === 'enemy';
                 
                 const isAggro = t.team === 'enemy' && t.currentTarget === player;
-                ctx.strokeStyle = isAggro ? 'rgba(255, 0, 0, 0.8)' : (inRange ? 'rgba(255, 65, 65, 0.55)' : 'rgba(255, 255, 255, 0.1)');
-                ctx.lineWidth = isAggro ? 3 : 2;
+                const isAggroBot = t.team === 'ally' && t.currentTarget === bot;
+
+                ctx.strokeStyle = (isAggro || isAggroBot) ? 'rgba(255, 0, 0, 0.8)' : (inRange ? 'rgba(255, 65, 65, 0.55)' : 'rgba(255, 255, 255, 0.1)');
+                ctx.lineWidth = (isAggro || isAggroBot) ? 3 : 2;
                 ctx.stroke();
 
-                // BUG FIX 3: Draw Aggro Laser for all structures
-                if (isAggro) {
+                if (isAggro || isAggroBot) {
                     ctx.beginPath();
                     ctx.moveTo(t.x, t.y);
-                    ctx.lineTo(player.x, player.y);
+                    ctx.lineTo(t.currentTarget.x, t.currentTarget.y);
                     ctx.strokeStyle = 'rgba(255, 65, 65, 0.5)';
                     ctx.lineWidth = 2;
                     ctx.setLineDash([5, 5]);
@@ -1541,7 +1661,6 @@
                     ctx.setLineDash([]);
                 }
 
-                // Only draw the tower body/HP bar if it's NOT a Nexus
                 if (!t.isNexus) {
                     ctx.beginPath();
                     ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
@@ -1558,7 +1677,6 @@
                 }
             });
 
-            // S2 pools + tracers
             slowFields.forEach(f => {
                 ctx.beginPath();
                 ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
@@ -1577,21 +1695,29 @@
                 ctx.stroke();
             });
             basicAtkTracers.forEach(b => {
-                ctx.beginPath();
-                ctx.moveTo(player.x, player.y);
-                ctx.lineTo(b.target.x, b.target.y + b.offsetY);
-                ctx.strokeStyle = 'rgba(255, 235, 59, 0.85)';
-                ctx.lineWidth = 5;
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(player.x, player.y);
-                ctx.lineTo(b.target.x, b.target.y + b.offsetY);
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
+                if (b.isBot) {
+                    ctx.beginPath();
+                    ctx.moveTo(bot.x, bot.y);
+                    ctx.lineTo(b.target.x, b.target.y + b.offsetY);
+                    ctx.strokeStyle = 'rgba(255, 69, 96, 0.85)';
+                    ctx.lineWidth = 5;
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(player.x, player.y);
+                    ctx.lineTo(b.target.x, b.target.y + b.offsetY);
+                    ctx.strokeStyle = 'rgba(255, 235, 59, 0.85)';
+                    ctx.lineWidth = 5;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(player.x, player.y);
+                    ctx.lineTo(b.target.x, b.target.y + b.offsetY);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
             });
 
-            // S3 beam
             projectiles.forEach(p => {
                 if (p.isSniper) {
                     ctx.save();
@@ -1615,7 +1741,6 @@
                 }
             });
 
-            // Aim indicators
             if (activeAim.skillId) {
                 const iC = activeAim.isCanceled ? '#e94560' : '#45f3ff';
                 const aC = activeAim.isCanceled ? 'rgba(233, 69, 96, 0.15)' : 'rgba(69, 243, 255, 0.15)';
@@ -1663,7 +1788,6 @@
                 }
             }
 
-            // Minions
             minions.forEach(m => {
                 const baseColor = m.team === 'ally' ? '#2196f3' : '#e53935';
                 const strokeColor = m.team === 'ally' ? '#64b5f6' : '#ef5350';
@@ -1684,26 +1808,35 @@
                 }
             });
 
-            // Dummy
-            ctx.beginPath();
-            ctx.arc(dummy.x, dummy.y, dummy.radius, 0, Math.PI * 2);
-            ctx.fillStyle = dummy.isSlowed ? '#0288d1' : '#e53935';
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 3;
-            ctx.fill();
-            ctx.stroke();
-            ctx.fillStyle = 'rgba(0,0,0,0.6)';
-            ctx.fillRect(dummy.x - 35, dummy.y - 48, 70, 7);
-            ctx.fillStyle = '#ff4141';
-            ctx.fillRect(dummy.x - 35, dummy.y - 48, 70 * (dummy.hp / dummy.maxHp), 7);
+            if (bot.state !== 'DEAD') {
+                ctx.beginPath();
+                ctx.arc(bot.x, bot.y, bot.radius, 0, Math.PI * 2);
+                ctx.fillStyle = bot.isSlowed ? '#0288d1' : '#e53935';
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 3;
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(bot.x, bot.y);
+                ctx.rotate(bot.angle);
+                ctx.beginPath();
+                ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
+                ctx.fillStyle = '#4a0e17';
+                ctx.fill();
+                ctx.restore();
 
-            // Player HP
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(bot.x - 35, bot.y - 48, 70, 7);
+                ctx.fillStyle = '#ff4141';
+                ctx.fillRect(bot.x - 35, bot.y - 48, 70 * (bot.hp / bot.maxHp), 7);
+            }
+
             ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.fillRect(player.x - 30, player.y - 42, 60, 6);
             ctx.fillStyle = player.isInvincible ? '#45f3ff' : '#00ff66';
             ctx.fillRect(player.x - 30, player.y - 42, 60 * (player.hp / player.maxHp), 6);
 
-            // Player body
             ctx.save();
             ctx.translate(player.x, player.y);
             ctx.rotate(player.angle);
@@ -1745,7 +1878,6 @@
                 ctx.stroke();
             }
 
-            // Tower shots
             towerShots.forEach(s => {
                 ctx.beginPath();
                 ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
@@ -1756,7 +1888,6 @@
                 ctx.stroke();
             });
 
-            // Explosions
             visualExplosions.forEach(exp => {
                 ctx.beginPath();
                 ctx.arc(exp.x, exp.y, exp.radius * (1.0 - exp.duration / 260), 0, Math.PI * 2);
@@ -1832,6 +1963,13 @@
                 ctx.fillStyle = m.team === 'ally' ? '#64b5f6' : '#ef5350';
                 ctx.fillRect(mx + m.x * scale - 1, my + m.y * scale - 1, 2, 2);
             });
+
+            if (bot.state !== 'DEAD') {
+                ctx.fillStyle = '#e53935';
+                ctx.beginPath();
+                ctx.arc(mx + bot.x * scale, my + bot.y * scale, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.fillStyle = '#00ff66';
             ctx.beginPath();
