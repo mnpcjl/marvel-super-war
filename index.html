@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 10.1.1: Surgical Bugfix</title>
+    <title>Marvel Super War - Phase 10.2: Skill Upgrade Tree</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -185,6 +185,34 @@
             cursor: pointer; font-weight: bold; letter-spacing: 2px;
         }
         .restart-btn:active { transform: scale(0.95); }
+
+        /* Phase 10.2 - Skill Upgrade UI */
+        @keyframes pulseUp {
+            0% { transform: scale(0.95); box-shadow: 0 0 8px rgba(255, 213, 79, 0.7); }
+            100% { transform: scale(1.1); box-shadow: 0 0 18px rgba(255, 213, 79, 1); }
+        }
+        .lvl-up-btn {
+            position: absolute;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd54f, #ff8f00);
+            border: 2px solid #fff;
+            color: #000;
+            font-size: 18px; font-weight: 900; line-height: 1;
+            display: none; align-items: center; justify-content: center;
+            pointer-events: auto; cursor: pointer; z-index: 15;
+            touch-action: none;
+            animation: pulseUp 0.75s infinite alternate;
+            padding: 0;
+        }
+        .lvl-up-btn.visible { display: flex; }
+        #upS1Btn { bottom: 94px; right: 196px; }
+        #upS2Btn { bottom: 182px; right: 163px; }
+        #upS3Btn { bottom: 248px; right: 88px; }
+        .skill-rank-label {
+            font-size: 8px; color: #ffd54f; font-weight: 800; margin-top: 1px;
+        }
+
         #orientation-warning {
             position: fixed; inset: 0; background: #0b0c10; z-index: 99999;
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -221,15 +249,19 @@
         </div>
 
         <div class="abilities-container interactive">
-            <button class="skill-btn" id="s1Btn"><div class="cd-overlay" id="s1CD"></div>DENSITY<span class="hotkey">[Space]</span></button>
-            <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div>RADIATION<span class="hotkey">[E]</span></button>
+            <button class="skill-btn" id="s1Btn"><div class="cd-overlay" id="s1CD"></div>DENSITY<span class="hotkey">[Space]</span><span class="skill-rank-label" id="s1RankText">Lv.0/4</span></button>
+            <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div>RADIATION<span class="hotkey">[E]</span><span class="skill-rank-label" id="s2RankText">Lv.0/5</span></button>
             <button class="skill-btn" id="s3Btn">
                 <div class="cd-overlay" id="s3CD"></div>
-                <div class="ammo-badge" id="s3AmmoBadge">L6</div>
+                <div class="ammo-badge" id="s3AmmoBadge">L4</div>
                 <div class="recharge-bar" id="s3RechargeBar"></div>
-                SOLAR BEAM<span class="hotkey">[R]</span>
+                SOLAR BEAM<span class="hotkey">[R]</span><span class="skill-rank-label" id="s3RankText">Lv.0/3</span>
             </button>
             <button class="skill-btn" id="atkBtn">ATK<span class="hotkey">[F]</span></button>
+
+            <button class="lvl-up-btn" id="upS1Btn" title="Upgrade S1 [1]">+</button>
+            <button class="lvl-up-btn" id="upS2Btn" title="Upgrade S2 [2]">+</button>
+            <button class="lvl-up-btn" id="upS3Btn" title="Upgrade S3 [3]">+</button>
         </div>
 
         <button class="mini-atk-btn" id="atkMinionBtn">MINION</button>
@@ -289,7 +321,9 @@
             lastDamagedBy: null,
             homeguardTimer: 0,
             empoweredAtks: 0,
-            empoweredTimer: 0
+            empoweredTimer: 0,
+            skillPoints: 1,
+            skillRanks: { s1: 0, s2: 0, s3: 0 }
         };
 
         const walls = [
@@ -370,7 +404,6 @@
             } else {
                 path = laneIndex === 0 ? laneManager.enemyTopPath : laneIndex === 1 ? laneManager.enemyMidPath : laneManager.enemyBotPath;
             }
-            // Phase 10.1.1 fix #2 — all minions in a wave spawn from the same Nexus gate
             const startIdx = 2;
             return {
                 x: path[startIdx].x, y: path[startIdx].y,
@@ -496,7 +529,6 @@
                 );
             }
 
-            // Phase 10.1.1 fix #3 — team objective reward regardless of last-hit source
             if (target.hp <= 0 && isStructure && !target.isNexus && !target.rewarded) {
                 target.rewarded = true;
                 visualExplosions.push({ x: target.x, y: target.y, radius: 80, duration: 350 });
@@ -512,7 +544,6 @@
             }
         }
 
-        // Phase 10.1.1 fix #1 — showPopup toggle to suppress passive trickle text
         function grantXP(entity, amount, showPopup = true) {
             if (entity.level >= 12) {
                 entity.gold += amount * 0.6;
@@ -540,20 +571,7 @@
                 entity.xpToNext = 100 + entity.level * 40;
 
                 if (entity === player) {
-                    if (entity.level === 6) {
-                        cooldowns.s3.maxCharges = 2;
-                        cooldowns.s3.charges = 2;
-                        cooldowns.s3.current = 0;
-                        cooldowns.s3.rechargeTimer = 0;
-                        spawnFloatingText(entity.x, entity.y - 90, 'SOLAR BEAM UNLOCKED!', '#ffc107', 16);
-                    }
-                    if (entity.level === 12) {
-                        cooldowns.s3.maxCharges = 3;
-                        cooldowns.s3.charges = 3;
-                        cooldowns.s3.current = 0;
-                        cooldowns.s3.rechargeTimer = 0;
-                        spawnFloatingText(entity.x, entity.y - 90, '3RD CHARGE UNLOCKED!', '#ffc107', 16);
-                    }
+                    player.skillPoints += 1;
                 }
                 spawnFloatingText(entity.x, entity.y - 70, 'LEVEL UP!', '#00ff66', 18);
             }
@@ -561,11 +579,84 @@
                 entity.gold += entity.xp * 0.6;
                 entity.xp = 0;
             }
+            if (entity === player) updateSkillUpgradeUI();
+        }
+
+        // ====== PHASE 10.2: SKILL TREE ======
+        function canUpgradeSkill(sk) {
+            if (player.skillPoints <= 0) return false;
+            const r = player.skillRanks[sk];
+            if (sk === 's3') {
+                if (r === 0 && player.level >= 4) return true;
+                if (r === 1 && player.level >= 8) return true;
+                if (r === 2 && player.level >= 12) return true;
+                return false;
+            } else {
+                const maxCap = (sk === 's2') ? 5 : 4;
+                const maxAllowed = Math.min(maxCap, Math.ceil(player.level / 2));
+                return r < maxAllowed;
+            }
+        }
+
+        function upgradeSkill(sk) {
+            if (!canUpgradeSkill(sk)) return;
+            player.skillPoints -= 1;
+            player.skillRanks[sk] += 1;
+            const rank = player.skillRanks[sk];
+
+            if (sk === 's1') {
+                cooldowns.s1.max = 7000 - (rank - 1) * 700;
+            } else if (sk === 's2') {
+                cooldowns.s2.max = 5000 - (rank - 1) * 350;
+            } else if (sk === 's3') {
+                if (rank === 1) {
+                    cooldowns.s3.maxCharges = 2;
+                    cooldowns.s3.charges = 2;
+                    cooldowns.s3.current = 0;
+                    cooldowns.s3.rechargeTimer = 0;
+                    cooldowns.s3.rechargeMax = 13000;
+                    spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM UNLOCKED!', '#ffc107', 16);
+                } else if (rank === 2) {
+                    cooldowns.s3.rechargeMax = 11000;
+                    if (cooldowns.s3.charges < cooldowns.s3.maxCharges) cooldowns.s3.charges += 1;
+                    spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM RANK 2!', '#ffc107', 15);
+                } else if (rank === 3) {
+                    cooldowns.s3.maxCharges = 3;
+                    cooldowns.s3.charges = 3;
+                    cooldowns.s3.current = 0;
+                    cooldowns.s3.rechargeTimer = 0;
+                    cooldowns.s3.rechargeMax = 9500;
+                    spawnFloatingText(player.x, player.y - 90, '3RD CHARGE UNLOCKED!', '#ffc107', 16);
+                }
+            }
+            spawnFloatingText(player.x, player.y - 70, `⬆️ ${sk.toUpperCase()} Lv.${rank}`, '#ffd54f', 14);
+            updateSkillUpgradeUI();
+        }
+
+        function updateSkillUpgradeUI() {
+            document.getElementById('upS1Btn').classList.toggle('visible', canUpgradeSkill('s1'));
+            document.getElementById('upS2Btn').classList.toggle('visible', canUpgradeSkill('s2'));
+            document.getElementById('upS3Btn').classList.toggle('visible', canUpgradeSkill('s3'));
+
+            document.getElementById('s1RankText').innerText = `Lv.${player.skillRanks.s1}/4`;
+            document.getElementById('s2RankText').innerText = `Lv.${player.skillRanks.s2}/5`;
+            document.getElementById('s3RankText').innerText = `Lv.${player.skillRanks.s3}/3`;
+
+            ['s1', 's2', 's3'].forEach(sk => {
+                const btn = document.getElementById(`${sk}Btn`);
+                if (player.skillRanks[sk] <= 0) {
+                    btn.style.opacity = '0.42';
+                    btn.style.filter = 'grayscale(100%)';
+                } else {
+                    btn.style.opacity = '1';
+                    btn.style.filter = 'none';
+                }
+            });
         }
 
         function getS3Damage(isMinion, chargePct) {
-            const lvl = Math.max(0, player.level - 6);
-            const base = (isMinion ? 120 : 140) + lvl * 10;
+            const r = Math.max(1, player.skillRanks.s3);
+            const base = (isMinion ? 110 : 135) + (r - 1) * 55 + (player.level - 1) * 5;
             const mult = 0.4 + 0.6 * (chargePct !== undefined ? chargePct : 1.0);
             return base * mult;
         }
@@ -594,9 +685,15 @@
             player.homeguardTimer = 0;
             player.empoweredAtks = 0;
             player.empoweredTimer = 0;
+            player.skillPoints = 1;
+            player.skillRanks = { s1: 0, s2: 0, s3: 0 };
+
             cooldowns.s1.current = 0; cooldowns.s2.current = 0;
             cooldowns.s3.current = 0; cooldowns.s3.charges = 0;
             cooldowns.s3.maxCharges = 0; cooldowns.s3.rechargeTimer = 0;
+            cooldowns.s1.max = 7000;
+            cooldowns.s2.max = 5000;
+            cooldowns.s3.rechargeMax = 13000;
 
             allyNexus.hp = allyNexus.maxHp; enemyNexus.hp = enemyNexus.maxHp;
             structures.forEach(s => { s.hp = s.maxHp; s.currentTarget = null; s.rewarded = false; });
@@ -624,6 +721,7 @@
             lastTimerSecond = -1;
             lastHudGold = -1; lastHudLevel = -1; lastHudPlayerKills = -1; lastHudBotKills = -1; lastHudXpPct = -1;
             s3ChargingPC = false;
+            updateSkillUpgradeUI();
             document.getElementById('gameOverOverlay').classList.remove('active');
         }
 
@@ -731,7 +829,6 @@
                     const dx = touch.clientX - camera.lastTouchX;
                     const dy = touch.clientY - camera.lastTouchY;
                     let maxPan = 450;
-                    // Phase 10.1.1 fix #4 — allow unlimited panning while dead
                     if (activeAim.skillId === 's3' || camera.minimapJumpActive || player.state === 'DEAD') maxPan = 99999;
                     camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
                     camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
@@ -761,6 +858,7 @@
         document.getElementById('s1Btn').addEventListener('mousedown', activateSkill1);
         document.getElementById('s2Btn').addEventListener('mousedown', () => {
             if (player.state === 'DEAD' || cooldowns.s2.current > 0) return;
+            if (player.skillRanks.s2 <= 0) return;
             player.recallTimer = 0;
             player.homeguardTimer = 0;
             const smart = getSmartTargetCoords(cooldowns.s2.range);
@@ -772,7 +870,7 @@
         });
         document.getElementById('s3Btn').addEventListener('mousedown', () => {
             if (player.state === 'DEAD' || cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
-            if (player.level < 6) return;
+            if (player.skillRanks.s3 <= 0) return;
             player.recallTimer = 0;
             player.homeguardTimer = 0;
             fireS3Projectile(getSmartTargetCoords(1100).angle, 1100, 1.0);
@@ -782,9 +880,17 @@
         document.getElementById('atkTowerBtn').addEventListener('mousedown', () => triggerBasicAttack('tower'));
         document.getElementById('recallBtn').addEventListener('mousedown', startRecall);
 
+        // Phase 10.2 - skill upgrade button bindings
+        document.getElementById('upS1Btn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s1'); }, { passive: false });
+        document.getElementById('upS1Btn').addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s1'); });
+        document.getElementById('upS2Btn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s2'); }, { passive: false });
+        document.getElementById('upS2Btn').addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s2'); });
+        document.getElementById('upS3Btn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s3'); }, { passive: false });
+        document.getElementById('upS3Btn').addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s3'); });
+
         function startS3ChargePC() {
             if (player.state === 'DEAD') return;
-            if (player.level < 6 || cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
+            if (player.skillRanks.s3 <= 0 || cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
             player.recallTimer = 0;
             player.homeguardTimer = 0;
             activeAim.skillId = 's3';
@@ -817,6 +923,9 @@
             if (e.key.toLowerCase() === 'f') triggerBasicAttack('all');
             if (e.key.toLowerCase() === 'b') startRecall();
             if (e.key.toLowerCase() === 'k') grantXP(player, 500);
+            if (e.key === '1') upgradeSkill('s1');
+            if (e.key === '2') upgradeSkill('s2');
+            if (e.key === '3') upgradeSkill('s3');
         });
         window.addEventListener('keyup', (e) => {
             keys[e.key.toLowerCase()] = false;
@@ -875,11 +984,13 @@
         function activatePassive() {
             player.passiveActive = true;
             player.passiveTimer = 1500;
-            player.speed = player.baseSpeed * 1.45;
+            const mult = 1.40 + Math.max(1, player.skillRanks.s1) * 0.06;
+            player.speed = player.baseSpeed * mult;
         }
 
         function activateSkill1() {
             if (player.state === 'DEAD' || cooldowns.s1.current > 0) return;
+            if (player.skillRanks.s1 <= 0) return;
             player.recallTimer = 0;
             player.isInvincible = true;
             player.invincibleTimer = cooldowns.s1.activeDur;
@@ -1004,9 +1115,9 @@
 
         function initSkillAim(skillId, touchEvent) {
             if (player.state === 'DEAD') return;
+            if (player.skillRanks[skillId] <= 0) return;
             if (skillId === 's3') {
                 if (cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
-                if (player.level < 6) return;
             } else if (cooldowns[skillId].current > 0) return;
             player.recallTimer = 0;
             player.homeguardTimer = 0;
@@ -1518,7 +1629,6 @@
             if (gameOver) return;
             const dtSec = deltaTime / 1000;
 
-            // Phase 10.1.1 fix #1 — passive XP never spawns floating text
             if (player.state !== 'DEAD') {
                 player.gold += 2 * dtSec;
                 grantXP(player, 1.5 * dtSec, false);
@@ -1617,10 +1727,10 @@
 
             const s3 = cooldowns.s3;
             if (s3.current > 0) s3.current = Math.max(0, s3.current - deltaTime);
-            if (player.level < 6) {
+            if (player.skillRanks.s3 <= 0) {
                 document.getElementById('s3Btn').style.opacity = '0.4';
                 document.getElementById('s3Btn').style.filter = 'grayscale(100%)';
-                document.getElementById('s3AmmoBadge').innerText = 'L6';
+                document.getElementById('s3AmmoBadge').innerText = 'L4';
                 document.getElementById('s3AmmoBadge').style.background = '#666';
                 document.getElementById('s3CD').style.height = '100%';
                 document.getElementById('s3RechargeBar').style.width = '0%';
@@ -1696,7 +1806,7 @@
             }
             for (let i = slowFields.length - 1; i >= 0; i--) {
                 const f = slowFields[i]; f.duration -= deltaTime;
-                const s2Dps = 25 + (player.level - 1) * 5;
+                const s2Dps = 18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2;
                 const s2TickDmg = s2Dps * (deltaTime / 1000);
                 if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
                     bot.isSlowed = true; bot.slowTimer = 500;
@@ -1999,7 +2109,7 @@
                 }
                 if (player.empoweredAtks > 0 && player.empoweredTimer > 0) {
                     const t = performance.now() * 0.003;
-                    for (let i = 0; i < 2; i++) {
+                    for (let i = 0; i < player.empoweredAtks; i++) {
                         const ang = t + i * Math.PI;
                         const ox = player.x + Math.cos(ang) * (player.radius + 18);
                         const oy = player.y + Math.sin(ang) * (player.radius + 18);
@@ -2106,6 +2216,10 @@
             draw();
             requestAnimationFrame(loop);
         }
+
+        // Initialize skill UI to Lv.1 state (1 point, both S1/S2 + buttons visible)
+        updateSkillUpgradeUI();
+
         requestAnimationFrame((timestamp) => {
             lastTime = timestamp;
             requestAnimationFrame(loop);
