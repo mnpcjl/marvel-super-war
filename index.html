@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 10.2.1: Physics & AI Overhaul</title>
+    <title>Marvel Super War - Phase 10.2.4: Broadcast & Death Recap</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -36,20 +36,27 @@
         }
         .skill-btn {
             position: absolute; width: 66px; height: 66px;
-            border-radius: 50%; background: #1f2833; border: 3px solid #45f3ff;
-            color: white; display: flex; flex-direction: column;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(35, 58, 82, 0.94), rgba(11, 16, 26, 0.98));
+            border: 2.5px solid rgba(69, 243, 255, 0.88);
+            color: #ffffff; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            font-size: 9px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 10px rgba(69, 243, 255, 0.25);
+            font-size: 8px; font-weight: 800; letter-spacing: 0.4px; cursor: pointer;
+            box-shadow: 0 0 14px rgba(69, 243, 255, 0.35), inset 0 0 10px rgba(69, 243, 255, 0.18);
             overflow: hidden; touch-action: none; pointer-events: auto;
-            transition: opacity 0.2s, filter 0.2s, box-shadow 0.2s;
+            transition: transform 0.12s ease-out, opacity 0.2s, filter 0.2s, box-shadow 0.2s;
         }
+        .skill-btn:active { transform: scale(0.92); }
+        .btn-icon { font-size: 15px; line-height: 1; margin-bottom: 1px; filter: drop-shadow(0 0 4px rgba(255,255,255,0.4)); }
         #s1Btn { bottom: 24px; right: 178px; }
         #s2Btn { bottom: 112px; right: 145px; }
         #s3Btn { bottom: 175px; right: 68px; width: 70px; height: 70px; }
         #atkBtn {
             bottom: 25px; right: 25px; width: 84px; height: 84px;
-            border-color: #ff4560; background: #4a0e17; font-size: 14px;
+            background: radial-gradient(circle at 30% 30%, rgba(150, 24, 52, 0.94), rgba(42, 8, 18, 0.98));
+            border: 3px solid #ff4560;
+            box-shadow: 0 0 18px rgba(255, 69, 96, 0.5), inset 0 0 12px rgba(255, 69, 96, 0.25);
+            font-size: 12px; font-weight: 900; letter-spacing: 1px;
         }
         .skill-btn .cd-overlay {
             position: absolute; bottom: 0; left: 0;
@@ -68,23 +75,31 @@
         }
         .mini-atk-btn {
             position: absolute; width: 44px; height: 44px;
-            border-radius: 50%; background: #2a0a10; border: 2px solid #ff4560;
-            color: #fff; display: flex; align-items: center; justify-content: center;
-            font-size: 8px; font-weight: bold; box-shadow: 0 0 8px rgba(255, 69, 96, 0.4);
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(80, 20, 36, 0.9), rgba(22, 8, 14, 0.96));
+            border: 2px solid rgba(255, 107, 129, 0.85);
+            color: #ffccd5; display: flex; align-items: center; justify-content: center;
+            font-size: 7.5px; font-weight: 800; letter-spacing: 0.4px;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.35), inset 0 0 6px rgba(233, 69, 96, 0.18);
             touch-action: none; pointer-events: auto; text-align: center;
+            transition: transform 0.12s ease-out;
         }
+        .mini-atk-btn:active { transform: scale(0.9); }
         #atkMinionBtn { bottom: 22px; right: 118px; }
         #atkTowerBtn  { bottom: 118px; right: 22px; }
         #recallBtn {
             position: absolute; bottom: 24px; right: 262px;
             width: 52px; height: 52px; border-radius: 50%;
-            background: #0d3a7a; border: 2.5px solid #64b5f6;
-            color: #fff; display: flex; flex-direction: column;
+            background: radial-gradient(circle at 30% 30%, rgba(25, 90, 175, 0.92), rgba(10, 28, 60, 0.96));
+            border: 2.5px solid #64b5f6;
+            color: #e3f2fd; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            font-size: 9px; font-weight: bold;
-            box-shadow: 0 0 10px rgba(33, 150, 243, 0.4);
+            font-size: 8px; font-weight: 800; letter-spacing: 0.4px;
+            box-shadow: 0 0 12px rgba(33, 150, 243, 0.45), inset 0 0 8px rgba(100, 181, 246, 0.2);
             touch-action: none; pointer-events: auto; cursor: pointer;
+            transition: transform 0.12s ease-out;
         }
+        #recallBtn:active { transform: scale(0.92); }
         #recallBtn .hotkey { font-size: 8px; color: #aaa; margin-top: 1px; }
         .cancel-zone {
             position: absolute;
@@ -117,58 +132,53 @@
         }
         .hud-panel {
             position: absolute;
-            top: 12px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(11, 12, 16, 0.92);
-            padding: 6px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(69, 243, 255, 0.5);
-            pointer-events: none;
-            text-align: center;
-            min-width: 300px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-        }
-        .hud-row-1 {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 15px;
-            font-weight: bold;
-            margin-bottom: 3px;
+            justify-content: center;
+            gap: 10px;
+            min-width: 150px;
+            height: 30px;
+            padding: 0 14px;
+            border-radius: 15px;
+            background: rgba(11, 14, 22, 0.9);
+            border: 1.5px solid rgba(69, 243, 255, 0.45);
+            pointer-events: none;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            font-size: 13px;
+            font-weight: 800;
         }
         .kills-ally { color: #45f3ff; }
         .kills-enemy { color: #ff4560; }
+        .hud-divider { color: rgba(255, 255, 255, 0.45); font-size: 9px; }
         .hud-timer {
             color: #fff;
             font-family: 'Courier New', monospace;
-            letter-spacing: 1.5px;
-            font-size: 13px;
+            letter-spacing: 1px;
+            font-size: 12px;
         }
-        .hud-xp-bar {
-            height: 6px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 4px 0;
-        }
-        .hud-xp-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #45f3ff, #00ff66);
-            transition: width 0.25s ease-out;
-        }
-        .hud-row-2 {
+        .gold-shop-pill {
+            position: absolute;
+            top: 162px;
+            left: 20px;
+            width: 130px;
+            height: 32px;
+            background: linear-gradient(135deg, rgba(20, 26, 38, 0.92), rgba(11, 14, 22, 0.96));
+            border: 1.5px solid rgba(255, 213, 79, 0.6);
+            border-radius: 16px;
+            padding: 0 10px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 10px;
-            color: #ccc;
-            gap: 10px;
+            justify-content: space-between;
+            box-shadow: 0 0 12px rgba(255, 213, 79, 0.2), inset 0 0 6px rgba(255, 213, 79, 0.1);
+            pointer-events: auto;
+            cursor: pointer;
         }
-        .hud-gold { color: #ffd54f; font-weight: bold; font-size: 11px; }
-        .hud-level { color: #45f3ff; font-weight: bold; font-size: 11px; }
-        .hud-bot { color: #ff8a80; }
+        .gold-icon { font-size: 13px; }
+        .gold-amount { color: #ffd54f; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; }
+        .shop-tag { font-size: 8px; font-weight: 800; color: #90a4ae; background: rgba(255,255,255,0.08); padding: 2px 5px; border-radius: 6px; }
         .game-over-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.88); z-index: 100;
@@ -192,13 +202,14 @@
         }
         .lvl-up-btn {
             position: absolute;
-            width: 30px; height: 30px;
+            width: 32px; height: 32px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ffd54f, #ff8f00);
-            border: 2px solid #fff;
-            color: #000;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 238, 88, 0.98), rgba(255, 143, 0, 0.96));
+            border: 2px solid #ffffff;
+            color: #0b0c10;
             font-size: 18px; font-weight: 900; line-height: 1;
             display: none; align-items: center; justify-content: center;
+            box-shadow: 0 0 14px rgba(255, 213, 79, 0.9), inset 0 0 6px rgba(255, 255, 255, 0.6);
             pointer-events: auto; cursor: pointer; z-index: 15;
             touch-action: none;
             animation: pulseUp 0.75s infinite alternate;
@@ -211,6 +222,88 @@
         .skill-rank-label {
             font-size: 8px; color: #ffd54f; font-weight: 800; margin-top: 1px;
         }
+
+        .announce-banner {
+            position: absolute;
+            top: 76px; left: 50%;
+            transform: translateX(-50%) translateY(-10px) scale(0.9);
+            background: linear-gradient(90deg, rgba(15, 22, 34, 0.95), rgba(22, 28, 42, 0.98), rgba(15, 22, 34, 0.95));
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-radius: 22px;
+            padding: 3px 5px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.75);
+            opacity: 0; pointer-events: none; z-index: 55;
+            transition: opacity 0.22s ease-out, transform 0.22s ease-out;
+        }
+        .announce-banner.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+        .announce-unit {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+        }
+        .announce-unit.ally {
+            background: radial-gradient(circle, rgba(33, 150, 243, 0.45), rgba(13, 58, 122, 0.95));
+            border: 2px solid #45f3ff;
+            box-shadow: 0 0 10px rgba(69, 243, 255, 0.6);
+        }
+        .announce-unit.enemy {
+            background: radial-gradient(circle, rgba(255, 69, 96, 0.45), rgba(106, 11, 55, 0.95));
+            border: 2px solid #ff4560;
+            box-shadow: 0 0 10px rgba(255, 69, 96, 0.6);
+        }
+        .announce-center {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0 4px;
+        }
+        .announce-verb {
+            font-size: 10px; font-weight: 900; letter-spacing: 1.2px;
+            color: #ffd54f; text-shadow: 0 0 8px rgba(255, 213, 79, 0.5);
+            white-space: nowrap;
+        }
+        .death-toggle-btn {
+            position: absolute;
+            top: 44px; left: 50%;
+            transform: translateX(-50%);
+            height: 26px; padding: 0 12px;
+            border-radius: 13px;
+            background: rgba(28, 12, 18, 0.94);
+            border: 1.5px solid #ff4560;
+            color: #ffccd5;
+            font-size: 10px; font-weight: 900; letter-spacing: 0.6px;
+            display: none; align-items: center; gap: 6px;
+            box-shadow: 0 0 12px rgba(255, 69, 96, 0.45);
+            pointer-events: auto; cursor: pointer; z-index: 45;
+            touch-action: none;
+        }
+        .death-toggle-btn.active { display: flex; }
+        .recap-arrow { font-size: 9px; color: #ffd54f; }
+        .death-recap-panel {
+            position: absolute;
+            top: 74px; left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            background: rgba(11, 13, 20, 0.96);
+            border: 1.5px solid rgba(255, 69, 96, 0.75);
+            border-radius: 10px; padding: 8px 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 69, 96, 0.3);
+            display: none; flex-direction: column; gap: 5px;
+            pointer-events: auto; z-index: 44;
+        }
+        .death-recap-panel.active { display: flex; }
+        .recap-header {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; font-weight: 900; color: #ff6b81;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;
+        }
+        .recap-row { display: flex; flex-direction: column; gap: 2px; font-size: 9.5px; color: #ddd; }
+        .recap-row-top { display: flex; justify-content: space-between; font-weight: 700; }
+        .recap-bar-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .recap-bar-fill { height: 100%; width: 0%; border-radius: 3px; }
 
         #orientation-warning {
             position: fixed; inset: 0; background: #0b0c10; z-index: 99999;
@@ -248,15 +341,15 @@
         </div>
 
         <div class="abilities-container interactive">
-            <button class="skill-btn" id="s1Btn"><div class="cd-overlay" id="s1CD"></div>DENSITY<span class="hotkey">[Space]</span><span class="skill-rank-label" id="s1RankText">Lv.0/4</span></button>
-            <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div>RADIATION<span class="hotkey">[E]</span><span class="skill-rank-label" id="s2RankText">Lv.0/4</span></button>
+            <button class="skill-btn" id="s1Btn"><div class="cd-overlay" id="s1CD"></div><span class="btn-icon">💎</span>DENSITY<span class="hotkey">[Space]</span><span class="skill-rank-label" id="s1RankText">Lv.0/4</span></button>
+            <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div><span class="btn-icon">☢️</span>RADIATION<span class="hotkey">[E]</span><span class="skill-rank-label" id="s2RankText">Lv.0/4</span></button>
             <button class="skill-btn" id="s3Btn">
                 <div class="cd-overlay" id="s3CD"></div>
                 <div class="ammo-badge" id="s3AmmoBadge">L3</div>
                 <div class="recharge-bar" id="s3RechargeBar"></div>
-                SOLAR BEAM<span class="hotkey">[R]</span><span class="skill-rank-label" id="s3RankText">Lv.0/4</span>
+                <span class="btn-icon">☀️</span>SOLAR BEAM<span class="hotkey">[R]</span><span class="skill-rank-label" id="s3RankText">Lv.0/4</span>
             </button>
-            <button class="skill-btn" id="atkBtn">ATK<span class="hotkey">[F]</span></button>
+            <button class="skill-btn" id="atkBtn"><span class="btn-icon" style="font-size:18px;">⚔️</span>ATK<span class="hotkey">[F]</span></button>
 
             <button class="lvl-up-btn" id="upS1Btn" title="Upgrade S1 [1]">+</button>
             <button class="lvl-up-btn" id="upS2Btn" title="Upgrade S2 [2]">+</button>
@@ -268,16 +361,52 @@
         <button id="recallBtn" class="interactive">RECALL<span class="hotkey">[B]</span></button>
 
         <div class="hud-panel" id="hudPanel">
-            <div class="hud-row-1">
-                <span class="kills-ally" id="allyKills">0</span>
-                <span class="hud-timer" id="matchTimer">00:00</span>
-                <span class="kills-enemy" id="enemyKills">0</span>
+            <span class="kills-ally" id="allyKills">0</span>
+            <span class="hud-divider">vs</span>
+            <span class="hud-timer" id="matchTimer">00:00</span>
+            <span class="hud-divider">vs</span>
+            <span class="kills-enemy" id="enemyKills">0</span>
+        </div>
+
+        <div class="gold-shop-pill interactive" id="goldShopBtn">
+            <span class="gold-icon">🪙</span>
+            <span class="gold-amount" id="goldDisplay">0</span>
+            <span class="shop-tag">SHOP</span>
+        </div>
+
+        <div class="announce-banner" id="announceBanner">
+            <div class="announce-unit ally" id="announceLeftUnit">💎</div>
+            <div class="announce-center">
+                <span class="announce-verb" id="announceVerb">DEFEATED</span>
             </div>
-            <div class="hud-xp-bar"><div class="hud-xp-fill" id="xpBar"></div></div>
-            <div class="hud-row-2">
-                <span class="hud-gold" id="goldDisplay">💰 0</span>
-                <span class="hud-level" id="lvlDisplay">Lv. 1</span>
-                <span class="hud-bot" id="botStateText">AI: PUSH</span>
+            <div class="announce-unit enemy" id="announceRightUnit">🤖</div>
+        </div>
+
+        <button class="death-toggle-btn interactive" id="deathToggleBtn">
+            <span>💀</span>
+            <span id="recapTimer">RESPAWN 0s</span>
+            <span class="recap-arrow" id="recapArrow">▼</span>
+        </button>
+
+        <div class="death-recap-panel" id="deathRecapPanel">
+            <div class="recap-header">
+                <span>DAMAGE BREAKDOWN</span>
+            </div>
+            <div class="recap-row">
+                <div class="recap-row-top"><span>🤖 Bot Basic Atk</span><span id="recapBotBasicLabel">0 (0%)</span></div>
+                <div class="recap-bar-bg"><div class="recap-bar-fill" id="recapBotBasicBar" style="background:#ff8a80;"></div></div>
+            </div>
+            <div class="recap-row">
+                <div class="recap-row-top"><span>☄️ Bot Plasma Skill</span><span id="recapBotSkillLabel">0 (0%)</span></div>
+                <div class="recap-bar-bg"><div class="recap-bar-fill" id="recapBotSkillBar" style="background:#ff4560;"></div></div>
+            </div>
+            <div class="recap-row">
+                <div class="recap-row-top"><span>🗼 Enemy Turret</span><span id="recapTowerLabel">0 (0%)</span></div>
+                <div class="recap-bar-bg"><div class="recap-bar-fill" id="recapTowerBar" style="background:#ffd54f;"></div></div>
+            </div>
+            <div class="recap-row">
+                <div class="recap-row-top"><span>👾 Enemy Minions</span><span id="recapMinionLabel">0 (0%)</span></div>
+                <div class="recap-bar-bg"><div class="recap-bar-fill" id="recapMinionBar" style="background:#45f3ff;"></div></div>
             </div>
         </div>
     </div>
@@ -319,11 +448,13 @@
             attackStunTimer: 0, attackInterval: 0, attackFacingTimer: 0,
             state: 'ALIVE', respawnTimer: 0, recallTimer: 0,
             lastDamagedBy: null,
+            lastHeroHitTimer: 0,
             homeguardTimer: 0,
             empoweredAtks: 0,
             empoweredTimer: 0,
             skillPoints: 1,
-            skillRanks: { s1: 0, s2: 0, s3: 0 }
+            skillRanks: { s1: 0, s2: 0, s3: 0 },
+            damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }
         };
 
         const walls = [
@@ -337,8 +468,8 @@
             { x: 1620, y: 1400, w: 220, h: 80 }
         ];
 
-        const allyNexus  = { x: 400,  y: 2000, radius: 48, hp: 2000, maxHp: 2000, team: 'ally',  range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false, heatStacks: 0, outOfCombatTimer: 0, alertTimer: 0 };
-        const enemyNexus = { x: 2000, y: 400,  radius: 48, hp: 2000, maxHp: 2000, team: 'enemy', range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false, heatStacks: 0, outOfCombatTimer: 0, alertTimer: 0 };
+        const allyNexus  = { x: 400,  y: 2000, radius: 48, hp: 2000, maxHp: 2000, team: 'ally',  range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false, heatStacks: 0, outOfCombatTimer: 0, alertTimer: 0, announceCd: 0 };
+        const enemyNexus = { x: 2000, y: 400,  radius: 48, hp: 2000, maxHp: 2000, team: 'enemy', range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false, heatStacks: 0, outOfCombatTimer: 0, alertTimer: 0, announceCd: 0 };
 
         const allyTopTower  = { x: 400,  y: 1100, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
         const enemyTopTower = { x: 1300, y: 400,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
@@ -384,11 +515,12 @@
             xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
             attackCd: 0, attackInterval: 850, attackStunTimer: 0,
             skillCd: 2000, skillMaxCd: 5500,
-            state: 'PUSHING', respawnTimer: 0,
+            state: 'PUSHING', respawnTimer: 0, lockedTarget: null,
             path: laneManager.enemyMidPath, waypointIdx: 4,
             isSlowed: false, slowTimer: 0,
             isRecalling: false, recallProgress: 0, recallDuration: 3000,
             damageRecoilTimer: 0, lastDamagedBy: null,
+            lastHeroHitTimer: 0,
             homeguardTimer: 0
         };
 
@@ -474,8 +606,10 @@
         let joyActive = false, joyStartX = 0, joyStartY = 0, joyTouchId = null;
         let lastTime = performance.now();
         let gameOver = false;
+        let announceTimer = 0;
+        let recapExpanded = false;
 
-        let lastHudGold = -1, lastHudLevel = -1, lastHudPlayerKills = -1, lastHudBotKills = -1, lastHudXpPct = -1;
+        let lastHudGold = -1, lastHudPlayerKills = -1, lastHudBotKills = -1;
 
         function spawnFloatingText(x, y, text, color, size) {
             floatingTexts.push({
@@ -518,12 +652,31 @@
 
             const actual = Math.min(amount, target.hp);
             target.hp -= amount;
-            target.lastDamagedBy = source;
+            target.lastDamagedBy = (source === 'bot_basic' || source === 'bot_skill') ? 'bot' : source;
+            if (target === bot && source === 'player') bot.lastHeroHitTimer = 5000;
+            if (target === player && (source === 'bot_basic' || source === 'bot_skill' || source === 'bot')) {
+                player.lastHeroHitTimer = 5000;
+            }
+
+            if (target === player && actual > 0) {
+                if (source === 'bot_basic') player.damageLog.botBasic += actual;
+                else if (source === 'bot_skill') player.damageLog.botSkill += actual;
+                else if (source === 'enemy_tower') player.damageLog.tower += actual;
+                else if (source === 'enemy_minion') player.damageLog.minion += actual;
+            }
 
             // Phase 10.2.1 - Nexus out-of-combat regen timers
             if (target.isNexus) {
                 target.outOfCombatTimer = 5000;
                 target.alertTimer = 4000;
+                if (target.announceCd <= 0) {
+                    if (target.team === 'enemy') {
+                        showAnnouncement('💎', 'ally', '🎯 SIEGE', '🏛️', 'enemy', '#ffd54f');
+                    } else {
+                        showAnnouncement('🤖', 'enemy', '🚨 SIEGE', '🏛️', 'ally', '#ff4560');
+                    }
+                    target.announceCd = 10000;
+                }
             }
 
             if (target === player) {
@@ -555,10 +708,12 @@
                     grantGold(player, 150);
                     grantXP(player, 120, true);
                     spawnFloatingText(target.x, target.y - 80, 'TOWER DESTROYED! +150g', '#ffd54f', 20);
+                    showAnnouncement('💎', 'ally', '💥 DESTROYED', '🗼', 'enemy', '#ffd54f');
                 } else if (target.team === 'ally') {
                     grantGold(bot, 150);
                     grantXP(bot, 120, true);
                     spawnFloatingText(target.x, target.y - 80, 'ALLY TOWER LOST!', '#ff4560', 20);
+                    showAnnouncement('🤖', 'enemy', '💥 DESTROYED', '🗼', 'ally', '#ff4560');
                 }
             }
         }
@@ -699,7 +854,34 @@
             return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
 
+        function showAnnouncement(leftIcon, leftTeam, verbText, rightIcon, rightTeam, verbColor = '#ffd54f') {
+            const banner = document.getElementById('announceBanner');
+            const leftEl = document.getElementById('announceLeftUnit');
+            const rightEl = document.getElementById('announceRightUnit');
+            const verbEl = document.getElementById('announceVerb');
+
+            leftEl.innerText = leftIcon;
+            leftEl.className = `announce-unit ${leftTeam}`;
+            rightEl.innerText = rightIcon;
+            rightEl.className = `announce-unit ${rightTeam}`;
+            verbEl.innerText = verbText;
+            verbEl.style.color = verbColor;
+
+            banner.classList.add('active');
+            announceTimer = 2600;
+        }
+
         document.getElementById('restartBtn').addEventListener('click', restartGame);
+        const deathToggleBtn = document.getElementById('deathToggleBtn');
+        function toggleDeathRecap(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (player.state !== 'DEAD') return;
+            recapExpanded = !recapExpanded;
+            updateHUD();
+        }
+        deathToggleBtn.addEventListener('touchstart', toggleDeathRecap, { passive: false });
+        deathToggleBtn.addEventListener('mousedown', toggleDeathRecap);
+
         function restartGame() {
             player.x = 400; player.y = 2000;
             player.hp = 550; player.maxHp = 550; player.level = 1;
@@ -710,11 +892,13 @@
             player.attackStunTimer = 0; player.attackFacingTimer = 0;
             player.state = 'ALIVE'; player.respawnTimer = 0; player.recallTimer = 0;
             player.lastDamagedBy = null;
+            player.lastHeroHitTimer = 0;
             player.homeguardTimer = 0;
             player.empoweredAtks = 0;
             player.empoweredTimer = 0;
             player.skillPoints = 1;
             player.skillRanks = { s1: 0, s2: 0, s3: 0 };
+            player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
 
             cooldowns.s1.current = 0; cooldowns.s2.current = 0;
             cooldowns.s3.current = 0; cooldowns.s3.charges = 0;
@@ -732,17 +916,20 @@
             });
             allyNexus.outOfCombatTimer = 0;
             allyNexus.alertTimer = 0;
+            allyNexus.announceCd = 0;
             enemyNexus.outOfCombatTimer = 0;
             enemyNexus.alertTimer = 0;
+            enemyNexus.announceCd = 0;
 
             bot.x = 1920; bot.y = 480;
             bot.hp = 550; bot.maxHp = 550; bot.level = 1;
             bot.xp = 0; bot.xpToNext = 140; bot.gold = 0;
             bot.kills = 0; bot.deaths = 0; bot.basicAtkDmg = 10;
-            bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0;
+            bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
             bot.lastDamagedBy = null;
+            bot.lastHeroHitTimer = 0;
             bot.homeguardTimer = 0;
 
             minions.length = 0; projectiles.length = 0; botProjectiles.length = 0;
@@ -757,8 +944,13 @@
             lastBotHp = bot.hp;
             matchStartTime = performance.now();
             lastTimerSecond = -1;
-            lastHudGold = -1; lastHudLevel = -1; lastHudPlayerKills = -1; lastHudBotKills = -1; lastHudXpPct = -1;
+            lastHudGold = -1; lastHudPlayerKills = -1; lastHudBotKills = -1;
             s3ChargingPC = false;
+            announceTimer = 0;
+            recapExpanded = false;
+            document.getElementById('announceBanner').classList.remove('active');
+            document.getElementById('deathToggleBtn').classList.remove('active');
+            document.getElementById('deathRecapPanel').classList.remove('active');
             updateSkillUpgradeUI();
             document.getElementById('gameOverOverlay').classList.remove('active');
         }
@@ -815,7 +1007,9 @@
                 }
                 const targetEl = touch.target;
                 if (targetEl.closest('.joystick-container') || targetEl.closest('.abilities-container') ||
-                    targetEl.closest('.hud-panel') || targetEl.closest('.mini-atk-btn') || targetEl.closest('#recallBtn')) continue;
+                    targetEl.closest('.hud-panel') || targetEl.closest('.mini-atk-btn') ||
+                    targetEl.closest('#recallBtn') || targetEl.closest('#goldShopBtn') ||
+                    targetEl.closest('#deathToggleBtn') || targetEl.closest('#deathRecapPanel')) continue;
                 if (!camera.isPanning) {
                     e.preventDefault();
                     camera.isPanning = true;
@@ -1424,25 +1618,27 @@
 
         // ====== PHASE 10.2.1: OVERHAULED BOT BRAIN ======
         function updateBot(dt) {
-            const botUI = document.getElementById('botStateText');
-
             if (bot.hp <= 0) {
                 if (bot.state !== 'DEAD') {
-                    if (bot.lastDamagedBy === 'player') {
+                    if (bot.lastDamagedBy === 'player' || bot.lastHeroHitTimer > 0) {
                         player.kills += 1;
                         grantXP(player, 180, true);
                         grantGold(player, 200);
                         spawnFloatingText(bot.x, bot.y - 90, 'KILL!', '#ffd54f', 22);
+                        showAnnouncement('💎', 'ally', '⚔️ KO!', '🤖', 'enemy', '#45f3ff');
+                    } else {
+                        showAnnouncement('⚔️', 'ally', '⚔️ EXECUTED', '🤖', 'enemy', '#45f3ff');
                     }
+                    bot.lastHeroHitTimer = 0;
                     bot.deaths += 1;
                     bot.state = 'DEAD';
+                    bot.lockedTarget = null;
                     bot.respawnTimer = (4 + bot.level * 1.5) * 1000;
                     bot.isRecalling = false;
                     bot.recallProgress = 0;
                     visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
                 }
                 bot.respawnTimer -= dt;
-                botUI.innerText = `AI: DEAD ${Math.ceil(bot.respawnTimer / 1000)}s`;
                 if (bot.respawnTimer <= 0) {
                     bot.hp = bot.maxHp;
                     bot.x = 1920;
@@ -1454,6 +1650,7 @@
                     bot.recallProgress = 0;
                     bot.damageRecoilTimer = 0;
                     bot.lastDamagedBy = null;
+                    bot.lastHeroHitTimer = 0;
                 }
                 return;
             }
@@ -1480,10 +1677,8 @@
                 if (!isBotSafeToRecall() || bot.damageRecoilTimer > 0) {
                     bot.isRecalling = false;
                     bot.recallProgress = 0;
-                    botUI.innerText = 'AI: RECALL INTERRUPTED';
                 } else {
                     bot.recallProgress += dt;
-                    botUI.innerText = `AI: RECALL ${Math.ceil((bot.recallDuration - bot.recallProgress) / 1000)}s`;
                     if (bot.recallProgress >= bot.recallDuration) {
                         bot.x = 1920;
                         bot.y = 480;
@@ -1507,7 +1702,6 @@
             }
 
             if (towerTargetingBot) {
-                botUI.innerText = 'AI: FALLBACK';
                 moveBotToward(1920, 480, spd, true, true);
                 return;
             }
@@ -1515,7 +1709,8 @@
             // Nexus Defense Emergency
             const playerAtBase = player.state !== 'DEAD' && player.hp > 0 && Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y) <= 480;
             const minionAtBase = minions.some(m => m.team === 'ally' && m.hp > 0 && Math.hypot(m.x - enemyNexus.x, m.y - enemyNexus.y) <= 420);
-            const nexusInDanger = playerAtBase || minionAtBase || (enemyNexus.alertTimer > 0);
+            const nexusInDanger = (playerAtBase || minionAtBase || enemyNexus.alertTimer > 0) &&
+                (bot.state !== 'RETREATING' || bot.hp > bot.maxHp * 0.45);
 
             if (nexusInDanger && bot.hp > bot.maxHp * 0.25) {
                 const dBase = Math.hypot(enemyNexus.x - bot.x, enemyNexus.y - bot.y);
@@ -1523,15 +1718,12 @@
                     if (isBotSafeToRecall()) {
                         bot.isRecalling = true;
                         bot.recallProgress = 0;
-                        botUI.innerText = 'AI: RECALL DEFEND!';
                         return;
                     }
                     moveBotToward(1920, 480, spd, true, false);
-                    botUI.innerText = 'AI: RUSH BASE!';
                     return;
                 } else if (dBase > 260) {
                     moveBotToward(enemyNexus.x, enemyNexus.y, spd, true, false);
-                    botUI.innerText = 'AI: DEFEND NEXUS!';
                     return;
                 } else {
                     bot.state = 'ATTACKING';
@@ -1573,10 +1765,8 @@
                     if (!inSlowField) {
                         moveBotToward(1920, 480, spd, true, false);
                     }
-                    botUI.innerText = 'AI: RETREAT';
                 } else {
                     bot.hp = Math.min(bot.maxHp, bot.hp + 0.35 * dt);
-                    botUI.innerText = 'AI: HEAL';
                 }
                 return;
             }
@@ -1597,7 +1787,22 @@
 
             let target = null;
             let bestDist = Infinity;
-            if (player.hp > 0 && !player.isInvincible && player.state !== 'DEAD' && !underUntankedAllyTower) {
+            const locked = bot.lockedTarget;
+            if (locked) {
+                const lockedAlive = locked.hp > 0 &&
+                    (locked !== player || (player.state !== 'DEAD' && !player.isInvincible)) &&
+                    (!minions.includes(locked) || locked.team === 'ally') &&
+                    (!structures.includes(locked) || locked.team === 'ally');
+                const lockedDist = Math.hypot(locked.x - bot.x, locked.y - bot.y);
+                if (lockedAlive && lockedDist <= bot.autoAtkRange + 75 &&
+                    !(locked === player && underUntankedAllyTower)) {
+                    target = locked;
+                    bestDist = lockedDist;
+                } else {
+                    bot.lockedTarget = null;
+                }
+            }
+            if (!target && player.hp > 0 && !player.isInvincible && player.state !== 'DEAD' && !underUntankedAllyTower) {
                 const dP = Math.hypot(player.x - bot.x, player.y - bot.y);
                 if (dP <= bot.autoAtkRange + 35) {
                     target = player;
@@ -1628,19 +1833,18 @@
                     }
                 }
             }
+            bot.lockedTarget = target;
 
             if (target) {
                 bot.state = 'ATTACKING';
-                botUI.innerText = 'AI: ATTACK';
                 const d = Math.hypot(target.x - bot.x, target.y - bot.y);
                 const aimAngle = Math.atan2(target.y - bot.y, target.x - bot.x);
                 rotateBotToward(aimAngle, 0.3);
 
                 if (target === player) {
-                    const preferred = 105;
-                    if (d < preferred - 25 && !inSlowField) {
+                    if (d < 85 && !inSlowField) {
                         moveBotToward(bot.x + (bot.x - player.x), bot.y + (bot.y - player.y), spd * 0.9, false, false);
-                    } else if (d > bot.autoAtkRange + player.radius - 15 && !inSlowField) {
+                    } else if (d > bot.autoAtkRange - 10 && !inSlowField) {
                         moveBotToward(target.x, target.y, spd * 0.85, false, false);
                     }
                 } else if (d > bot.autoAtkRange + (target.radius || 0) - 15 && !inSlowField) {
@@ -1659,7 +1863,7 @@
                     bot.attackStunTimer = 120;
                     bot.homeguardTimer = 0;
                     botAtkTracers.push({ x1: bot.x, y1: bot.y, x2: target.x, y2: target.y, duration: 130 });
-                    dealDamage(target, bot.basicAtkDmg, 'bot', target === player);
+                    dealDamage(target, bot.basicAtkDmg, target === player ? 'bot_basic' : 'bot', target === player);
                     if (target === player) {
                         triggerStructureAggro(bot, player);
                     }
@@ -1667,7 +1871,6 @@
                 }
             } else {
                 bot.state = 'PUSHING';
-                botUI.innerText = 'AI: PUSH';
                 for (let st of structures) {
                     if (st.team === 'ally' && st.hp > 0) {
                         const dSt = Math.hypot(st.x - bot.x, st.y - bot.y);
@@ -1714,14 +1917,36 @@
         }
 
         function updateHUD() {
+            const recapPanel = document.getElementById('deathRecapPanel');
+            const deathToggle = document.getElementById('deathToggleBtn');
+            if (player.state === 'DEAD') {
+                deathToggle.classList.add('active');
+                recapPanel.classList.toggle('active', recapExpanded);
+                document.getElementById('recapTimer').innerText = `RESPAWN ${Math.ceil(player.respawnTimer / 1000)}s`;
+                document.getElementById('recapArrow').innerText = recapExpanded ? '▲' : '▼';
+                const entries = [
+                    { key: 'botBasic', label: 'recapBotBasicLabel', bar: 'recapBotBasicBar' },
+                    { key: 'botSkill', label: 'recapBotSkillLabel', bar: 'recapBotSkillBar' },
+                    { key: 'tower', label: 'recapTowerLabel', bar: 'recapTowerBar' },
+                    { key: 'minion', label: 'recapMinionLabel', bar: 'recapMinionBar' }
+                ];
+                const totalDamage = Math.max(1, Object.values(player.damageLog).reduce((sum, value) => sum + value, 0));
+                entries.forEach(entry => {
+                    const damage = player.damageLog[entry.key];
+                    const percent = Math.round((damage / totalDamage) * 100);
+                    document.getElementById(entry.label).innerText = `${Math.round(damage)} (${percent}%)`;
+                    document.getElementById(entry.bar).style.width = `${percent}%`;
+                });
+            } else {
+                deathToggle.classList.remove('active');
+                recapPanel.classList.remove('active');
+                recapExpanded = false;
+            }
+
             const floorGold = Math.floor(player.gold);
             if (floorGold !== lastHudGold) {
                 lastHudGold = floorGold;
-                document.getElementById('goldDisplay').innerText = `💰 ${floorGold}`;
-            }
-            if (player.level !== lastHudLevel) {
-                lastHudLevel = player.level;
-                document.getElementById('lvlDisplay').innerText = player.level >= 12 ? 'Lv. 12 MAX' : `Lv. ${player.level}`;
+                document.getElementById('goldDisplay').innerText = floorGold;
             }
             if (player.kills !== lastHudPlayerKills) {
                 lastHudPlayerKills = player.kills;
@@ -1730,20 +1955,6 @@
             if (bot.kills !== lastHudBotKills) {
                 lastHudBotKills = bot.kills;
                 document.getElementById('enemyKills').innerText = bot.kills;
-            }
-            if (player.level >= 12) {
-                if (lastHudXpPct !== 100) {
-                    lastHudXpPct = 100;
-                    document.getElementById('xpBar').style.width = '100%';
-                    document.getElementById('xpBar').style.background = 'linear-gradient(90deg, #ffd54f, #ff8f00)';
-                }
-            } else {
-                const pct = Math.round((player.xp / player.xpToNext) * 100);
-                if (pct !== lastHudXpPct) {
-                    lastHudXpPct = pct;
-                    document.getElementById('xpBar').style.width = `${pct}%`;
-                    document.getElementById('xpBar').style.background = 'linear-gradient(90deg, #45f3ff, #00ff66)';
-                }
             }
             const atkBtn = document.getElementById('atkBtn');
             if (player.empoweredAtks > 0 && player.empoweredTimer > 0) {
@@ -1765,6 +1976,18 @@
         function update(deltaTime) {
             if (gameOver) return;
             const dtSec = deltaTime / 1000;
+            player.lastHeroHitTimer = Math.max(0, player.lastHeroHitTimer - deltaTime);
+            bot.lastHeroHitTimer = Math.max(0, bot.lastHeroHitTimer - deltaTime);
+
+            if (announceTimer > 0) {
+                announceTimer -= deltaTime;
+                if (announceTimer <= 0) {
+                    announceTimer = 0;
+                    document.getElementById('announceBanner').classList.remove('active');
+                }
+            }
+            allyNexus.announceCd = Math.max(0, allyNexus.announceCd - deltaTime);
+            enemyNexus.announceCd = Math.max(0, enemyNexus.announceCd - deltaTime);
 
             if (player.state !== 'DEAD') {
                 player.gold += 2 * dtSec;
@@ -1788,6 +2011,9 @@
                 player.respawnTimer -= deltaTime;
                 if (player.respawnTimer <= 0) {
                     player.state = 'ALIVE'; player.hp = player.maxHp;
+                    recapExpanded = false;
+                    player.lastHeroHitTimer = 0;
+                    player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
                     player.x = allyNexus.x; player.y = allyNexus.y;
                     player.recallTimer = 0; player.dx = 0; player.dy = 0;
                     player.isInvincible = false; player.passiveActive = false;
@@ -1946,7 +2172,7 @@
                 bp.x += bp.dx * ff; bp.y += bp.dy * ff; bp.dist += Math.hypot(bp.dx * ff, bp.dy * ff);
                 if (player.hp > 0 && player.state !== 'DEAD' && Math.hypot(bp.x - player.x, bp.y - player.y) < player.radius + bp.radius) {
                     if (!player.isInvincible) {
-                        dealDamage(player, bp.dmg, 'bot', true);
+                        dealDamage(player, bp.dmg, 'bot_skill', true);
                         visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 });
                         triggerStructureAggro(bot, player);
                     }
@@ -2007,14 +2233,19 @@
             }
 
             if (player.hp <= 0 && player.state !== 'DEAD') {
-                if (player.lastDamagedBy === 'bot') {
+                if (player.lastDamagedBy === 'bot' || player.lastHeroHitTimer > 0) {
                     bot.kills += 1;
                     grantXP(bot, 180);
                     grantGold(bot, 200);
                     spawnFloatingText(player.x, player.y - 90, 'SLAIN', '#ff4560', 20);
+                    showAnnouncement('🤖', 'enemy', '💀 SLAIN', '💎', 'ally', '#ff4560');
+                } else {
+                    showAnnouncement('🗼', 'enemy', '💀 EXECUTED', '💎', 'ally', '#ff4560');
                 }
+                player.lastHeroHitTimer = 0;
                 player.deaths += 1;
                 player.state = 'DEAD';
+                recapExpanded = false;
                 player.respawnTimer = (4 + player.level * 1.5) * 1000;
                 player.isInvincible = false;
                 player.passiveActive = false;
@@ -2032,6 +2263,48 @@
 
             updateHUD();
             checkGameOver();
+        }
+
+        function drawHeroHealthAndLevel(entity, isPlayer) {
+            const barW = 58;
+            const barH = 6;
+            const barX = entity.x - 22;
+            const barY = entity.y - entity.radius - 22;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+            ctx.fillStyle = isPlayer ? (entity.isInvincible ? '#45f3ff' : '#00ff66') : '#ff1744';
+            ctx.fillRect(barX, barY, barW * Math.max(0, entity.hp / entity.maxHp), barH);
+
+            const cx = barX - 8;
+            const cy = barY + barH / 2;
+            const r = 9.5;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fillStyle = '#0b0e14';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+            ctx.lineWidth = 2.2;
+            ctx.stroke();
+
+            const xpPct = entity.level >= 12 ? 1.0 : Math.max(0, Math.min(1, entity.xp / entity.xpToNext));
+            if (xpPct > 0) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + xpPct * Math.PI * 2);
+                ctx.strokeStyle = entity.level >= 12 ? '#ffd54f' : (isPlayer ? '#45f3ff' : '#ff8a80');
+                ctx.lineWidth = 2.2;
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = entity.level >= 12 ? '#ffd54f' : '#ffffff';
+            ctx.font = 'bold 8.5px "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${entity.level}`, cx, cy + 0.5);
         }
 
         function drawFloatingTexts() {
@@ -2234,20 +2507,11 @@
                     ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.radius + 6, 0, Math.PI * 2);
                     ctx.strokeStyle = 'rgba(69, 243, 255, 0.5)'; ctx.lineWidth = 2; ctx.stroke();
                 }
-                ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(bot.x - 35, bot.y - 46, 70, 7);
-                ctx.fillStyle = '#ff1744'; ctx.fillRect(bot.x - 35, bot.y - 46, 70 * (bot.hp / bot.maxHp), 7);
-                ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(bot.x - 20, bot.y - 58, 40, 9);
-                ctx.fillStyle = '#ff8a80'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText(`Lv.${bot.level}`, bot.x, bot.y - 50);
+                drawHeroHealthAndLevel(bot, false);
             }
 
             if (player.state !== 'DEAD') {
-                ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(player.x - 30, player.y - 42, 60, 6);
-                ctx.fillStyle = player.isInvincible ? '#45f3ff' : '#00ff66';
-                ctx.fillRect(player.x - 30, player.y - 42, 60 * (player.hp / player.maxHp), 6);
-                ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(player.x - 20, player.y - 54, 40, 9);
-                ctx.fillStyle = '#45f3ff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText(`Lv.${player.level}`, player.x, player.y - 46);
+                drawHeroHealthAndLevel(player, true);
                 ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
                 ctx.beginPath(); ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
                 if (player.isInvincible) ctx.fillStyle = 'rgba(69, 243, 255, 0.75)';
@@ -2318,14 +2582,6 @@
 
             ctx.restore();
             drawMiniMap();
-            if (player.state === 'DEAD') {
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(0, canvas.height / 2 - 40, canvas.width, 80);
-                ctx.fillStyle = '#e94560';
-                ctx.font = 'bold 32px "Segoe UI", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`RESPAWNING IN ${Math.ceil(player.respawnTimer / 1000)}s`, canvas.width / 2, canvas.height / 2 + 10);
-            }
         }
 
         function drawNexus(n) {
