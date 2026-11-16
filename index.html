@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 10.2: Skill Upgrade Tree</title>
+    <title>Marvel Super War - Phase 10.2.1: Physics & AI Overhaul</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -186,7 +186,6 @@
         }
         .restart-btn:active { transform: scale(0.95); }
 
-        /* Phase 10.2 - Skill Upgrade UI */
         @keyframes pulseUp {
             0% { transform: scale(0.95); box-shadow: 0 0 8px rgba(255, 213, 79, 0.7); }
             100% { transform: scale(1.1); box-shadow: 0 0 18px rgba(255, 213, 79, 1); }
@@ -250,12 +249,12 @@
 
         <div class="abilities-container interactive">
             <button class="skill-btn" id="s1Btn"><div class="cd-overlay" id="s1CD"></div>DENSITY<span class="hotkey">[Space]</span><span class="skill-rank-label" id="s1RankText">Lv.0/4</span></button>
-            <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div>RADIATION<span class="hotkey">[E]</span><span class="skill-rank-label" id="s2RankText">Lv.0/5</span></button>
+            <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div>RADIATION<span class="hotkey">[E]</span><span class="skill-rank-label" id="s2RankText">Lv.0/4</span></button>
             <button class="skill-btn" id="s3Btn">
                 <div class="cd-overlay" id="s3CD"></div>
-                <div class="ammo-badge" id="s3AmmoBadge">L4</div>
+                <div class="ammo-badge" id="s3AmmoBadge">L3</div>
                 <div class="recharge-bar" id="s3RechargeBar"></div>
-                SOLAR BEAM<span class="hotkey">[R]</span><span class="skill-rank-label" id="s3RankText">Lv.0/3</span>
+                SOLAR BEAM<span class="hotkey">[R]</span><span class="skill-rank-label" id="s3RankText">Lv.0/4</span>
             </button>
             <button class="skill-btn" id="atkBtn">ATK<span class="hotkey">[F]</span></button>
 
@@ -302,6 +301,7 @@
         const WORLD = { width: 2400, height: 2400, gridSize: 100 };
         const camera = {
             x: 0, y: 0, zoom: 1.0, offsetX: 0, offsetY: 0,
+            spectatorX: 400, spectatorY: 2000,
             isPanning: false, panTouchId: null,
             lastTouchX: 0, lastTouchY: 0,
             minimapJumpActive: false, minimapTouchId: null,
@@ -310,8 +310,8 @@
 
         const player = {
             x: 400, y: 2000, radius: 22, team: 'ally', level: 1,
-            baseSpeed: 3.3, speed: 3.3, angle: -Math.PI / 4, dx: 0, dy: 0,
-            hp: 550, maxHp: 550, autoAtkRange: 340,
+            baseSpeed: 2.75, speed: 2.75, angle: -Math.PI / 4, dx: 0, dy: 0,
+            hp: 550, maxHp: 550, autoAtkRange: 272,
             basicAtkDmg: 10,
             xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
             isInvincible: false, invincibleTimer: 0,
@@ -337,15 +337,15 @@
             { x: 1620, y: 1400, w: 220, h: 80 }
         ];
 
-        const allyNexus  = { x: 400,  y: 2000, radius: 48, hp: 2000, maxHp: 2000, team: 'ally',  range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false };
-        const enemyNexus = { x: 2000, y: 400,  radius: 48, hp: 2000, maxHp: 2000, team: 'enemy', range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false };
+        const allyNexus  = { x: 400,  y: 2000, radius: 48, hp: 2000, maxHp: 2000, team: 'ally',  range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false, heatStacks: 0, outOfCombatTimer: 0, alertTimer: 0 };
+        const enemyNexus = { x: 2000, y: 400,  radius: 48, hp: 2000, maxHp: 2000, team: 'enemy', range: 310, fireCooldown: 0, fireRate: 1200, currentTarget: null, isNexus: true, rewarded: false, heatStacks: 0, outOfCombatTimer: 0, alertTimer: 0 };
 
-        const allyTopTower  = { x: 400,  y: 1100, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
-        const enemyTopTower = { x: 1300, y: 400,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
-        const allyMidTower  = { x: 850,  y: 1550, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
-        const enemyMidTower = { x: 1550, y: 850,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
-        const allyBotTower  = { x: 1100, y: 2000, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
-        const enemyBotTower = { x: 2000, y: 1300, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false };
+        const allyTopTower  = { x: 400,  y: 1100, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
+        const enemyTopTower = { x: 1300, y: 400,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
+        const allyMidTower  = { x: 850,  y: 1550, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
+        const enemyMidTower = { x: 1550, y: 850,  radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
+        const allyBotTower  = { x: 1100, y: 2000, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'ally',  fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
+        const enemyBotTower = { x: 2000, y: 1300, radius: 34, range: 250, hp: 1000, maxHp: 1000, team: 'enemy', fireCooldown: 0, fireRate: 1400, currentTarget: null, rewarded: false, heatStacks: 0 };
         const structures = [allyTopTower, allyMidTower, allyBotTower, enemyTopTower, enemyMidTower, enemyBotTower, allyNexus, enemyNexus];
 
         const minions = [];
@@ -378,14 +378,14 @@
 
         const bot = {
             x: 1920, y: 480, radius: 24, team: 'enemy', level: 1,
-            baseSpeed: 2.85, speed: 2.85, angle: (3 * Math.PI) / 4,
-            hp: 550, maxHp: 550, autoAtkRange: 300,
+            baseSpeed: 2.55, speed: 2.55, angle: (3 * Math.PI) / 4,
+            hp: 550, maxHp: 550, autoAtkRange: 245,
             basicAtkDmg: 10,
             xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
             attackCd: 0, attackInterval: 850, attackStunTimer: 0,
             skillCd: 2000, skillMaxCd: 5500,
             state: 'PUSHING', respawnTimer: 0,
-            path: laneManager.enemyMidPath, waypointIdx: 0,
+            path: laneManager.enemyMidPath, waypointIdx: 4,
             isSlowed: false, slowTimer: 0,
             isRecalling: false, recallProgress: 0, recallDuration: 3000,
             damageRecoilTimer: 0, lastDamagedBy: null,
@@ -408,7 +408,7 @@
             return {
                 x: path[startIdx].x, y: path[startIdx].y,
                 radius: 14, hp: 100, maxHp: 100,
-                speed: 1.35,
+                speed: 1.15,
                 attackRange: 45, attackInterval: 900, attackCd: 0, dmg: 12,
                 team: team, path: path, waypointIdx: startIdx,
                 lastDamagedBy: null,
@@ -449,7 +449,7 @@
 
         const cooldowns = {
             s1: { max: 7000, current: 0, activeDur: 1500 },
-            s2: { max: 5000, current: 0, activeDur: 3500, range: 300 },
+            s2: { max: 5000, current: 0, activeDur: 3500, range: 235 },
             s3: { recastMax: 1000, current: 0, chargeDur: 900, maxChargeHoldLimit: 3000, charges: 0, maxCharges: 0, rechargeMax: 13000, rechargeTimer: 0 }
         };
 
@@ -488,6 +488,19 @@
             });
         }
 
+        // Phase 10.2.1 - Fix cross-lane tower aggro
+        function triggerStructureAggro(attacker, victim) {
+            for (let st of structures) {
+                if (st.team === victim.team && st.hp > 0) {
+                    const attackerInRange = Math.hypot(attacker.x - st.x, attacker.y - st.y) <= st.range + attacker.radius;
+                    const victimNearTower = Math.hypot(victim.x - st.x, victim.y - st.y) <= st.range + 120;
+                    if (attackerInRange && victimNearTower) {
+                        st.currentTarget = attacker;
+                    }
+                }
+            }
+        }
+
         function dealDamage(target, amount, source, showNumber) {
             if (!target || target.hp <= 0) return;
 
@@ -506,6 +519,12 @@
             const actual = Math.min(amount, target.hp);
             target.hp -= amount;
             target.lastDamagedBy = source;
+
+            // Phase 10.2.1 - Nexus out-of-combat regen timers
+            if (target.isNexus) {
+                target.outOfCombatTimer = 5000;
+                target.alertTimer = 4000;
+            }
 
             if (target === player) {
                 player.recallTimer = 0;
@@ -582,18 +601,19 @@
             if (entity === player) updateSkillUpgradeUI();
         }
 
-        // ====== PHASE 10.2: SKILL TREE ======
         function canUpgradeSkill(sk) {
-            if (player.skillPoints <= 0) return false;
+            if (player.skillPoints <= 0) {
+                return false;
+            }
             const r = player.skillRanks[sk];
             if (sk === 's3') {
-                if (r === 0 && player.level >= 4) return true;
-                if (r === 1 && player.level >= 8) return true;
-                if (r === 2 && player.level >= 12) return true;
+                if (r === 0 && player.level >= 3) return true;
+                if (r === 1 && player.level >= 6) return true;
+                if (r === 2 && player.level >= 9) return true;
+                if (r === 3 && player.level >= 12) return true;
                 return false;
             } else {
-                const maxCap = (sk === 's2') ? 5 : 4;
-                const maxAllowed = Math.min(maxCap, Math.ceil(player.level / 2));
+                const maxAllowed = Math.min(4, Math.ceil(player.level / 2));
                 return r < maxAllowed;
             }
         }
@@ -617,10 +637,18 @@
                     cooldowns.s3.rechargeMax = 13000;
                     spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM UNLOCKED!', '#ffc107', 16);
                 } else if (rank === 2) {
-                    cooldowns.s3.rechargeMax = 11000;
-                    if (cooldowns.s3.charges < cooldowns.s3.maxCharges) cooldowns.s3.charges += 1;
+                    cooldowns.s3.rechargeMax = 11800;
+                    if (cooldowns.s3.charges < cooldowns.s3.maxCharges) {
+                        cooldowns.s3.charges += 1;
+                    }
                     spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM RANK 2!', '#ffc107', 15);
                 } else if (rank === 3) {
+                    cooldowns.s3.rechargeMax = 10600;
+                    if (cooldowns.s3.charges < cooldowns.s3.maxCharges) {
+                        cooldowns.s3.charges += 1;
+                    }
+                    spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM RANK 3!', '#ffc107', 15);
+                } else if (rank === 4) {
                     cooldowns.s3.maxCharges = 3;
                     cooldowns.s3.charges = 3;
                     cooldowns.s3.current = 0;
@@ -639,8 +667,8 @@
             document.getElementById('upS3Btn').classList.toggle('visible', canUpgradeSkill('s3'));
 
             document.getElementById('s1RankText').innerText = `Lv.${player.skillRanks.s1}/4`;
-            document.getElementById('s2RankText').innerText = `Lv.${player.skillRanks.s2}/5`;
-            document.getElementById('s3RankText').innerText = `Lv.${player.skillRanks.s3}/3`;
+            document.getElementById('s2RankText').innerText = `Lv.${player.skillRanks.s2}/4`;
+            document.getElementById('s3RankText').innerText = `Lv.${player.skillRanks.s3}/4`;
 
             ['s1', 's2', 's3'].forEach(sk => {
                 const btn = document.getElementById(`${sk}Btn`);
@@ -656,7 +684,7 @@
 
         function getS3Damage(isMinion, chargePct) {
             const r = Math.max(1, player.skillRanks.s3);
-            const base = (isMinion ? 110 : 135) + (r - 1) * 55 + (player.level - 1) * 5;
+            const base = (isMinion ? 105 : 130) + (r - 1) * 40 + (player.level - 1) * 5;
             const mult = 0.4 + 0.6 * (chargePct !== undefined ? chargePct : 1.0);
             return base * mult;
         }
@@ -696,13 +724,22 @@
             cooldowns.s3.rechargeMax = 13000;
 
             allyNexus.hp = allyNexus.maxHp; enemyNexus.hp = enemyNexus.maxHp;
-            structures.forEach(s => { s.hp = s.maxHp; s.currentTarget = null; s.rewarded = false; });
+            structures.forEach(s => {
+                s.hp = s.maxHp;
+                s.currentTarget = null;
+                s.rewarded = false;
+                s.heatStacks = 0;
+            });
+            allyNexus.outOfCombatTimer = 0;
+            allyNexus.alertTimer = 0;
+            enemyNexus.outOfCombatTimer = 0;
+            enemyNexus.alertTimer = 0;
 
             bot.x = 1920; bot.y = 480;
             bot.hp = 550; bot.maxHp = 550; bot.level = 1;
             bot.xp = 0; bot.xpToNext = 140; bot.gold = 0;
             bot.kills = 0; bot.deaths = 0; bot.basicAtkDmg = 10;
-            bot.state = 'PUSHING'; bot.waypointIdx = 0; bot.respawnTimer = 0;
+            bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
             bot.lastDamagedBy = null;
@@ -716,6 +753,7 @@
 
             laneManager.waveTimer = 5000; gameOver = false;
             camera.offsetX = 0; camera.offsetY = 0;
+            camera.spectatorX = 400; camera.spectatorY = 2000;
             lastBotHp = bot.hp;
             matchStartTime = performance.now();
             lastTimerSecond = -1;
@@ -754,8 +792,14 @@
 
         function resolveMinimapPan(sx, sy) {
             const scale = WORLD.width / 130;
-            camera.minimapJumpX = (sx - 20) * scale;
-            camera.minimapJumpY = (sy - 20) * scale;
+            camera.minimapJumpX = Math.max(0, Math.min(WORLD.width, (sx - 20) * scale));
+            camera.minimapJumpY = Math.max(0, Math.min(WORLD.height, (sy - 20) * scale));
+            if (player.state === 'DEAD') {
+                camera.spectatorX = camera.minimapJumpX;
+                camera.spectatorY = camera.minimapJumpY;
+                camera.offsetX = 0;
+                camera.offsetY = 0;
+            }
         }
 
         window.addEventListener('touchstart', (e) => {
@@ -828,11 +872,16 @@
                     e.preventDefault();
                     const dx = touch.clientX - camera.lastTouchX;
                     const dy = touch.clientY - camera.lastTouchY;
-                    let maxPan = 450;
-                    if (activeAim.skillId === 's3' || camera.minimapJumpActive || player.state === 'DEAD') maxPan = 99999;
-                    camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
-                    camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
-                    camera.lastTouchX = touch.clientX; camera.lastTouchY = touch.clientY;
+                    if (player.state === 'DEAD') {
+                        camera.spectatorX = Math.max(0, Math.min(WORLD.width, camera.spectatorX - dx * 1.8));
+                        camera.spectatorY = Math.max(0, Math.min(WORLD.height, camera.spectatorY - dy * 1.8));
+                    } else {
+                        let maxPan = (activeAim.skillId === 's3' || camera.minimapJumpActive) ? 99999 : 450;
+                        camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
+                        camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
+                    }
+                    camera.lastTouchX = touch.clientX;
+                    camera.lastTouchY = touch.clientY;
                 }
             }
         }, { passive: false });
@@ -865,7 +914,7 @@
             player.angle = Math.atan2(smart.y - player.y, smart.x - player.x);
             player.attackFacingTimer = 180; player.attackStunTimer = 30;
             beamTracers.push({ targetX: smart.x, targetY: smart.y, duration: 220 });
-            slowFields.push({ x: smart.x, y: smart.y, radius: 115, duration: cooldowns.s2.activeDur });
+            slowFields.push({ x: smart.x, y: smart.y, radius: 80, duration: cooldowns.s2.activeDur });
             cooldowns.s2.current = cooldowns.s2.max;
         });
         document.getElementById('s3Btn').addEventListener('mousedown', () => {
@@ -873,14 +922,13 @@
             if (player.skillRanks.s3 <= 0) return;
             player.recallTimer = 0;
             player.homeguardTimer = 0;
-            fireS3Projectile(getSmartTargetCoords(1100).angle, 1100, 1.0);
+            fireS3Projectile(getSmartTargetCoords(880).angle, 880, 1.0);
         });
         document.getElementById('atkBtn').addEventListener('mousedown', () => triggerBasicAttack('all'));
         document.getElementById('atkMinionBtn').addEventListener('mousedown', () => triggerBasicAttack('minion'));
         document.getElementById('atkTowerBtn').addEventListener('mousedown', () => triggerBasicAttack('tower'));
         document.getElementById('recallBtn').addEventListener('mousedown', startRecall);
 
-        // Phase 10.2 - skill upgrade button bindings
         document.getElementById('upS1Btn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s1'); }, { passive: false });
         document.getElementById('upS1Btn').addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s1'); });
         document.getElementById('upS2Btn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s2'); }, { passive: false });
@@ -904,7 +952,7 @@
             activeAim.isCanceled = false;
             activeAim.hasMoved = false;
             activeAim.dragDist = 0;
-            const smart = getSmartTargetCoords(1100);
+            const smart = getSmartTargetCoords(880);
             activeAim.angle = smart.angle;
             player.angle = activeAim.angle;
             document.getElementById('cancelZone').classList.add('active');
@@ -1046,9 +1094,7 @@
             player.recallTimer = 0;
             player.homeguardTimer = 0;
             if (target === bot) {
-                structures.forEach(s => {
-                    if (s.team === 'enemy' && s.hp > 0 && Math.hypot(player.x - s.x, player.y - s.y) <= s.range) s.currentTarget = player;
-                });
+                triggerStructureAggro(player, bot);
             }
             player.attackInterval = 380;
             let offY = (validTargets[0].type === 'tower') ? -20 : 0;
@@ -1105,11 +1151,11 @@
                 player.angle = Math.atan2(targetY - player.y, targetX - player.x);
                 player.attackFacingTimer = 180; player.attackStunTimer = 30;
                 beamTracers.push({ targetX: targetX, targetY: targetY, duration: 220 });
-                slowFields.push({ x: targetX, y: targetY, radius: 115, duration: cooldowns.s2.activeDur });
+                slowFields.push({ x: targetX, y: targetY, radius: 80, duration: cooldowns.s2.activeDur });
                 cooldowns.s2.current = cooldowns.s2.max;
             } else if (skill === 's3') {
                 const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
-                fireS3Projectile(activeAim.angle, 400 + (chargePct * 700), chargePct);
+                fireS3Projectile(activeAim.angle, 320 + (chargePct * 560), chargePct);
             }
         }
 
@@ -1127,7 +1173,7 @@
             activeAim.currentX = touch.clientX; activeAim.currentY = touch.clientY;
             activeAim.dragDist = 0; activeAim.chargeTime = 0; activeAim.fullZoomHoldTime = 0;
             activeAim.isCanceled = false; activeAim.hasMoved = false;
-            const smart = getSmartTargetCoords(skillId === 's2' ? cooldowns.s2.range : 1100);
+            const smart = getSmartTargetCoords(skillId === 's2' ? cooldowns.s2.range : 880);
             activeAim.angle = smart.angle;
             if (skillId === 's3') player.angle = activeAim.angle;
             document.getElementById('cancelZone').classList.add('active');
@@ -1297,12 +1343,35 @@
                         }
                     }
                 }
+
+                // Heat stack reset if not targeting a hero
+                if (!t.currentTarget || (t.currentTarget !== player && t.currentTarget !== bot)) {
+                    t.heatStacks = 0;
+                }
+
                 if (t.fireCooldown > 0) t.fireCooldown -= dt;
                 if (t.fireCooldown <= 0 && t.currentTarget) {
-                    towerShots.push({ x: t.x, y: t.y - 20, speed: 6.5, radius: 9, team: t.team, target: t.currentTarget, dmg: 30 });
+                    const isHero = (t.currentTarget === player || t.currentTarget === bot);
+                    const shotDmg = isHero ? Math.round(28 * (1 + Math.min(4, t.heatStacks || 0) * 0.35)) : 30;
+                    if (isHero) {
+                        t.heatStacks = (t.heatStacks || 0) + 1;
+                    } else {
+                        t.heatStacks = 0;
+                    }
+                    towerShots.push({ x: t.x, y: t.y - 20, speed: 6.5, radius: 9, team: t.team, target: t.currentTarget, dmg: shotDmg });
                     t.fireCooldown = t.fireRate;
                 }
             }
+
+            // Nexus out-of-combat regen + alert timer
+            [allyNexus, enemyNexus].forEach(n => {
+                if (n.outOfCombatTimer > 0) n.outOfCombatTimer -= dt;
+                if (n.alertTimer > 0) n.alertTimer -= dt;
+                if (n.hp > 0 && n.hp < n.maxHp && n.outOfCombatTimer <= 0) {
+                    n.hp = Math.min(n.maxHp, n.hp + 14 * (dt / 1000));
+                }
+            });
+
             const ff = dt / 16.67;
             for (let i = towerShots.length - 1; i >= 0; i--) {
                 const s = towerShots[i];
@@ -1339,10 +1408,10 @@
 
         function isBotSafeToRecall() {
             if (player.state !== 'DEAD' && player.hp > 0) {
-                if (Math.hypot(player.x - bot.x, player.y - bot.y) < 600) return false;
+                if (Math.hypot(player.x - bot.x, player.y - bot.y) < 380) return false;
             }
             for (let m of minions) {
-                if (m.team === 'ally' && m.hp > 0 && Math.hypot(m.x - bot.x, m.y - bot.y) < 400) return false;
+                if (m.team === 'ally' && m.hp > 0 && Math.hypot(m.x - bot.x, m.y - bot.y) < 240) return false;
             }
             for (let s of structures) {
                 if (s.team === 'ally' && s.hp > 0 && s.currentTarget === bot) return false;
@@ -1353,75 +1422,89 @@
             return true;
         }
 
+        // ====== PHASE 10.2.1: OVERHAULED BOT BRAIN ======
         function updateBot(dt) {
             const botUI = document.getElementById('botStateText');
+
             if (bot.hp <= 0) {
                 if (bot.state !== 'DEAD') {
                     if (bot.lastDamagedBy === 'player') {
                         player.kills += 1;
-                        grantXP(player, 180);
+                        grantXP(player, 180, true);
                         grantGold(player, 200);
                         spawnFloatingText(bot.x, bot.y - 90, 'KILL!', '#ffd54f', 22);
                     }
                     bot.deaths += 1;
-                    bot.state = 'DEAD'; bot.respawnTimer = 6000;
-                    bot.isRecalling = false; bot.recallProgress = 0;
+                    bot.state = 'DEAD';
+                    bot.respawnTimer = (4 + bot.level * 1.5) * 1000;
+                    bot.isRecalling = false;
+                    bot.recallProgress = 0;
                     visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
                 }
                 bot.respawnTimer -= dt;
                 botUI.innerText = `AI: DEAD ${Math.ceil(bot.respawnTimer / 1000)}s`;
                 if (bot.respawnTimer <= 0) {
-                    bot.hp = bot.maxHp; bot.x = 1920; bot.y = 480;
-                    bot.state = 'PUSHING'; bot.waypointIdx = 0; bot.isSlowed = false;
-                    bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
+                    bot.hp = bot.maxHp;
+                    bot.x = 1920;
+                    bot.y = 480;
+                    bot.state = 'PUSHING';
+                    bot.waypointIdx = 4;
+                    bot.isSlowed = false;
+                    bot.isRecalling = false;
+                    bot.recallProgress = 0;
+                    bot.damageRecoilTimer = 0;
                     bot.lastDamagedBy = null;
                 }
                 return;
             }
-            if (bot.isSlowed && (bot.slowTimer -= dt) <= 0) bot.isSlowed = false;
+
+            if (bot.isSlowed && (bot.slowTimer -= dt) <= 0) {
+                bot.isSlowed = false;
+            }
             if (bot.attackCd > 0) bot.attackCd -= dt;
             if (bot.skillCd > 0) bot.skillCd -= dt;
             if (bot.attackStunTimer > 0) bot.attackStunTimer -= dt;
             if (bot.damageRecoilTimer > 0) bot.damageRecoilTimer -= dt;
             if (bot.homeguardTimer > 0) bot.homeguardTimer -= dt;
 
-            if (Math.hypot(bot.x - enemyNexus.x, bot.y - enemyNexus.y) <= 220) bot.homeguardTimer = 4000;
+            if (Math.hypot(bot.x - enemyNexus.x, bot.y - enemyNexus.y) <= 220 && (performance.now() - matchStartTime) > 12000) {
+                bot.homeguardTimer = 4000;
+            }
 
             const frameFactor = dt / 16.67;
-            const hgMult = 1 + 0.55 * (Math.max(0, bot.homeguardTimer) / 4000);
+            const hgMult = 1 + 0.40 * (Math.max(0, bot.homeguardTimer) / 4000);
             const spd = (bot.isSlowed ? bot.baseSpeed * 0.55 : bot.baseSpeed) * hgMult * frameFactor;
             const isEarlyGame = bot.level <= 3;
 
             if (bot.isRecalling) {
                 if (!isBotSafeToRecall() || bot.damageRecoilTimer > 0) {
-                    bot.isRecalling = false; bot.recallProgress = 0;
+                    bot.isRecalling = false;
+                    bot.recallProgress = 0;
                     botUI.innerText = 'AI: RECALL INTERRUPTED';
                 } else {
                     bot.recallProgress += dt;
                     botUI.innerText = `AI: RECALL ${Math.ceil((bot.recallDuration - bot.recallProgress) / 1000)}s`;
                     if (bot.recallProgress >= bot.recallDuration) {
-                        bot.x = 1920; bot.y = 480;
-                        bot.isRecalling = false; bot.recallProgress = 0;
+                        bot.x = 1920;
+                        bot.y = 480;
+                        bot.isRecalling = false;
+                        bot.recallProgress = 0;
                         bot.state = 'RETREATING';
-                        bot.waypointIdx = 0;
+                        bot.waypointIdx = 4;
                         visualExplosions.push({ x: bot.x, y: bot.y, radius: 50, duration: 300 });
                     }
                     return;
                 }
             }
 
-            if (bot.state === 'RETREATING' && bot.hp < bot.maxHp * 0.4) {
-                const dHome = Math.hypot(1920 - bot.x, 480 - bot.y);
-                if (dHome > 700 && isBotSafeToRecall()) {
-                    bot.isRecalling = true; bot.recallProgress = 0;
-                    return;
-                }
-            }
-
             const towerTargetingBot = structures.some(s => s.team === 'ally' && s.hp > 0 && s.currentTarget === bot);
-            const retreatThreshold = isEarlyGame ? 0.4 : 0.25;
-            if (bot.hp < bot.maxHp * retreatThreshold) bot.state = 'RETREATING';
-            else if (bot.state === 'RETREATING' && bot.hp >= bot.maxHp * 0.85 && !towerTargetingBot) bot.state = 'PUSHING';
+
+            if (bot.hp < bot.maxHp * 0.22) {
+                bot.state = 'RETREATING';
+            } else if (bot.state === 'RETREATING' && bot.hp >= bot.maxHp * 0.85 && !towerTargetingBot) {
+                bot.state = 'PUSHING';
+                bot.waypointIdx = 4;
+            }
 
             if (towerTargetingBot) {
                 botUI.innerText = 'AI: FALLBACK';
@@ -1429,6 +1512,33 @@
                 return;
             }
 
+            // Nexus Defense Emergency
+            const playerAtBase = player.state !== 'DEAD' && player.hp > 0 && Math.hypot(player.x - enemyNexus.x, player.y - enemyNexus.y) <= 480;
+            const minionAtBase = minions.some(m => m.team === 'ally' && m.hp > 0 && Math.hypot(m.x - enemyNexus.x, m.y - enemyNexus.y) <= 420);
+            const nexusInDanger = playerAtBase || minionAtBase || (enemyNexus.alertTimer > 0);
+
+            if (nexusInDanger && bot.hp > bot.maxHp * 0.25) {
+                const dBase = Math.hypot(enemyNexus.x - bot.x, enemyNexus.y - bot.y);
+                if (dBase > 600) {
+                    if (isBotSafeToRecall()) {
+                        bot.isRecalling = true;
+                        bot.recallProgress = 0;
+                        botUI.innerText = 'AI: RECALL DEFEND!';
+                        return;
+                    }
+                    moveBotToward(1920, 480, spd, true, false);
+                    botUI.innerText = 'AI: RUSH BASE!';
+                    return;
+                } else if (dBase > 260) {
+                    moveBotToward(enemyNexus.x, enemyNexus.y, spd, true, false);
+                    botUI.innerText = 'AI: DEFEND NEXUS!';
+                    return;
+                } else {
+                    bot.state = 'ATTACKING';
+                }
+            }
+
+            // Lava escape (ignore stun, don't rotate, no return, allows attacking while escaping)
             let inSlowField = false;
             for (let f of slowFields) {
                 const dPool = Math.hypot(bot.x - f.x, bot.y - f.y);
@@ -1437,23 +1547,32 @@
                     let ex = bot.x - f.x;
                     let ey = bot.y - f.y;
                     const em = Math.hypot(ex, ey);
-                    const hx = 1920 - bot.x, hy = 480 - bot.y;
+                    const hx = 1920 - bot.x;
+                    const hy = 480 - bot.y;
                     const hm = Math.hypot(hx, hy) || 1;
                     if (em < 15) {
-                        ex = hx / hm; ey = hy / hm;
+                        ex = hx / hm;
+                        ey = hy / hm;
                     } else {
                         ex = (ex / em) * 0.6 + (hx / hm) * 0.4;
                         ey = (ey / em) * 0.6 + (hy / hm) * 0.4;
                     }
-                    moveBotToward(bot.x + ex * 80, bot.y + ey * 80, spd, true, false);
+                    moveBotToward(bot.x + ex * 80, bot.y + ey * 80, spd, false, true);
                     break;
                 }
             }
 
             if (bot.state === 'RETREATING') {
                 const dHome = Math.hypot(1920 - bot.x, 480 - bot.y);
+                if (dHome > 500 && bot.hp < bot.maxHp * 0.55 && isBotSafeToRecall()) {
+                    bot.isRecalling = true;
+                    bot.recallProgress = 0;
+                    return;
+                }
                 if (dHome > 45) {
-                    if (!inSlowField) moveBotToward(1920, 480, spd, true, false);
+                    if (!inSlowField) {
+                        moveBotToward(1920, 480, spd, true, false);
+                    }
                     botUI.innerText = 'AI: RETREAT';
                 } else {
                     bot.hp = Math.min(bot.maxHp, bot.hp + 0.35 * dt);
@@ -1463,31 +1582,36 @@
             }
 
             let underUntankedAllyTower = false;
-            if (isEarlyGame) {
-                for (let s of structures) {
-                    if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 40) {
-                        underUntankedAllyTower = true; break;
-                    }
-                }
-            } else {
-                for (let s of structures) {
-                    if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 20) {
+            for (let s of structures) {
+                if (s.team === 'ally' && s.hp > 0) {
+                    const buffer = isEarlyGame ? 40 : 20;
+                    if (Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + buffer) {
                         const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range);
-                        if (!tanking) { underUntankedAllyTower = true; break; }
+                        if (!tanking || isEarlyGame) {
+                            underUntankedAllyTower = true;
+                            break;
+                        }
                     }
                 }
             }
 
-            let target = null, bestDist = Infinity;
+            let target = null;
+            let bestDist = Infinity;
             if (player.hp > 0 && !player.isInvincible && player.state !== 'DEAD' && !underUntankedAllyTower) {
                 const dP = Math.hypot(player.x - bot.x, player.y - bot.y);
-                if (dP <= bot.autoAtkRange + 35) { target = player; bestDist = dP; }
+                if (dP <= bot.autoAtkRange + 35) {
+                    target = player;
+                    bestDist = dP;
+                }
             }
             if (!target) {
                 for (let m of minions) {
                     if (m.team === 'ally' && m.hp > 0) {
                         const d = Math.hypot(m.x - bot.x, m.y - bot.y);
-                        if (d <= bot.autoAtkRange + 20 && d < bestDist) { target = m; bestDist = d; }
+                        if (d <= bot.autoAtkRange + 30 && d < bestDist) {
+                            target = m;
+                            bestDist = d;
+                        }
                     }
                 }
             }
@@ -1496,30 +1620,36 @@
                     if (st.team === 'ally' && st.hp > 0) {
                         const d = Math.hypot(st.x - bot.x, st.y - bot.y);
                         const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - st.x, m.y - st.y) <= st.range);
-                        if (d <= bot.autoAtkRange + st.radius && tanking) { target = st; bestDist = d; break; }
+                        if (d <= bot.autoAtkRange + st.radius && tanking) {
+                            target = st;
+                            bestDist = d;
+                            break;
+                        }
                     }
                 }
             }
 
             if (target) {
-                bot.state = 'ATTACKING'; botUI.innerText = 'AI: ATTACK';
+                bot.state = 'ATTACKING';
+                botUI.innerText = 'AI: ATTACK';
                 const d = Math.hypot(target.x - bot.x, target.y - bot.y);
                 const aimAngle = Math.atan2(target.y - bot.y, target.x - bot.x);
                 rotateBotToward(aimAngle, 0.3);
 
                 if (target === player) {
-                    const preferred = 200;
-                    if (d < preferred - 30 && !inSlowField) {
+                    const preferred = 105;
+                    if (d < preferred - 25 && !inSlowField) {
                         moveBotToward(bot.x + (bot.x - player.x), bot.y + (bot.y - player.y), spd * 0.9, false, false);
-                    } else if (d > bot.autoAtkRange + player.radius - 20 && !inSlowField) {
+                    } else if (d > bot.autoAtkRange + player.radius - 15 && !inSlowField) {
                         moveBotToward(target.x, target.y, spd * 0.85, false, false);
                     }
                 } else if (d > bot.autoAtkRange + (target.radius || 0) - 15 && !inSlowField) {
                     moveBotToward(target.x, target.y, spd * 0.85, false, false);
                 }
 
-                if (target === player && bot.skillCd <= 0 && !player.isInvincible) {
-                    bot.angle = aimAngle; bot.attackStunTimer = 160;
+                if (target === player && bot.skillCd <= 0 && !player.isInvincible && bot.level >= 2) {
+                    bot.angle = aimAngle;
+                    bot.attackStunTimer = 160;
                     bot.homeguardTimer = 0;
                     botProjectiles.push({ x: bot.x, y: bot.y, dx: Math.cos(aimAngle) * 10, dy: Math.sin(aimAngle) * 10, radius: 10, dist: 0, maxDist: 500, dmg: getBotSkillDamage() });
                     bot.skillCd = bot.skillMaxCd;
@@ -1531,34 +1661,41 @@
                     botAtkTracers.push({ x1: bot.x, y1: bot.y, x2: target.x, y2: target.y, duration: 130 });
                     dealDamage(target, bot.basicAtkDmg, 'bot', target === player);
                     if (target === player) {
-                        for (let s of structures) {
-                            if (s.team === 'ally' && s.hp > 0 && Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range) s.currentTarget = bot;
-                        }
+                        triggerStructureAggro(bot, player);
                     }
                     bot.attackCd = bot.attackInterval;
                 }
             } else {
-                bot.state = 'PUSHING'; botUI.innerText = 'AI: PUSH';
+                bot.state = 'PUSHING';
+                botUI.innerText = 'AI: PUSH';
                 for (let st of structures) {
                     if (st.team === 'ally' && st.hp > 0) {
                         const dSt = Math.hypot(st.x - bot.x, st.y - bot.y);
                         const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - st.x, m.y - st.y) <= st.range);
                         if (dSt <= st.range + 55 && !tanking) {
-                            if (dSt < st.range + 25 && !inSlowField) moveBotToward(1920, 480, spd * 0.8, true, true);
+                            if (dSt < st.range + 25 && !inSlowField) {
+                                moveBotToward(1920, 480, spd * 0.8, true, true);
+                            }
                             return;
                         }
                     }
                 }
                 if (!inSlowField) {
                     const path = laneManager.enemyMidPath;
-                    let closest = bot.waypointIdx, minD = Infinity;
-                    for (let i = 0; i < path.length; i++) {
-                        const d = Math.hypot(path[i].x - bot.x, path[i].y - bot.y);
-                        if (d < minD) { minD = d; closest = i; }
+                    if (bot.waypointIdx < 4) {
+                        bot.waypointIdx = 4;
                     }
-                    bot.waypointIdx = Math.min(path.length - 1, closest + 2);
-                    const node = path[bot.waypointIdx];
-                    if (Math.hypot(node.x - bot.x, node.y - bot.y) > 24) moveBotToward(node.x, node.y, spd * 0.75, true, false);
+                    for (let i = bot.waypointIdx + 1; i < Math.min(path.length, bot.waypointIdx + 10); i++) {
+                        if (Math.hypot(path[i].x - bot.x, path[i].y - bot.y) < 35) {
+                            bot.waypointIdx = i;
+                        }
+                    }
+                    const node = path[Math.min(path.length - 1, bot.waypointIdx)];
+                    if (Math.hypot(node.x - bot.x, node.y - bot.y) < 30 && bot.waypointIdx < path.length - 1) {
+                        bot.waypointIdx += 1;
+                    }
+                    const activeNode = path[Math.min(path.length - 1, bot.waypointIdx)];
+                    moveBotToward(activeNode.x, activeNode.y, spd * 0.85, true, false);
                 }
             }
         }
@@ -1643,7 +1780,7 @@
                 if (player.empoweredTimer <= 0) player.empoweredAtks = 0;
             }
             if (player.homeguardTimer > 0) player.homeguardTimer -= deltaTime;
-            if (player.state === 'ALIVE' && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 220) {
+            if (player.state === 'ALIVE' && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 220 && (performance.now() - matchStartTime) > 12000) {
                 player.homeguardTimer = 4000;
             }
 
@@ -1707,7 +1844,7 @@
                 }
                 if (player.attackStunTimer <= 0) {
                     const ultSlow = (activeAim.skillId === 's3') ? 0.65 : 1.0;
-                    const hgMult = 1 + 0.55 * (Math.max(0, player.homeguardTimer) / 4000);
+                    const hgMult = 1 + 0.40 * (Math.max(0, player.homeguardTimer) / 4000);
                     const currentSpeed = player.speed * ultSlow * hgMult;
                     const ff = deltaTime / 16.67;
                     const stepX = player.dx * currentSpeed * ff, stepY = player.dy * currentSpeed * ff;
@@ -1730,7 +1867,7 @@
             if (player.skillRanks.s3 <= 0) {
                 document.getElementById('s3Btn').style.opacity = '0.4';
                 document.getElementById('s3Btn').style.filter = 'grayscale(100%)';
-                document.getElementById('s3AmmoBadge').innerText = 'L4';
+                document.getElementById('s3AmmoBadge').innerText = 'L3';
                 document.getElementById('s3AmmoBadge').style.background = '#666';
                 document.getElementById('s3CD').style.height = '100%';
                 document.getElementById('s3RechargeBar').style.width = '0%';
@@ -1766,8 +1903,20 @@
                 if (Math.abs(camera.offsetX) < 0.3) camera.offsetX = 0;
                 if (Math.abs(camera.offsetY) < 0.3) camera.offsetY = 0;
             }
-            let focusX = player.x, focusY = player.y;
-            if (camera.minimapJumpActive) { focusX = camera.minimapJumpX; focusY = camera.minimapJumpY; }
+
+            let focusX, focusY;
+            if (player.state === 'DEAD') {
+                focusX = camera.spectatorX;
+                focusY = camera.spectatorY;
+            } else {
+                focusX = player.x;
+                focusY = player.y;
+            }
+            if (camera.minimapJumpActive) {
+                focusX = camera.minimapJumpX;
+                focusY = camera.minimapJumpY;
+            }
+
             const targetCamX = (focusX + camera.offsetX) - (canvas.width / camera.zoom) / 2;
             const targetCamY = (focusY + camera.offsetY) - (canvas.height / camera.zoom) / 2;
             camera.x += (targetCamX - camera.x) * 0.15; camera.y += (targetCamY - camera.y) * 0.15;
@@ -1799,6 +1948,7 @@
                     if (!player.isInvincible) {
                         dealDamage(player, bp.dmg, 'bot', true);
                         visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 });
+                        triggerStructureAggro(bot, player);
                     }
                     botProjectiles.splice(i, 1); continue;
                 }
@@ -1811,7 +1961,7 @@
                 if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
                     bot.isSlowed = true; bot.slowTimer = 500;
                     dealDamage(bot, s2TickDmg, 'player', false);
-                    for (let st of structures) { if (st.team === 'enemy' && st.hp > 0 && Math.hypot(player.x - st.x, player.y - st.y) <= st.range) st.currentTarget = player; }
+                    triggerStructureAggro(player, bot);
                 }
                 for (let m of minions) {
                     if (m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
@@ -1843,7 +1993,7 @@
                         dealDamage(bot, getS3Damage(false, p.chargePct), 'player', true);
                         bot.damageRecoilTimer = 400; activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 60, duration: 280 });
-                        for (let st of structures) { if (st.team === 'enemy' && st.hp > 0 && Math.hypot(player.x - st.x, player.y - st.y) <= st.range) st.currentTarget = player; }
+                        triggerStructureAggro(player, bot);
                         stoppedByHero = true; break;
                     }
                     for (let st of structures) {
@@ -1864,10 +2014,19 @@
                     spawnFloatingText(player.x, player.y - 90, 'SLAIN', '#ff4560', 20);
                 }
                 player.deaths += 1;
-                player.state = 'DEAD'; player.respawnTimer = 6000;
-                player.isInvincible = false; player.passiveActive = false; player.recallTimer = 0;
-                player.empoweredAtks = 0; player.empoweredTimer = 0;
-                activeAim.skillId = null; document.getElementById('cancelZone').classList.remove('active', 'hovered');
+                player.state = 'DEAD';
+                player.respawnTimer = (4 + player.level * 1.5) * 1000;
+                player.isInvincible = false;
+                player.passiveActive = false;
+                player.recallTimer = 0;
+                player.empoweredAtks = 0;
+                player.empoweredTimer = 0;
+                camera.spectatorX = player.x + camera.offsetX;
+                camera.spectatorY = player.y + camera.offsetY;
+                camera.offsetX = 0;
+                camera.offsetY = 0;
+                activeAim.skillId = null;
+                document.getElementById('cancelZone').classList.remove('active', 'hovered');
                 visualExplosions.push({ x: player.x, y: player.y, radius: 65, duration: 300 });
             }
 
@@ -1963,6 +2122,15 @@
                     ctx.fillStyle = t.team === 'ally' ? '#2196f3' : '#ff4081';
                     ctx.fillRect(t.x - 42, t.y - 54, 84 * (t.hp / t.maxHp), 7);
                 }
+                // Heat stacks (works for towers AND nexuses)
+                if ((t.heatStacks || 0) > 0) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                    ctx.fillRect(t.x - 20, t.y - t.radius - 68, 40, 15);
+                    ctx.fillStyle = '#ff5722';
+                    ctx.font = 'bold 11px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`🔥${t.heatStacks}`, t.x, t.y - t.radius - 57);
+                }
             });
 
             slowFields.forEach(f => {
@@ -2015,11 +2183,11 @@
                     }
                     ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(aX, aY);
                     ctx.strokeStyle = iC; ctx.lineWidth = 1.5; ctx.setLineDash([6, 6]); ctx.stroke(); ctx.setLineDash([]);
-                    ctx.beginPath(); ctx.arc(aX, aY, 115, 0, Math.PI * 2);
+                    ctx.beginPath(); ctx.arc(aX, aY, 80, 0, Math.PI * 2);
                     ctx.fillStyle = aC; ctx.strokeStyle = iC; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
                 } else if (activeAim.skillId === 's3') {
                     const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
-                    const L = 400 + (chargePct * 700);
+                    const L = 320 + (chargePct * 560);
                     const ms = 0.35; const cs = ms * (1 - chargePct);
                     const aL = activeAim.angle - cs; const aR = activeAim.angle + cs;
                     ctx.lineWidth = 1.5;
@@ -2217,7 +2385,6 @@
             requestAnimationFrame(loop);
         }
 
-        // Initialize skill UI to Lv.1 state (1 point, both S1/S2 + buttons visible)
         updateSkillUpgradeUI();
 
         requestAnimationFrame((timestamp) => {
