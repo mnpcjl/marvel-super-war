@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 10.3.1: Shop, Scoreboard & Combat</title>
+    <title>Marvel Super War - Phase 10.3.2: Shop, Scoreboard & Combat</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -415,9 +415,63 @@
         .shop-item-icon { position: relative; }
         .shop-item-cost { color: #ffd54f; font-size: 8px; font-weight: 900; }
         .shop-bottom-bar { margin-top: 10px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.055); }
-        .shop-bottom-inventory { display: flex; gap: 5px; margin-bottom: 7px; }
-        .shop-bottom-inventory .inventory-slot { width: 30px; height: 30px; font-size: 17px; }
-        .shop-bottom-stats { display: flex; flex-wrap: wrap; gap: 7px; color: #d9e3f0; font-size: 8px; }
+        .shop-bottom-inventory { display: flex; gap: 5px; margin: 0; }
+        .shop-bottom-inventory .inventory-slot { width: 30px; height: 30px; font-size: 17px; cursor: pointer; color: #fff; padding: 0; }
+        .shop-bottom-inventory .inventory-slot.selected-slot { border-color: #ffd54f; box-shadow: 0 0 9px rgba(255, 213, 79, 0.8); }
+        .shop-bottom-stats { display: flex; flex-wrap: wrap; gap: 7px; color: #d9e3f0; font-size: 8px; width: 100%; }
+        .sell-item-btn { min-height: 30px; padding: 4px 8px; border: 1px solid #ffd54f; border-radius: 6px; background: rgba(255, 193, 7, 0.18); color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer; white-space: nowrap; }
+        .sell-item-btn:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
+        #shopModal .shop-card {
+            width: min(720px, 95vw); height: min(350px, 90vh); max-height: 90vh;
+            padding: 0; overflow: hidden; display: flex; flex-direction: column;
+        }
+        #shopModal .shop-layout {
+            display: grid; grid-template-columns: 128px minmax(0, 1fr);
+            height: 100%; min-height: 0; overflow: hidden;
+        }
+        #shopModal .shop-sidebar {
+            padding: 8px 6px; background: rgba(0, 0, 0, 0.32);
+            border-right: 1px solid rgba(255, 213, 79, 0.2);
+            overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
+        }
+        #shopModal .shop-tab { width: 100%; min-height: 28px; margin: 0; padding: 4px 6px; font-size: 8.5px; }
+        #shopModal .shop-sidebar-gold { padding: 4px 6px 7px; }
+        #shopModal .shop-main {
+            min-width: 0; height: 100%; min-height: 0; display: flex;
+            flex-direction: column; padding: 8px 10px; overflow: hidden;
+        }
+        #shopModal .shop-header { margin-bottom: 6px; }
+        #shopModal .shop-title { font-size: 12px; }
+        #shopModal .shop-grid {
+            flex: 1 1 auto; min-height: 0; overflow-y: auto;
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px; align-content: start; padding-right: 2px;
+        }
+        #shopModal .shop-item { min-height: 54px; padding: 5px 6px; grid-template-columns: 38px 1fr; }
+        #shopModal .shop-bottom-bar {
+            flex: 0 0 auto; margin-top: 6px; padding: 6px 8px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06); display: flex;
+            align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+        }
+        #shopModal .shop-bottom-inventory { align-items: center; }
+        @media (max-height: 400px) {
+            #shopModal .shop-header { margin-bottom: 3px; }
+            #shopModal .shop-main { padding-top: 5px; padding-bottom: 5px; }
+            #shopModal .shop-bottom-bar { margin-top: 3px; padding: 4px 6px; gap: 4px; }
+            #shopModal .shop-bottom-inventory { gap: 3px; }
+            #shopModal .shop-bottom-inventory .inventory-slot { width: 25px; height: 25px; font-size: 14px; }
+            #shopModal .shop-bottom-stats { gap: 3px 6px; font-size: 7px; }
+        }
+        @media (max-width: 520px) {
+            #shopModal .shop-layout { grid-template-columns: 104px minmax(0, 1fr); }
+            #shopModal .shop-main { padding: 6px; }
+            #shopModal .shop-title { font-size: 10px; }
+            #shopModal .shop-grid { grid-template-columns: 1fr; }
+            #shopModal .shop-item { min-height: 50px; }
+            #shopModal .shop-bottom-bar { gap: 5px; padding: 5px; }
+            #shopModal .shop-bottom-inventory .inventory-slot { width: 25px; height: 25px; font-size: 14px; }
+            #shopModal .sell-item-btn { padding: 3px 5px; font-size: 7px; }
+        }
         #kdaBar { position: absolute; top: 10px; right: 16px; height: 30px; z-index: 45; display: flex; align-items: center; gap: 7px; padding: 0 8px; border: 1px solid rgba(69,243,255,0.45); border-radius: 8px; background: rgba(11,14,22,0.92); font-size: 11px; font-weight: 900; pointer-events: auto; }
         #scoreboardBtn { height: 23px; padding: 0 7px; border: 1px solid #64b5f6; border-radius: 5px; background: rgba(33,150,243,0.2); color: #e3f2fd; font-weight: 900; cursor: pointer; }
         .scoreboard-card { width: min(720px, 96vw); }
@@ -580,6 +634,7 @@
                     <div class="shop-grid" id="shopItemGrid"></div>
                     <div class="shop-bottom-bar">
                         <div class="shop-bottom-inventory" id="shopBottomInventory" aria-label="Equipped items"></div>
+                        <button class="sell-item-btn" id="sellItemBtn" type="button" disabled>TAP SLOT TO SELL</button>
                         <div class="shop-bottom-stats" id="shopStats"></div>
                     </div>
                 </section>
@@ -732,6 +787,7 @@
             isRecalling: false, recallProgress: 0, recallDuration: 3000, recallCooldown: 0,
             damageRecoilTimer: 0, lastDamagedBy: null,
             lastHeroHitTimer: 0,
+            revealedTimer: 0,
             homeguardTimer: 0,
             items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0
         };
@@ -860,6 +916,30 @@
             }
         }
 
+        function triggerBotDeath() {
+            if (bot.state === 'DEAD') return;
+            bot.hp = 0;
+            bot.state = 'DEAD';
+            bot.lockedTarget = null;
+            bot.isRecalling = false;
+            bot.recallProgress = 0;
+            bot.vx = 0;
+            bot.vy = 0;
+            if (bot.lastDamagedBy === 'player' || bot.lastHeroHitTimer > 0) {
+                player.kills += 1;
+                grantXP(player, 180, true);
+                grantGold(player, 140);
+                spawnFloatingText(bot.x, bot.y - 90, 'KILL!', '#ffd54f', 22);
+                showAnnouncement('💎', 'ally', '⚔️ KO!', '🤖', 'enemy', '#45f3ff');
+            } else {
+                showAnnouncement('⚔️', 'ally', '⚔️ EXECUTED', '🤖', 'enemy', '#45f3ff');
+            }
+            bot.lastHeroHitTimer = 0;
+            bot.deaths += 1;
+            bot.respawnTimer = (7 + bot.level * 2.2) * 1000;
+            visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
+        }
+
         function dealDamage(target, amount, source, showNumber) {
             if (!target || target.hp <= 0) return;
 
@@ -882,10 +962,16 @@
             const actual = Math.min(amount, target.hp);
             target.hp = Math.max(0, target.hp - amount);
             target.lastDamagedBy = (source === 'bot_basic' || source === 'bot_skill') ? 'bot' : source;
-            if (target === bot && source === 'player') bot.lastHeroHitTimer = 5000;
+            if (['bot', 'bot_basic', 'bot_skill'].includes(source)) bot.revealedTimer = 2000;
+            if (target === bot && actual > 0) {
+                bot.revealedTimer = 2000;
+                if (source === 'player') bot.lastHeroHitTimer = 5000;
+            }
             if (target === player && (source === 'bot_basic' || source === 'bot_skill' || source === 'bot')) {
                 player.lastHeroHitTimer = 5000;
+                bot.revealedTimer = 2000;
             }
+            if (target === bot && target.hp <= 0) triggerBotDeath();
 
             if (target === player && actual > 0) {
                 if (source === 'bot_basic') player.damageLog.botBasic += actual;
@@ -948,6 +1034,7 @@
         }
 
         function grantXP(entity, amount, showPopup = true) {
+            if (entity.state === 'DEAD' || entity.hp <= 0) return;
             if (entity.level >= 12) {
                 entity.gold += amount * 0.42;
                 return;
@@ -960,6 +1047,7 @@
         }
 
         function grantGold(entity, amount) {
+            if (entity.state === 'DEAD' || entity.hp <= 0) return;
             entity.gold += amount;
             spawnFloatingText(entity.x, entity.y - 30, `+${amount}g`, '#ffd54f', 12);
         }
@@ -972,6 +1060,7 @@
 
         function buyItem(entity, itemId) {
             const item = SHOP_ITEMS.find(entry => entry.id === itemId);
+            if (entity === bot && (bot.state === 'DEAD' || bot.hp <= 0)) return false;
             if (!canBuyItem(entity, item)) return false;
 
             entity.gold -= item.cost;
@@ -987,7 +1076,9 @@
             entity.defense += item.def;
             if (item.hp > 0) {
                 entity.maxHp += item.hp;
-                entity.hp = Math.min(entity.maxHp, entity.hp + item.hp);
+                if (entity.state !== 'DEAD' && entity.hp > 0) {
+                    entity.hp = Math.min(entity.maxHp, entity.hp + item.hp);
+                }
             }
 
             if (entity === player) {
@@ -999,7 +1090,36 @@
             return true;
         }
 
+        function sellItem(slotIndex) {
+            const itemId = player.items[slotIndex];
+            const item = SHOP_ITEMS.find(entry => entry.id === itemId);
+            if (!item) return false;
+
+            player.items.splice(slotIndex, 1);
+            const refund = Math.floor(item.cost * 0.60);
+            player.gold += refund;
+            player.baseSpeed = Math.max(1.5, player.baseSpeed - item.spd);
+            if (!player.passiveActive) player.speed = player.baseSpeed;
+            player.basicAtkDmg = Math.max(1, player.basicAtkDmg - item.atk);
+            player.bonusAtk = Math.max(0, player.bonusAtk - item.atk);
+            player.aspdBonus = Math.max(0, player.aspdBonus - item.aspd);
+            player.critRate = Math.max(0, player.critRate - item.crit);
+            player.energyPower = Math.max(0, player.energyPower - item.energyPow);
+            player.epRecovery = Math.max(0, player.epRecovery - item.epRec);
+            player.defense = Math.max(0, player.defense - item.def);
+            if (item.hp > 0) {
+                player.maxHp = Math.max(100, player.maxHp - item.hp);
+                player.hp = Math.min(player.hp, player.maxHp);
+            }
+            selectedInventoryIndex = -1;
+            spawnFloatingText(player.x, player.y - 80, `🪙 Sold ${item.icon} +${refund}g`, '#ffd54f', 14);
+            lastShopRenderKey = '';
+            updateShopUI();
+            return true;
+        }
+
         let lastShopRenderKey = '';
+        let selectedInventoryIndex = -1;
         function updateShopUI() {
             const inventory = document.getElementById('shopBottomInventory');
             const quickBuy = document.getElementById('quickBuyBtn');
@@ -1009,8 +1129,19 @@
             const ownedItems = player.items.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean);
             inventory.innerHTML = Array.from({ length: 6 }, (_, index) => {
                 const item = ownedItems[index];
-                return `<div class="inventory-slot" title="${item ? item.name : 'Empty slot'}">${item ? item.icon : ''}</div>`;
+                return `<button type="button" class="inventory-slot ${selectedInventoryIndex === index && item ? 'selected-slot' : ''}" data-slot-index="${index}" title="${item ? item.name : 'Empty slot'}" ${item ? '' : 'disabled'}>${item ? item.icon : ''}</button>`;
             }).join('');
+
+            const selectedItem = player.items[selectedInventoryIndex]
+                ? SHOP_ITEMS.find(item => item.id === player.items[selectedInventoryIndex])
+                : null;
+            const sellButton = document.getElementById('sellItemBtn');
+            if (sellButton) {
+                sellButton.disabled = !selectedItem;
+                sellButton.innerText = selectedItem
+                    ? `SELL ${selectedItem.icon} (+${Math.floor(selectedItem.cost * 0.60)}g)`
+                    : 'TAP SLOT TO SELL';
+            }
 
             let nextItem = null;
             if (player.items.length < 6) {
@@ -1071,6 +1202,10 @@
             const modal = document.getElementById('shopModal');
             const isOpen = modal.classList.toggle('active');
             if (isOpen) updateShopUI();
+            else {
+                selectedInventoryIndex = -1;
+                updateShopUI();
+            }
         }
 
         function checkLevelUp(entity) {
@@ -1078,7 +1213,9 @@
                 entity.xp -= entity.xpToNext;
                 entity.level += 1;
                 entity.maxHp += 65;
-                entity.hp = Math.min(entity.maxHp, entity.hp + 65);
+                if (entity.state !== 'DEAD' && entity.hp > 0) {
+                    entity.hp = Math.min(entity.maxHp, entity.hp + 65);
+                }
                 entity.basicAtkDmg += 3.5;
                 entity.xpToNext = 100 + entity.level * 40;
 
@@ -1228,6 +1365,26 @@
                 updateShopUI();
             }
         });
+        document.getElementById('shopBottomInventory').addEventListener('click', (e) => {
+            const slot = e.target.closest('[data-slot-index]');
+            if (!slot || !player.items[Number(slot.dataset.slotIndex)]) return;
+            selectedInventoryIndex = Number(slot.dataset.slotIndex);
+            updateShopUI();
+        });
+        document.getElementById('shopBottomInventory').addEventListener('touchstart', (e) => {
+            const slot = e.target.closest('[data-slot-index]');
+            if (!slot || !player.items[Number(slot.dataset.slotIndex)]) return;
+            e.preventDefault(); e.stopPropagation();
+            selectedInventoryIndex = Number(slot.dataset.slotIndex);
+            updateShopUI();
+        }, { passive: false });
+        document.getElementById('sellItemBtn').addEventListener('click', () => {
+            if (selectedInventoryIndex >= 0) sellItem(selectedInventoryIndex);
+        });
+        document.getElementById('sellItemBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            if (selectedInventoryIndex >= 0) sellItem(selectedInventoryIndex);
+        }, { passive: false });
         document.getElementById('scoreboardBtn').addEventListener('click', () => {
             updateScoreboardUI();
             document.getElementById('scoreboardModal').classList.add('active');
@@ -1324,11 +1481,14 @@
             bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.recallCooldown = 0; bot.damageRecoilTimer = 0;
-            bot.lastDamagedBy = null;
+                        bot.lastDamagedBy = null;
             bot.lastHeroHitTimer = 0;
+            bot.revealedTimer = 0;
+            bot.recallCooldown = 0;
             bot.homeguardTimer = 0;
 
-            minions.length = 0; projectiles.length = 0; botProjectiles.length = 0;
+            minions.length = 0;
+ projectiles.length = 0; botProjectiles.length = 0;
             towerShots.length = 0; slowFields.length = 0; beamTracers.length = 0;
             basicAtkTracers.length = 0; botAtkTracers.length = 0; visualExplosions.length = 0;
             floatingTexts.length = 0;
@@ -1343,6 +1503,7 @@
             lastHudGold = -1; lastHudPlayerKills = -1; lastHudBotKills = -1;
             lastShopRenderKey = '';
             activeShopCategory = 'RECOMMENDED';
+            selectedInventoryIndex = -1;
             s3ChargingPC = false;
             announceTimer = 0;
             document.getElementById('scoreboardModal').classList.remove('active');
@@ -1402,7 +1563,8 @@
             for (let i = 0; i < e.changedTouches.length; i++) {
                 const touch = e.changedTouches[i];
                 const x = touch.clientX, y = touch.clientY;
-                if (x >= 20 && x <= 150 && y >= 20 && y <= 150) {
+                if (x >= 20 && x <= 150 && y >= 20 && y <= 150 &&
+                    !touch.target.closest('#shopModal') && !touch.target.closest('#scoreboardModal')) {
                     e.preventDefault();
                     camera.minimapJumpActive = true;
                     camera.minimapTouchId = touch.identifier;
@@ -1417,7 +1579,7 @@
                     targetEl.closest('#miniInventoryRow') || targetEl.closest('#quickBuyBtn') ||
                     targetEl.closest('#shopModal') || targetEl.closest('#kdaBar') ||
                     targetEl.closest('#scoreboardBtn') || targetEl.closest('#scoreboardModal')) continue;
-                if (!camera.isPanning) {
+                if (player.state === 'DEAD' && !camera.isPanning) {
                     e.preventDefault();
                     camera.isPanning = true;
                     camera.panTouchId = touch.identifier;
@@ -1490,7 +1652,14 @@
         window.addEventListener('touchend', (e) => {
             for (let i = 0; i < e.changedTouches.length; i++) {
                 const touch = e.changedTouches[i];
-                if (camera.minimapJumpActive && touch.identifier === camera.minimapTouchId) { camera.minimapJumpActive = false; camera.minimapTouchId = null; }
+                if (camera.minimapJumpActive && touch.identifier === camera.minimapTouchId) {
+                    camera.minimapJumpActive = false;
+                    camera.minimapTouchId = null;
+                    if (player.state !== 'DEAD') {
+                        camera.offsetX = 0;
+                        camera.offsetY = 0;
+                    }
+                }
                 if (joyActive && touch.identifier === joyTouchId) { joyActive = false; joyTouchId = null; joyKnob.style.transform = 'translate(0px, 0px)'; player.dx = 0; player.dy = 0; }
                 if (activeAim.skillId && touch.identifier === activeAim.touchId) resolveSkillRelease();
                 if (camera.isPanning && touch.identifier === camera.panTouchId) { camera.isPanning = false; camera.panTouchId = null; }
@@ -1587,7 +1756,7 @@
 
         function getSmartTargetCoords(maxRange) {
             let best = null, bestDist = Infinity;
-            if (bot.state !== 'DEAD' && bot.hp > 0) {
+            if (bot.state !== 'DEAD' && bot.hp > 0 && isVisibleToAllies(bot.x, bot.y)) {
                 const dBot = Math.hypot(bot.x - player.x, bot.y - player.y);
                 if (dBot <= maxRange + bot.radius) { best = bot; bestDist = dBot; }
             }
@@ -1665,7 +1834,7 @@
                     if (d <= range + m.radius) validTargets.push({ entity: m, type: 'minion', dist: d });
                 }
             }
-            if (bot.state !== 'DEAD' && bot.hp > 0) {
+            if (bot.state !== 'DEAD' && bot.hp > 0 && isVisibleToAllies(bot.x, bot.y)) {
                 const d = Math.hypot(bot.x - player.x, bot.y - player.y);
                 if (d <= range + bot.radius) validTargets.push({ entity: bot, type: 'hero', dist: d });
             }
@@ -1898,13 +2067,13 @@
                 if (m.hp <= 0) {
                     if (m.team === 'enemy') {
                         const dP = Math.hypot(player.x - m.x, player.y - m.y);
-                        if (dP <= 450) {
+                        if (player.state !== 'DEAD' && player.hp > 0 && dP <= 450) {
                             grantXP(player, 35);
                             grantGold(player, m.lastDamagedBy === 'player' ? 28 : 15);
                         }
                     } else if (m.team === 'ally') {
                         const dB = Math.hypot(bot.x - m.x, bot.y - m.y);
-                        if (dB <= 450) {
+                        if (bot.state !== 'DEAD' && bot.hp > 0 && dB <= 450) {
                             grantXP(bot, 35);
                             grantGold(bot, m.lastDamagedBy === 'bot' ? 28 : 15);
                         }
@@ -2048,7 +2217,8 @@
 
         // ====== PHASE 10.2.1: OVERHAULED BOT BRAIN ======
         function updateBot(dt) {
-            if (bot.hp <= 0) {
+            if (bot.hp <= 0 || bot.state === 'DEAD') {
+                if (bot.state !== 'DEAD') triggerBotDeath();
                 if (bot.state !== 'DEAD') {
                     if (bot.lastDamagedBy === 'player' || bot.lastHeroHitTimer > 0) {
                         player.kills += 1;
@@ -2084,6 +2254,8 @@
                     bot.damageRecoilTimer = 0;
                     bot.lastDamagedBy = null;
                     bot.lastHeroHitTimer = 0;
+                    bot.revealedTimer = 0;
+                    bot.recallCooldown = 0;
                 }
                 return;
             }
@@ -2229,6 +2401,12 @@
                 Math.hypot(player.x - s.x, player.y - s.y) <= s.range - 10 &&
                 !minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range)
             );
+
+            const playerAttackedBotRecently = bot.lastHeroHitTimer > 3200 &&
+                player.state !== 'DEAD' && player.hp > 0 && !player.isInvincible &&
+                !underUntankedAllyTower && !playerUnderSafeTower &&
+                Math.hypot(player.x - bot.x, player.y - bot.y) <= bot.autoAtkRange + 65;
+            if (playerAttackedBotRecently) bot.lockedTarget = player;
 
             let target = null;
             let bestDist = Infinity;
@@ -2437,6 +2615,7 @@
             const dtSec = deltaTime / 1000;
             player.lastHeroHitTimer = Math.max(0, player.lastHeroHitTimer - deltaTime);
             bot.lastHeroHitTimer = Math.max(0, bot.lastHeroHitTimer - deltaTime);
+            bot.revealedTimer = Math.max(0, bot.revealedTimer - deltaTime);
 
             if (announceTimer > 0) {
                 announceTimer -= deltaTime;
@@ -2952,6 +3131,7 @@
             }
 
             minions.forEach(m => {
+                if (m.team === 'enemy' && !isVisibleToAllies(m.x, m.y)) return;
                 const alpha = m.spawnAlpha !== undefined ? m.spawnAlpha : 1;
                 ctx.globalAlpha = alpha;
                 const baseColor = m.team === 'ally' ? '#2196f3' : '#e53935';
@@ -2972,7 +3152,7 @@
                 ctx.globalAlpha = 1;
             });
 
-            if (bot.state !== 'DEAD') {
+            if (bot.state !== 'DEAD' && isVisibleToAllies(bot.x, bot.y)) {
                 ctx.save(); ctx.translate(bot.x, bot.y); ctx.rotate(bot.angle);
                 ctx.beginPath(); ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
                 ctx.fillStyle = '#660e4f'; ctx.fill();
@@ -3088,6 +3268,7 @@
         }
 
         function isVisibleToAllies(wx, wy) {
+            if (Math.hypot(wx - bot.x, wy - bot.y) < 5 && bot.revealedTimer > 0) return true;
             if (player.state !== 'DEAD' && Math.hypot(wx - player.x, wy - player.y) <= 480) return true;
             for (const s of structures) {
                 if (s.team === 'ally' && s.hp > 0 && Math.hypot(wx - s.x, wy - s.y) <= 420) return true;
