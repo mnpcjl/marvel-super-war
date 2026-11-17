@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 10.2.4: Broadcast & Death Recap</title>
+    <title>Marvel Super War - Phase 10.2.5: Combat & Minion Upgrade</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,7 +20,7 @@
         .control-panel { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
         .interactive { pointer-events: auto; }
         .joystick-container {
-            position: absolute; bottom: 40px; left: 40px;
+            position: absolute; bottom: 40px; left: 40px; z-index: 10;
             width: 130px; height: 130px; background: rgba(255,255,255,0.08);
             border: 2px solid rgba(255,255,255,0.2); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -31,7 +31,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
         .abilities-container {
-            position: absolute; bottom: 0; right: 0;
+            position: absolute; bottom: 0; right: 0; z-index: 10;
             width: 340px; height: 270px; pointer-events: none;
         }
         .skill-btn {
@@ -74,7 +74,7 @@
             background: #ffc107; width: 0%; z-index: 3;
         }
         .mini-atk-btn {
-            position: absolute; width: 44px; height: 44px;
+            position: absolute; z-index: 10; width: 44px; height: 44px;
             border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, rgba(80, 20, 36, 0.9), rgba(22, 8, 14, 0.96));
             border: 2px solid rgba(255, 107, 129, 0.85);
@@ -88,7 +88,7 @@
         #atkMinionBtn { bottom: 22px; right: 118px; }
         #atkTowerBtn  { bottom: 118px; right: 22px; }
         #recallBtn {
-            position: absolute; bottom: 24px; right: 262px;
+            position: absolute; z-index: 10; bottom: 24px; right: 262px;
             width: 52px; height: 52px; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, rgba(25, 90, 175, 0.92), rgba(10, 28, 60, 0.96));
             border: 2.5px solid #64b5f6;
@@ -149,6 +149,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
             font-size: 13px;
             font-weight: 800;
+            z-index: 40;
         }
         .kills-ally { color: #45f3ff; }
         .kills-enemy { color: #ff4560; }
@@ -175,10 +176,39 @@
             box-shadow: 0 0 12px rgba(255, 213, 79, 0.2), inset 0 0 6px rgba(255, 213, 79, 0.1);
             pointer-events: auto;
             cursor: pointer;
+            z-index: 40;
         }
         .gold-icon { font-size: 13px; }
         .gold-amount { color: #ffd54f; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; }
         .shop-tag { font-size: 8px; font-weight: 800; color: #90a4ae; background: rgba(255,255,255,0.08); padding: 2px 5px; border-radius: 6px; }
+        .enemy-respawn-badge {
+            position: absolute;
+            top: 10px; left: calc(50% + 84px);
+            height: 30px; padding: 0 9px;
+            border-radius: 8px;
+            background: rgba(45, 10, 18, 0.94);
+            border: 1.5px solid #ff4560;
+            color: #ffccd5;
+            font-size: 11px; font-weight: 900;
+            display: none; align-items: center; gap: 5px;
+            box-shadow: 0 0 12px rgba(255, 69, 96, 0.45);
+            pointer-events: none; z-index: 45;
+        }
+        .enemy-respawn-badge.active { display: flex; }
+        .death-dim-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(4, 7, 14, 0.52);
+            clip-path: polygon(
+                0% 0%, 100% 0%, 100% 100%, 0% 100%,
+                0% 20px, 20px 20px, 20px 150px, 150px 150px, 150px 20px, 0% 20px
+            );
+            opacity: 0;
+            pointer-events: none;
+            z-index: 25;
+            transition: opacity 0.3s ease-out;
+        }
+        .death-dim-overlay.active { opacity: 1; }
         .game-over-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.88); z-index: 100;
@@ -210,7 +240,7 @@
             font-size: 18px; font-weight: 900; line-height: 1;
             display: none; align-items: center; justify-content: center;
             box-shadow: 0 0 14px rgba(255, 213, 79, 0.9), inset 0 0 6px rgba(255, 255, 255, 0.6);
-            pointer-events: auto; cursor: pointer; z-index: 15;
+            pointer-events: auto; cursor: pointer; z-index: 10;
             touch-action: none;
             animation: pulseUp 0.75s infinite alternate;
             padding: 0;
@@ -292,7 +322,7 @@
             border-radius: 10px; padding: 8px 12px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 69, 96, 0.3);
             display: none; flex-direction: column; gap: 5px;
-            pointer-events: auto; z-index: 44;
+            pointer-events: auto; z-index: 46;
         }
         .death-recap-panel.active { display: flex; }
         .recap-header {
@@ -304,6 +334,81 @@
         .recap-row-top { display: flex; justify-content: space-between; font-weight: 700; }
         .recap-bar-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
         .recap-bar-fill { height: 100%; width: 0%; border-radius: 3px; }
+
+        .mini-inventory-row {
+            position: absolute;
+            top: 198px; left: 20px; width: 130px;
+            display: flex; gap: 2px; z-index: 40;
+            pointer-events: none;
+        }
+        .inventory-slot {
+            width: 19px; height: 19px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(11, 14, 22, 0.88);
+            border: 1px solid rgba(255, 213, 79, 0.35);
+            font-size: 12px;
+        }
+        .quick-buy-btn {
+            position: absolute; top: 222px; left: 20px; width: 130px; min-height: 34px;
+            display: none; align-items: center; justify-content: center; gap: 7px;
+            padding: 4px 7px; border-radius: 8px;
+            background: linear-gradient(135deg, rgba(50, 38, 12, 0.96), rgba(18, 16, 12, 0.98));
+            border: 1.5px solid #ffd54f; color: #fff8e1;
+            box-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
+            pointer-events: auto; cursor: pointer; z-index: 40; touch-action: none;
+            text-align: left;
+        }
+        .quick-buy-btn.visible { display: flex; animation: pulseUp 0.75s infinite alternate; }
+        .qb-icon { font-size: 18px; }
+        .qb-text { display: flex; flex-direction: column; min-width: 0; }
+        .qb-title { font-size: 8px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .qb-price { font-size: 8px; color: #ffd54f; font-weight: 800; }
+        .shop-modal {
+            position: fixed; inset: 0; z-index: 65;
+            display: none; align-items: center; justify-content: center;
+            padding: 12px; background: rgba(0, 0, 0, 0.66);
+            pointer-events: auto;
+        }
+        .shop-modal.active { display: flex; }
+        .shop-card {
+            width: min(620px, 96vw); max-height: 92vh; overflow-y: auto;
+            padding: 14px; border-radius: 14px;
+            background: linear-gradient(145deg, rgba(21, 29, 43, 0.98), rgba(8, 12, 20, 0.99));
+            border: 1.5px solid rgba(255, 213, 79, 0.7);
+            box-shadow: 0 0 28px rgba(255, 213, 79, 0.22), 0 12px 40px rgba(0, 0, 0, 0.7);
+        }
+        .shop-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .shop-title { flex: 1; color: #ffd54f; font-size: 14px; font-weight: 900; letter-spacing: 0.6px; }
+        .shop-gold, .shop-slots { font-size: 10px; font-weight: 800; color: #fff; }
+        .shop-close {
+            width: 30px; height: 30px; border: 1px solid #ff6b81; border-radius: 7px;
+            background: rgba(90, 15, 30, 0.8); color: #fff; font-weight: 900; cursor: pointer;
+        }
+        .shop-stats { display: flex; flex-wrap: wrap; gap: 5px; padding: 7px; margin-bottom: 10px;
+            border-radius: 8px; background: rgba(255,255,255,0.05); font-size: 9px; color: #d9e3f0; }
+        .shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+        .shop-item {
+            display: grid; grid-template-columns: 32px 1fr; gap: 2px 7px; align-items: center;
+            min-height: 72px; padding: 7px; border-radius: 8px;
+            background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .shop-item-icon { grid-row: span 3; font-size: 22px; text-align: center; }
+        .shop-item-cat { color: #64b5f6; font-size: 7px; font-weight: 900; letter-spacing: 0.7px; }
+        .shop-item-name { color: #fff; font-size: 9px; font-weight: 900; }
+        .shop-item-desc { color: #aeb9c7; font-size: 8px; }
+        .shop-buy {
+            grid-column: 2; justify-self: start; padding: 3px 8px; border-radius: 5px;
+            border: 1px solid #ffd54f; background: rgba(255, 193, 7, 0.2);
+            color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer;
+        }
+        .shop-buy:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
+        @media (max-width: 520px) {
+            .shop-card { padding: 9px; }
+            .shop-title { font-size: 11px; }
+            .shop-stats { font-size: 8px; }
+            .shop-grid { gap: 5px; }
+            .shop-item { padding: 5px; }
+        }
 
         #orientation-warning {
             position: fixed; inset: 0; background: #0b0c10; z-index: 99999;
@@ -331,6 +436,7 @@
     <canvas id="gameCanvas"></canvas>
 
     <div class="control-panel" id="controlPanel">
+        <div class="death-dim-overlay" id="deathDimOverlay"></div>
         <div class="joystick-container interactive" id="joyContainer">
             <div class="joystick-knob" id="joyKnob"></div>
         </div>
@@ -345,7 +451,7 @@
             <button class="skill-btn" id="s2Btn"><div class="cd-overlay" id="s2CD"></div><span class="btn-icon">☢️</span>RADIATION<span class="hotkey">[E]</span><span class="skill-rank-label" id="s2RankText">Lv.0/4</span></button>
             <button class="skill-btn" id="s3Btn">
                 <div class="cd-overlay" id="s3CD"></div>
-                <div class="ammo-badge" id="s3AmmoBadge">L3</div>
+                <div class="ammo-badge" id="s3AmmoBadge">L4</div>
                 <div class="recharge-bar" id="s3RechargeBar"></div>
                 <span class="btn-icon">☀️</span>SOLAR BEAM<span class="hotkey">[R]</span><span class="skill-rank-label" id="s3RankText">Lv.0/4</span>
             </button>
@@ -368,11 +474,19 @@
             <span class="kills-enemy" id="enemyKills">0</span>
         </div>
 
+        <div class="enemy-respawn-badge" id="enemyRespawnBadge">
+            <span>🤖</span>
+            <span id="enemyRespawnText">0s</span>
+        </div>
+
         <div class="gold-shop-pill interactive" id="goldShopBtn">
             <span class="gold-icon">🪙</span>
             <span class="gold-amount" id="goldDisplay">0</span>
             <span class="shop-tag">SHOP</span>
         </div>
+
+        <div class="mini-inventory-row" id="miniInventoryRow" aria-label="Inventory"></div>
+        <button class="quick-buy-btn" id="quickBuyBtn" type="button"></button>
 
         <div class="announce-banner" id="announceBanner">
             <div class="announce-unit ally" id="announceLeftUnit">💎</div>
@@ -408,6 +522,19 @@
                 <div class="recap-row-top"><span>👾 Enemy Minions</span><span id="recapMinionLabel">0 (0%)</span></div>
                 <div class="recap-bar-bg"><div class="recap-bar-fill" id="recapMinionBar" style="background:#45f3ff;"></div></div>
             </div>
+        </div>
+    </div>
+
+    <div class="shop-modal" id="shopModal" role="dialog" aria-modal="true" aria-label="MSW Armory">
+        <div class="shop-card">
+            <div class="shop-header">
+                <div class="shop-title">🛒 MSW ARMORY — LEVEL 1</div>
+                <span class="shop-gold" id="shopGoldDisplay">🪙 0</span>
+                <span class="shop-slots" id="shopSlotDisplay">0/6</span>
+                <button class="shop-close" id="closeShopBtn" type="button" aria-label="Close shop">✕</button>
+            </div>
+            <div class="shop-stats" id="shopStats"></div>
+            <div class="shop-grid" id="shopItemGrid"></div>
         </div>
     </div>
 
@@ -454,7 +581,8 @@
             empoweredTimer: 0,
             skillPoints: 1,
             skillRanks: { s1: 0, s2: 0, s3: 0 },
-            damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }
+            damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 },
+            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, epRecovery: 0, defense: 0
         };
 
         const walls = [
@@ -481,6 +609,18 @@
 
         const minions = [];
 
+        const SHOP_ITEMS = [
+            { id: 'core', cat: 'ENERGY', name: 'Energy Core', icon: '🔮', cost: 85, desc: '+25% EP Recovery (+2 HP/s)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 0, unique: false },
+            { id: 'shoes', cat: 'SPEED', name: 'Light Running Shoes', icon: '👟', cost: 200, desc: 'Passive - Fast: +25 Movement Speed', spd: 0.35, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true },
+            { id: 'pistol', cat: 'PHYSICS', name: 'SHIELD Pistol', icon: '🔫', cost: 200, desc: '+10% Attack Speed', spd: 0, atk: 0, aspd: 0.10, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
+            { id: 'gear', cat: 'DEFENSE', name: 'SHIELD Combat Gear', icon: '🛡️', cost: 200, desc: '+45 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 45, hp: 0, unique: false },
+            { id: 'blade', cat: 'PHYSICS', name: 'Army Blade', icon: '🗡️', cost: 235, desc: '+20 Physical Attack (+8 Base ATK)', spd: 0, atk: 8, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
+            { id: 'blood', cat: 'DEFENSE', name: 'Bloodstone', icon: '♦️', cost: 265, desc: '+300 Stamina (+210 Max HP)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 210, unique: false },
+            { id: 'hammer', cat: 'PHYSICS', name: "Warrior's Hammer", icon: '🔨', cost: 270, desc: '+8% Critical Rate (1.75x Crit Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
+            { id: 'rune', cat: 'ENERGY', name: 'Mystic Rune', icon: '📜', cost: 290, desc: '+40 Energy Power (+18% Skill Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 40, epRec: 0, def: 0, hp: 0, unique: false }
+        ];
+        const RECOMMENDED_BUILD = ['shoes', 'blade', 'rune', 'gear', 'blood', 'hammer'];
+
         function generateDensePath(points, spacing) {
             const path = [];
             for (let i = 0; i < points.length - 1; i++) {
@@ -497,7 +637,7 @@
         }
 
         const laneManager = {
-            waveTimer: 5000, waveInterval: 20000, minionCap: 24,
+            waveTimer: 5000, waveInterval: 28000, minionCap: 24,
             spawnQueue: [],
             allyTopPath: generateDensePath([{ x: 400, y: 2000 }, { x: 400, y: 400 }, { x: 2000, y: 400 }], 40),
             allyMidPath: generateDensePath([{ x: 400, y: 2000 }, { x: 2000, y: 400 }], 40),
@@ -509,7 +649,7 @@
 
         const bot = {
             x: 1920, y: 480, radius: 24, team: 'enemy', level: 1,
-            baseSpeed: 2.55, speed: 2.55, angle: (3 * Math.PI) / 4,
+            baseSpeed: 2.55, speed: 2.55, angle: (3 * Math.PI) / 4, vx: 0, vy: 0,
             hp: 550, maxHp: 550, autoAtkRange: 245,
             basicAtkDmg: 10,
             xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
@@ -521,7 +661,8 @@
             isRecalling: false, recallProgress: 0, recallDuration: 3000,
             damageRecoilTimer: 0, lastDamagedBy: null,
             lastHeroHitTimer: 0,
-            homeguardTimer: 0
+            homeguardTimer: 0,
+            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, epRecovery: 0, defense: 0
         };
 
         let lastBotHp = bot.hp;
@@ -531,18 +672,31 @@
 
         function createMinion(team, laneIndex, index) {
             let path;
+            let opposingTower;
+            let allThreeTowersDown;
             if (team === 'ally') {
                 path = laneIndex === 0 ? laneManager.allyTopPath : laneIndex === 1 ? laneManager.allyMidPath : laneManager.allyBotPath;
+                opposingTower = laneIndex === 0 ? enemyTopTower : laneIndex === 1 ? enemyMidTower : enemyBotTower;
+                allThreeTowersDown = enemyTopTower.hp <= 0 && enemyMidTower.hp <= 0 && enemyBotTower.hp <= 0;
             } else {
                 path = laneIndex === 0 ? laneManager.enemyTopPath : laneIndex === 1 ? laneManager.enemyMidPath : laneManager.enemyBotPath;
+                opposingTower = laneIndex === 0 ? allyTopTower : laneIndex === 1 ? allyMidTower : allyBotTower;
+                allThreeTowersDown = allyTopTower.hp <= 0 && allyMidTower.hp <= 0 && allyBotTower.hp <= 0;
             }
+            const laneTowerDown = opposingTower.hp <= 0;
+            const isSuper = (laneTowerDown && index === 0) || allThreeTowersDown;
             const startIdx = 2;
             return {
                 x: path[startIdx].x, y: path[startIdx].y,
-                radius: 14, hp: 100, maxHp: 100,
+                radius: isSuper ? 20 : 14,
+                hp: isSuper ? 250 : 100,
+                maxHp: isSuper ? 250 : 100,
                 speed: 1.15,
-                attackRange: 45, attackInterval: 900, attackCd: 0, dmg: 12,
+                attackRange: isSuper ? 55 : 45,
+                attackInterval: 900, attackCd: 0,
+                dmg: isSuper ? 26 : 12,
                 team: team, path: path, waypointIdx: startIdx,
+                isSuper: isSuper,
                 lastDamagedBy: null,
                 spawnAlpha: 0
             };
@@ -639,8 +793,12 @@
             if (!target || target.hp <= 0) return;
 
             const isStructure = structures.includes(target);
-            if (isStructure) {
-                const attackerTeam = (source === 'player' || source === 'ally_minion' || source === 'ally_tower') ? 'ally' : 'enemy';
+            const isHeroAttacker = ['player', 'bot', 'bot_basic', 'bot_skill'].includes(source);
+            if ((target === player || target === bot) && target.defense > 0) {
+                amount *= 180 / (180 + target.defense);
+            }
+            if (isStructure && isHeroAttacker) {
+                const attackerTeam = source === 'player' ? 'ally' : 'enemy';
                 const hasFriendlyMinion = minions.some(m =>
                     m.team === attackerTeam && m.hp > 0 &&
                     Math.hypot(m.x - target.x, m.y - target.y) <= target.range
@@ -705,12 +863,12 @@
                 target.rewarded = true;
                 visualExplosions.push({ x: target.x, y: target.y, radius: 80, duration: 350 });
                 if (target.team === 'enemy') {
-                    grantGold(player, 150);
+                    grantGold(player, 105);
                     grantXP(player, 120, true);
-                    spawnFloatingText(target.x, target.y - 80, 'TOWER DESTROYED! +150g', '#ffd54f', 20);
+                    spawnFloatingText(target.x, target.y - 80, 'TOWER DESTROYED! +105g', '#ffd54f', 20);
                     showAnnouncement('💎', 'ally', '💥 DESTROYED', '🗼', 'enemy', '#ffd54f');
                 } else if (target.team === 'ally') {
-                    grantGold(bot, 150);
+                    grantGold(bot, 105);
                     grantXP(bot, 120, true);
                     spawnFloatingText(target.x, target.y - 80, 'ALLY TOWER LOST!', '#ff4560', 20);
                     showAnnouncement('🤖', 'enemy', '💥 DESTROYED', '🗼', 'ally', '#ff4560');
@@ -720,7 +878,7 @@
 
         function grantXP(entity, amount, showPopup = true) {
             if (entity.level >= 12) {
-                entity.gold += amount * 0.6;
+                entity.gold += amount * 0.42;
                 return;
             }
             entity.xp += amount;
@@ -733,6 +891,94 @@
         function grantGold(entity, amount) {
             entity.gold += amount;
             spawnFloatingText(entity.x, entity.y - 30, `+${amount}g`, '#ffd54f', 12);
+        }
+
+        function canBuyItem(entity, item) {
+            if (!item || entity.items.length >= 6 || entity.gold < item.cost) return false;
+            if (item.unique && entity.items.includes(item.id)) return false;
+            return true;
+        }
+
+        function buyItem(entity, itemId) {
+            const item = SHOP_ITEMS.find(entry => entry.id === itemId);
+            if (!canBuyItem(entity, item)) return false;
+
+            entity.gold -= item.cost;
+            entity.items.push(item.id);
+            entity.baseSpeed += item.spd;
+            if (!entity.passiveActive) entity.speed = entity.baseSpeed;
+            entity.basicAtkDmg += item.atk;
+            entity.aspdBonus += item.aspd;
+            entity.critRate = Math.min(1.0, entity.critRate + item.crit);
+            entity.energyPower += item.energyPow;
+            entity.epRecovery += item.epRec;
+            entity.defense += item.def;
+            if (item.hp > 0) {
+                entity.maxHp += item.hp;
+                entity.hp = Math.min(entity.maxHp, entity.hp + item.hp);
+            }
+
+            if (entity === player) {
+                spawnFloatingText(player.x, player.y - 80, `${item.icon} ${item.name}!`, '#ffd54f', 14);
+                updateShopUI();
+            } else if (entity === bot) {
+                spawnFloatingText(bot.x, bot.y - 80, `🤖 ${item.icon}`, '#ff8a80', 13);
+            }
+            return true;
+        }
+
+        let lastShopRenderKey = '';
+        function updateShopUI() {
+            const inventory = document.getElementById('miniInventoryRow');
+            const quickBuy = document.getElementById('quickBuyBtn');
+            const grid = document.getElementById('shopItemGrid');
+            if (!inventory || !quickBuy || !grid) return;
+
+            const ownedItems = player.items.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean);
+            inventory.innerHTML = Array.from({ length: 6 }, (_, index) => {
+                const item = ownedItems[index];
+                return `<div class="inventory-slot" title="${item ? item.name : 'Empty slot'}">${item ? item.icon : ''}</div>`;
+            }).join('');
+
+            let nextItem = null;
+            if (player.items.length < 6) {
+                const preferredId = RECOMMENDED_BUILD.find(id => !player.items.includes(id));
+                nextItem = SHOP_ITEMS.find(item => item.id === preferredId && canBuyItem(player, item));
+                if (!nextItem) nextItem = SHOP_ITEMS.find(item => canBuyItem(player, item));
+            }
+            if (nextItem) {
+                quickBuy.innerHTML = `<span class="qb-icon">${nextItem.icon}</span><span class="qb-text"><span class="qb-title">${nextItem.name}</span><span class="qb-price">🪙 ${nextItem.cost}</span></span>`;
+                quickBuy.dataset.itemId = nextItem.id;
+                quickBuy.classList.add('visible');
+            } else {
+                quickBuy.classList.remove('visible');
+                quickBuy.removeAttribute('data-item-id');
+                quickBuy.innerHTML = '';
+            }
+
+            const stats = document.getElementById('shopStats');
+            if (stats) {
+                stats.innerHTML = `<span>⚔️ ATK ${Math.round(player.basicAtkDmg)}</span><span>⚡ ASPD ${(1 + player.aspdBonus).toFixed(2)}x</span><span>🎯 CRIT ${Math.round(player.critRate * 100)}%</span><span>📜 ENG +${player.energyPower}</span><span>🛡️ DEF ${player.defense}</span><span>❤️ HP ${Math.round(player.hp)}/${player.maxHp}</span><span>👟 SPD ${player.baseSpeed.toFixed(2)}</span><span>🔮 EP REC ${Math.round(player.epRecovery * 100)}%</span>`;
+            }
+            document.getElementById('shopGoldDisplay').innerText = `🪙 ${Math.floor(player.gold)}`;
+            document.getElementById('shopSlotDisplay').innerText = `${player.items.length}/6`;
+
+            const renderKey = `${Math.floor(player.gold)}|${player.items.join(',')}|${player.basicAtkDmg}|${player.aspdBonus}|${player.critRate}|${player.energyPower}|${player.defense}|${player.maxHp}|${player.baseSpeed}|${player.epRecovery}`;
+            if (renderKey !== lastShopRenderKey) {
+                lastShopRenderKey = renderKey;
+                grid.innerHTML = SHOP_ITEMS.map(item => {
+                    const canBuy = canBuyItem(player, item);
+                    const ownedUnique = item.unique && player.items.includes(item.id);
+                    const disabledLabel = ownedUnique ? 'MAXED' : (player.items.length >= 6 ? 'FULL' : `BUY ${item.cost}g`);
+                    return `<div class="shop-item"><div class="shop-item-icon">${item.icon}</div><div class="shop-item-cat">${item.cat}</div><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div><button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? `BUY ${item.cost}g` : disabledLabel}</button></div>`;
+                }).join('');
+            }
+        }
+
+        function toggleShop() {
+            const modal = document.getElementById('shopModal');
+            const isOpen = modal.classList.toggle('active');
+            if (isOpen) updateShopUI();
         }
 
         function checkLevelUp(entity) {
@@ -750,7 +996,7 @@
                 spawnFloatingText(entity.x, entity.y - 70, 'LEVEL UP!', '#00ff66', 18);
             }
             if (entity.level >= 12 && entity.xp > 0) {
-                entity.gold += entity.xp * 0.6;
+                entity.gold += entity.xp * 0.42;
                 entity.xp = 0;
             }
             if (entity === player) updateSkillUpgradeUI();
@@ -762,9 +1008,9 @@
             }
             const r = player.skillRanks[sk];
             if (sk === 's3') {
-                if (r === 0 && player.level >= 3) return true;
-                if (r === 1 && player.level >= 6) return true;
-                if (r === 2 && player.level >= 9) return true;
+                if (r === 0 && player.level >= 4) return true;
+                if (r === 1 && player.level >= 7) return true;
+                if (r === 2 && player.level >= 10) return true;
                 if (r === 3 && player.level >= 12) return true;
                 return false;
             } else {
@@ -839,13 +1085,17 @@
 
         function getS3Damage(isMinion, chargePct) {
             const r = Math.max(1, player.skillRanks.s3);
-            const base = (isMinion ? 105 : 130) + (r - 1) * 40 + (player.level - 1) * 5;
+            const rankBaseHero = [0, 130, 210, 310, 440][r] || 130;
+            const rankBaseMinion = [0, 105, 165, 240, 340][r] || 105;
+            const base = (isMinion ? rankBaseMinion : rankBaseHero) + (player.level - 1) * 6;
             const mult = 0.4 + 0.6 * (chargePct !== undefined ? chargePct : 1.0);
-            return base * mult;
+            const energyMult = 1 + (player.energyPower / 40) * 0.18;
+            return base * mult * energyMult;
         }
 
         function getBotSkillDamage() {
-            return 45 + (bot.level - 1) * 5;
+            const energyMult = 1 + (bot.energyPower / 40) * 0.18;
+            return (45 + (bot.level - 1) * 5) * energyMult;
         }
 
         function formatTime(sec) {
@@ -872,6 +1122,28 @@
         }
 
         document.getElementById('restartBtn').addEventListener('click', restartGame);
+        const goldShopBtn = document.getElementById('goldShopBtn');
+        goldShopBtn.addEventListener('click', toggleShop);
+        goldShopBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); toggleShop(); }, { passive: false });
+        document.getElementById('closeShopBtn').addEventListener('click', toggleShop);
+        document.getElementById('closeShopBtn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); toggleShop(); }, { passive: false });
+        document.getElementById('quickBuyBtn').addEventListener('click', (e) => {
+            const itemId = e.currentTarget.dataset.itemId;
+            if (itemId) buyItem(player, itemId);
+        });
+        document.getElementById('quickBuyBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const itemId = e.currentTarget.dataset.itemId;
+            if (itemId) buyItem(player, itemId);
+        }, { passive: false });
+        document.getElementById('shopItemGrid').addEventListener('click', (e) => {
+            const button = e.target.closest('.shop-buy');
+            if (button) buyItem(player, button.dataset.itemId);
+        });
+        document.getElementById('shopItemGrid').addEventListener('touchstart', (e) => {
+            const button = e.target.closest('.shop-buy');
+            if (button) { e.preventDefault(); e.stopPropagation(); buyItem(player, button.dataset.itemId); }
+        }, { passive: false });
         const deathToggleBtn = document.getElementById('deathToggleBtn');
         function toggleDeathRecap(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -884,9 +1156,13 @@
 
         function restartGame() {
             player.x = 400; player.y = 2000;
+            player.angle = -Math.PI / 4;
             player.hp = 550; player.maxHp = 550; player.level = 1;
             player.xp = 0; player.xpToNext = 140; player.gold = 0;
             player.kills = 0; player.deaths = 0; player.basicAtkDmg = 10;
+            player.baseSpeed = 2.75; player.speed = 2.75;
+            player.items = []; player.aspdBonus = 0; player.critRate = 0; player.energyPower = 0;
+            player.epRecovery = 0; player.defense = 0;
             player.isInvincible = false; player.passiveActive = false;
             player.speed = player.baseSpeed; player.attackInterval = 0;
             player.attackStunTimer = 0; player.attackFacingTimer = 0;
@@ -922,9 +1198,14 @@
             enemyNexus.announceCd = 0;
 
             bot.x = 1920; bot.y = 480;
+            bot.angle = (3 * Math.PI) / 4;
+            bot.vx = 0; bot.vy = 0;
             bot.hp = 550; bot.maxHp = 550; bot.level = 1;
             bot.xp = 0; bot.xpToNext = 140; bot.gold = 0;
             bot.kills = 0; bot.deaths = 0; bot.basicAtkDmg = 10;
+            bot.baseSpeed = 2.55; bot.speed = 2.55;
+            bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0;
+            bot.epRecovery = 0; bot.defense = 0;
             bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
@@ -945,13 +1226,17 @@
             matchStartTime = performance.now();
             lastTimerSecond = -1;
             lastHudGold = -1; lastHudPlayerKills = -1; lastHudBotKills = -1;
+            lastShopRenderKey = '';
             s3ChargingPC = false;
             announceTimer = 0;
             recapExpanded = false;
             document.getElementById('announceBanner').classList.remove('active');
             document.getElementById('deathToggleBtn').classList.remove('active');
             document.getElementById('deathRecapPanel').classList.remove('active');
+            document.getElementById('deathDimOverlay').classList.remove('active');
+            document.getElementById('enemyRespawnBadge').classList.remove('active');
             updateSkillUpgradeUI();
+            updateShopUI();
             document.getElementById('gameOverOverlay').classList.remove('active');
         }
 
@@ -1009,7 +1294,9 @@
                 if (targetEl.closest('.joystick-container') || targetEl.closest('.abilities-container') ||
                     targetEl.closest('.hud-panel') || targetEl.closest('.mini-atk-btn') ||
                     targetEl.closest('#recallBtn') || targetEl.closest('#goldShopBtn') ||
-                    targetEl.closest('#deathToggleBtn') || targetEl.closest('#deathRecapPanel')) continue;
+                    targetEl.closest('#deathToggleBtn') || targetEl.closest('#deathRecapPanel') ||
+                    targetEl.closest('#miniInventoryRow') || targetEl.closest('#quickBuyBtn') ||
+                    targetEl.closest('#shopModal')) continue;
                 if (!camera.isPanning) {
                     e.preventDefault();
                     camera.isPanning = true;
@@ -1116,7 +1403,7 @@
             if (player.skillRanks.s3 <= 0) return;
             player.recallTimer = 0;
             player.homeguardTimer = 0;
-            fireS3Projectile(getSmartTargetCoords(880).angle, 880, 1.0);
+            fireS3Projectile(getSmartTargetCoords(660).angle, 660, 1.0);
         });
         document.getElementById('atkBtn').addEventListener('mousedown', () => triggerBasicAttack('all'));
         document.getElementById('atkMinionBtn').addEventListener('mousedown', () => triggerBasicAttack('minion'));
@@ -1146,7 +1433,7 @@
             activeAim.isCanceled = false;
             activeAim.hasMoved = false;
             activeAim.dragDist = 0;
-            const smart = getSmartTargetCoords(880);
+            const smart = getSmartTargetCoords(660);
             activeAim.angle = smart.angle;
             player.angle = activeAim.angle;
             document.getElementById('cancelZone').classList.add('active');
@@ -1164,6 +1451,7 @@
             }
             if (e.key.toLowerCase() === 'f') triggerBasicAttack('all');
             if (e.key.toLowerCase() === 'b') startRecall();
+            if (e.key.toLowerCase() === 'p') toggleShop();
             if (e.key.toLowerCase() === 'k') grantXP(player, 500);
             if (e.key === '1') upgradeSkill('s1');
             if (e.key === '2') upgradeSkill('s2');
@@ -1290,15 +1578,18 @@
             if (target === bot) {
                 triggerStructureAggro(player, bot);
             }
-            player.attackInterval = 380;
+            player.attackInterval = Math.max(180, 380 / (1 + player.aspdBonus));
             let offY = (validTargets[0].type === 'tower') ? -20 : 0;
 
             const isEmpowered = player.empoweredAtks > 0 && player.empoweredTimer > 0;
             const dmgMult = isEmpowered ? 1.8 : 1.0;
             if (isEmpowered) player.empoweredAtks -= 1;
+            const isCrit = !structures.includes(target) && Math.random() < player.critRate;
+            const critMult = isCrit ? 1.75 : 1.0;
+            if (isCrit) spawnFloatingText(target.x, target.y - target.radius - 28, '💥 CRIT!', '#ff5252', 15);
 
             basicAtkTracers.push({ target: target, offsetY: offY, duration: 140, empowered: isEmpowered });
-            dealDamage(target, player.basicAtkDmg * dmgMult, 'player', true);
+            dealDamage(target, player.basicAtkDmg * dmgMult * critMult, 'player', true);
         }
 
         function consumeS3Charge() {
@@ -1349,7 +1640,7 @@
                 cooldowns.s2.current = cooldowns.s2.max;
             } else if (skill === 's3') {
                 const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
-                fireS3Projectile(activeAim.angle, 320 + (chargePct * 560), chargePct);
+                fireS3Projectile(activeAim.angle, 240 + (chargePct * 420), chargePct);
             }
         }
 
@@ -1367,7 +1658,7 @@
             activeAim.currentX = touch.clientX; activeAim.currentY = touch.clientY;
             activeAim.dragDist = 0; activeAim.chargeTime = 0; activeAim.fullZoomHoldTime = 0;
             activeAim.isCanceled = false; activeAim.hasMoved = false;
-            const smart = getSmartTargetCoords(skillId === 's2' ? cooldowns.s2.range : 880);
+            const smart = getSmartTargetCoords(skillId === 's2' ? cooldowns.s2.range : 660);
             activeAim.angle = smart.angle;
             if (skillId === 's3') player.angle = activeAim.angle;
             document.getElementById('cancelZone').classList.add('active');
@@ -1440,6 +1731,13 @@
                         }
                     } else if (m.attackCd <= 0) {
                         const src = m.team === 'ally' ? 'ally_minion' : 'enemy_minion';
+                        if (structures.includes(target)) {
+                            botAtkTracers.push({
+                                x1: m.x, y1: m.y, x2: target.x, y2: target.y,
+                                duration: 90,
+                                color: m.team === 'ally' ? 'rgba(100, 181, 246, 0.85)' : 'rgba(255, 82, 82, 0.85)'
+                            });
+                        }
                         dealDamage(target, m.dmg, src, false);
                         m.attackCd = m.attackInterval;
                     }
@@ -1481,13 +1779,13 @@
                         const dP = Math.hypot(player.x - m.x, player.y - m.y);
                         if (dP <= 450) {
                             grantXP(player, 35);
-                            grantGold(player, m.lastDamagedBy === 'player' ? 40 : 22);
+                            grantGold(player, m.lastDamagedBy === 'player' ? 28 : 15);
                         }
                     } else if (m.team === 'ally') {
                         const dB = Math.hypot(bot.x - m.x, bot.y - m.y);
                         if (dB <= 450) {
                             grantXP(bot, 35);
-                            grantGold(bot, m.lastDamagedBy === 'bot' ? 40 : 22);
+                            grantGold(bot, m.lastDamagedBy === 'bot' ? 28 : 15);
                         }
                     }
                     minions.splice(i, 1);
@@ -1590,14 +1888,25 @@
         }
 
         function moveBotToward(tx, ty, spd, updateFacing = true, ignoreStun = false) {
-            if (!ignoreStun && bot.attackStunTimer > 0) return;
+            if (!ignoreStun && bot.attackStunTimer > 0) {
+                bot.vx *= 0.6;
+                bot.vy *= 0.6;
+                return;
+            }
             const dist = Math.hypot(tx - bot.x, ty - bot.y);
-            if (dist < 4) return;
+            if (dist < 6) {
+                bot.vx *= 0.7;
+                bot.vy *= 0.7;
+                return;
+            }
             const moveAng = Math.atan2(ty - bot.y, tx - bot.x);
-            if (updateFacing) rotateBotToward(moveAng, 0.22);
-            const sx = Math.cos(moveAng) * spd, sy = Math.sin(moveAng) * spd;
-            if (canMoveTo(bot.x + sx, bot.y, bot.radius, false)) bot.x += sx;
-            if (canMoveTo(bot.x, bot.y + sy, bot.radius, false)) bot.y += sy;
+            if (updateFacing) rotateBotToward(moveAng, 0.18);
+            const targetVx = Math.cos(moveAng) * spd;
+            const targetVy = Math.sin(moveAng) * spd;
+            bot.vx += (targetVx - bot.vx) * 0.22;
+            bot.vy += (targetVy - bot.vy) * 0.22;
+            if (canMoveTo(bot.x + bot.vx, bot.y, bot.radius, false)) bot.x += bot.vx;
+            if (canMoveTo(bot.x, bot.y + bot.vy, bot.radius, false)) bot.y += bot.vy;
         }
 
         function isBotSafeToRecall() {
@@ -1623,7 +1932,7 @@
                     if (bot.lastDamagedBy === 'player' || bot.lastHeroHitTimer > 0) {
                         player.kills += 1;
                         grantXP(player, 180, true);
-                        grantGold(player, 200);
+                        grantGold(player, 140);
                         spawnFloatingText(bot.x, bot.y - 90, 'KILL!', '#ffd54f', 22);
                         showAnnouncement('💎', 'ally', '⚔️ KO!', '🤖', 'enemy', '#45f3ff');
                     } else {
@@ -1633,7 +1942,7 @@
                     bot.deaths += 1;
                     bot.state = 'DEAD';
                     bot.lockedTarget = null;
-                    bot.respawnTimer = (4 + bot.level * 1.5) * 1000;
+                    bot.respawnTimer = (7 + bot.level * 2.2) * 1000;
                     bot.isRecalling = false;
                     bot.recallProgress = 0;
                     visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
@@ -1643,6 +1952,8 @@
                     bot.hp = bot.maxHp;
                     bot.x = 1920;
                     bot.y = 480;
+                    bot.angle = (3 * Math.PI) / 4;
+                    bot.vx = 0; bot.vy = 0;
                     bot.state = 'PUSHING';
                     bot.waypointIdx = 4;
                     bot.isSlowed = false;
@@ -1653,6 +1964,12 @@
                     bot.lastHeroHitTimer = 0;
                 }
                 return;
+            }
+
+            if (bot.items.length < 6) {
+                const nextItemId = RECOMMENDED_BUILD[bot.items.length];
+                const nextItem = SHOP_ITEMS.find(item => item.id === nextItemId);
+                if (canBuyItem(bot, nextItem)) buyItem(bot, nextItem.id);
             }
 
             if (bot.isSlowed && (bot.slowTimer -= dt) <= 0) {
@@ -1682,6 +1999,8 @@
                     if (bot.recallProgress >= bot.recallDuration) {
                         bot.x = 1920;
                         bot.y = 480;
+                        bot.angle = (3 * Math.PI) / 4;
+                        bot.vx = 0; bot.vy = 0;
                         bot.isRecalling = false;
                         bot.recallProgress = 0;
                         bot.state = 'RETREATING';
@@ -1774,13 +2093,13 @@
             let underUntankedAllyTower = false;
             for (let s of structures) {
                 if (s.team === 'ally' && s.hp > 0) {
-                    const buffer = isEarlyGame ? 40 : 20;
-                    if (Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + buffer) {
-                        const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range);
-                        if (!tanking || isEarlyGame) {
-                            underUntankedAllyTower = true;
-                            break;
-                        }
+                    const playerInTowerRange = player.state !== 'DEAD' && player.hp > 0 &&
+                        Math.hypot(player.x - s.x, player.y - s.y) <= s.range + 20;
+                    const botInTowerRange = Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 15;
+                    const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range);
+                    if ((playerInTowerRange || botInTowerRange) && (!tanking || isEarlyGame)) {
+                        underUntankedAllyTower = true;
+                        break;
                     }
                 }
             }
@@ -1863,11 +2182,14 @@
                     bot.attackStunTimer = 120;
                     bot.homeguardTimer = 0;
                     botAtkTracers.push({ x1: bot.x, y1: bot.y, x2: target.x, y2: target.y, duration: 130 });
-                    dealDamage(target, bot.basicAtkDmg, target === player ? 'bot_basic' : 'bot', target === player);
+                    const isBotCrit = !structures.includes(target) && Math.random() < bot.critRate;
+                    const botDamage = bot.basicAtkDmg * (isBotCrit ? 1.75 : 1.0);
+                    if (isBotCrit && target === player) spawnFloatingText(player.x, player.y - player.radius - 28, '💥 CRIT!', '#ff5252', 15);
+                    dealDamage(target, botDamage, target === player ? 'bot_basic' : 'bot', target === player);
                     if (target === player) {
                         triggerStructureAggro(bot, player);
                     }
-                    bot.attackCd = bot.attackInterval;
+                    bot.attackCd = Math.max(380, bot.attackInterval / (1 + bot.aspdBonus));
                 }
             } else {
                 bot.state = 'PUSHING';
@@ -1875,8 +2197,8 @@
                     if (st.team === 'ally' && st.hp > 0) {
                         const dSt = Math.hypot(st.x - bot.x, st.y - bot.y);
                         const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - st.x, m.y - st.y) <= st.range);
-                        if (dSt <= st.range + 55 && !tanking) {
-                            if (dSt < st.range + 25 && !inSlowField) {
+                        if (dSt <= st.range + 60 && !tanking) {
+                            if (dSt < st.range + 15 && !inSlowField) {
                                 moveBotToward(1920, 480, spd * 0.8, true, true);
                             }
                             return;
@@ -1919,6 +2241,12 @@
         function updateHUD() {
             const recapPanel = document.getElementById('deathRecapPanel');
             const deathToggle = document.getElementById('deathToggleBtn');
+            document.getElementById('deathDimOverlay').classList.toggle('active', player.state === 'DEAD');
+            const enemyRespawnBadge = document.getElementById('enemyRespawnBadge');
+            enemyRespawnBadge.classList.toggle('active', bot.state === 'DEAD');
+            if (bot.state === 'DEAD') {
+                document.getElementById('enemyRespawnText').innerText = `${Math.ceil(bot.respawnTimer / 1000)}s`;
+            }
             if (player.state === 'DEAD') {
                 deathToggle.classList.add('active');
                 recapPanel.classList.toggle('active', recapExpanded);
@@ -1947,6 +2275,7 @@
             if (floorGold !== lastHudGold) {
                 lastHudGold = floorGold;
                 document.getElementById('goldDisplay').innerText = floorGold;
+                updateShopUI();
             }
             if (player.kills !== lastHudPlayerKills) {
                 lastHudPlayerKills = player.kills;
@@ -1990,12 +2319,18 @@
             enemyNexus.announceCd = Math.max(0, enemyNexus.announceCd - deltaTime);
 
             if (player.state !== 'DEAD') {
-                player.gold += 2 * dtSec;
+                player.gold += 1.4 * dtSec;
                 grantXP(player, 1.5 * dtSec, false);
+                if (player.epRecovery > 0 && player.hp > 0 && player.hp < player.maxHp) {
+                    player.hp = Math.min(player.maxHp, player.hp + (player.epRecovery / 0.25) * 2 * dtSec);
+                }
             }
             if (bot.state !== 'DEAD') {
-                bot.gold += 2 * dtSec;
+                bot.gold += 1.4 * dtSec;
                 grantXP(bot, 1.5 * dtSec, false);
+                if (bot.epRecovery > 0 && bot.hp > 0 && bot.hp < bot.maxHp) {
+                    bot.hp = Math.min(bot.maxHp, bot.hp + (bot.epRecovery / 0.25) * 2 * dtSec);
+                }
             }
 
             if (player.empoweredTimer > 0) {
@@ -2011,6 +2346,7 @@
                 player.respawnTimer -= deltaTime;
                 if (player.respawnTimer <= 0) {
                     player.state = 'ALIVE'; player.hp = player.maxHp;
+                    player.angle = -Math.PI / 4;
                     recapExpanded = false;
                     player.lastHeroHitTimer = 0;
                     player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
@@ -2032,6 +2368,7 @@
                     player.recallTimer -= deltaTime;
                     if (player.recallTimer <= 0) {
                         player.x = allyNexus.x; player.y = allyNexus.y;
+                        player.angle = -Math.PI / 4;
                         player.recallTimer = 0; camera.offsetX = 0; camera.offsetY = 0;
                     }
                 }
@@ -2093,7 +2430,7 @@
             if (player.skillRanks.s3 <= 0) {
                 document.getElementById('s3Btn').style.opacity = '0.4';
                 document.getElementById('s3Btn').style.filter = 'grayscale(100%)';
-                document.getElementById('s3AmmoBadge').innerText = 'L3';
+                document.getElementById('s3AmmoBadge').innerText = 'L4';
                 document.getElementById('s3AmmoBadge').style.background = '#666';
                 document.getElementById('s3CD').style.height = '100%';
                 document.getElementById('s3RechargeBar').style.width = '0%';
@@ -2182,7 +2519,7 @@
             }
             for (let i = slowFields.length - 1; i >= 0; i--) {
                 const f = slowFields[i]; f.duration -= deltaTime;
-                const s2Dps = 18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2;
+                const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * (1 + (player.energyPower / 40) * 0.18);
                 const s2TickDmg = s2Dps * (deltaTime / 1000);
                 if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
                     bot.isSlowed = true; bot.slowTimer = 500;
@@ -2236,7 +2573,7 @@
                 if (player.lastDamagedBy === 'bot' || player.lastHeroHitTimer > 0) {
                     bot.kills += 1;
                     grantXP(bot, 180);
-                    grantGold(bot, 200);
+                    grantGold(bot, 140);
                     spawnFloatingText(player.x, player.y - 90, 'SLAIN', '#ff4560', 20);
                     showAnnouncement('🤖', 'enemy', '💀 SLAIN', '💎', 'ally', '#ff4560');
                 } else {
@@ -2246,7 +2583,7 @@
                 player.deaths += 1;
                 player.state = 'DEAD';
                 recapExpanded = false;
-                player.respawnTimer = (4 + player.level * 1.5) * 1000;
+                player.respawnTimer = (7 + player.level * 2.2) * 1000;
                 player.isInvincible = false;
                 player.passiveActive = false;
                 player.recallTimer = 0;
@@ -2424,7 +2761,7 @@
             });
             botAtkTracers.forEach(b => {
                 ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2);
-                ctx.strokeStyle = 'rgba(255, 65, 65, 0.85)'; ctx.lineWidth = 4; ctx.stroke();
+                ctx.strokeStyle = b.color || 'rgba(255, 65, 65, 0.85)'; ctx.lineWidth = 4; ctx.stroke();
             });
             botProjectiles.forEach(bp => {
                 ctx.beginPath(); ctx.arc(bp.x, bp.y, bp.radius, 0, Math.PI * 2);
@@ -2460,7 +2797,7 @@
                     ctx.fillStyle = aC; ctx.strokeStyle = iC; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
                 } else if (activeAim.skillId === 's3') {
                     const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
-                    const L = 320 + (chargePct * 560);
+                    const L = 240 + (chargePct * 420);
                     const ms = 0.35; const cs = ms * (1 - chargePct);
                     const aL = activeAim.angle - cs; const aR = activeAim.angle + cs;
                     ctx.lineWidth = 1.5;
@@ -2479,6 +2816,12 @@
                 const strokeColor = m.team === 'ally' ? '#64b5f6' : '#ef5350';
                 ctx.beginPath(); ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
                 ctx.fillStyle = baseColor; ctx.strokeStyle = strokeColor; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
+                if (m.isSuper) {
+                    ctx.beginPath(); ctx.arc(m.x, m.y, m.radius + 4, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 3.5; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(m.x, m.y, m.radius * 0.48, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff176'; ctx.fill();
+                }
                 if (m.hp < m.maxHp) {
                     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(m.x - 15, m.y - 22, 30, 4);
                     ctx.fillStyle = m.team === 'ally' ? '#64b5f6' : '#ff4141';
@@ -2490,7 +2833,7 @@
             if (bot.state !== 'DEAD') {
                 ctx.save(); ctx.translate(bot.x, bot.y); ctx.rotate(bot.angle);
                 ctx.beginPath(); ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
-                ctx.fillStyle = '#880e4f'; ctx.fill();
+                ctx.fillStyle = '#660e4f'; ctx.fill();
                 ctx.beginPath(); ctx.arc(0, 0, bot.radius, 0, Math.PI * 2);
                 ctx.fillStyle = bot.isSlowed ? '#0288d1' : '#c62828';
                 ctx.strokeStyle = '#ff8a80'; ctx.lineWidth = 4; ctx.fill(); ctx.stroke();
@@ -2642,6 +2985,7 @@
         }
 
         updateSkillUpgradeUI();
+        updateShopUI();
 
         requestAnimationFrame((timestamp) => {
             lastTime = timestamp;
