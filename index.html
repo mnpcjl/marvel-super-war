@@ -422,7 +422,7 @@
         .sell-item-btn { min-height: 30px; padding: 4px 8px; border: 1px solid #ffd54f; border-radius: 6px; background: rgba(255, 193, 7, 0.18); color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer; white-space: nowrap; }
         .sell-item-btn:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
         #shopModal .shop-card {
-            width: min(720px, 95vw); height: min(350px, 90vh); max-height: 90vh;
+            width: min(720px, 95vw); height: min(340px, 88vh); max-height: 88vh;
             padding: 0; overflow: hidden; display: flex; flex-direction: column;
         }
         #shopModal .shop-layout {
@@ -570,7 +570,8 @@
 
         <button class="quick-buy-btn" id="quickBuyBtn" type="button"></button>
         <div id="kdaBar" aria-label="Kills deaths assists">
-            ⚔️ <span id="hudK">0</span> 💀 <span id="hudD">0</span> 🤝 <span id="hudA">0</span>
+            ⚔️                     <span id="hudK">0</span> / <span id="hudD">0</span> / <span id="hudA">0</span>
+
             <button id="scoreboardBtn" type="button" aria-label="Open scoreboard">☰</button>
         </div>
 
@@ -644,17 +645,14 @@
 
     <div class="shop-modal" id="scoreboardModal" role="dialog" aria-modal="true" aria-label="Match scoreboard">
         <div class="shop-card scoreboard-card">
-            <div class="shop-header" style="padding:12px 14px 0;">
-                <div class="shop-title">⚔️ MATCH SCOREBOARD</div>
+            <div class="shop-header" style="justify-content:flex-end; padding:12px 14px 0;">
                 <button class="shop-close" id="closeScoreboardBtn" type="button" aria-label="Close scoreboard">✕</button>
             </div>
             <div class="scoreboard-teams" style="padding:14px;">
                 <section class="scoreboard-team ally">
-                    <h3>🔵 BLUE TEAM</h3>
                     <div id="scoreboardPlayer"></div>
                 </section>
                 <section class="scoreboard-team enemy">
-                    <h3>🔴 RED TEAM</h3>
                     <div id="scoreboardBot"></div>
                 </section>
             </div>
@@ -684,7 +682,7 @@
             isPanning: false, panTouchId: null,
             lastTouchX: 0, lastTouchY: 0,
             minimapJumpActive: false, minimapTouchId: null,
-            minimapJumpX: 0, minimapJumpY: 0, zoomHoldTimer: 0
+            minimapJumpX: 0, minimapJumpY: 0, zoomHoldTimer: 0, panHoldTimer: 0
         };
 
         const player = {
@@ -798,6 +796,7 @@
         let s3ChargingPC = false;
 
         function createMinion(team, laneIndex, index) {
+            const matchMins = Math.floor((performance.now() - matchStartTime) / 60000);
             let path;
             let opposingTower;
             let allThreeTowersDown;
@@ -816,8 +815,8 @@
             return {
                 x: path[startIdx].x, y: path[startIdx].y,
                 radius: isSuper ? 16.5 : 14,
-                hp: isSuper ? 250 : 100,
-                maxHp: isSuper ? 250 : 100,
+                hp: isSuper ? 420 + matchMins * 30 : 190 + matchMins * 18,
+                maxHp: isSuper ? 420 + matchMins * 30 : 190 + matchMins * 18,
                 speed: 1.15,
                 attackRange: isSuper ? 55 : 45,
                 attackInterval: 900, attackCd: 0,
@@ -825,6 +824,7 @@
                 team: team, path: path, waypointIdx: startIdx,
                 isSuper: isSuper,
                 lastDamagedBy: null,
+                aggroTarget: null, aggroTimer: 0,
                 spawnAlpha: 0
             };
         }
@@ -904,6 +904,15 @@
         }
 
         // Phase 10.2.1 - Fix cross-lane tower aggro
+        function triggerMinionAggro(attacker, victim) {
+            for (const m of minions) {
+                if (m.team === victim.team && m.hp > 0 && Math.hypot(attacker.x - m.x, attacker.y - m.y) <= 240) {
+                    m.aggroTarget = attacker;
+                    m.aggroTimer = 2500;
+                }
+            }
+        }
+
         function triggerStructureAggro(attacker, victim) {
             for (let st of structures) {
                 if (st.team === victim.team && st.hp > 0) {
@@ -961,6 +970,8 @@
 
             const actual = Math.min(amount, target.hp);
             target.hp = Math.max(0, target.hp - amount);
+            if (target === bot && source === 'player') triggerMinionAggro(player, bot);
+            if (target === player && ['bot', 'bot_basic', 'bot_skill'].includes(source)) triggerMinionAggro(bot, player);
             target.lastDamagedBy = (source === 'bot_basic' || source === 'bot_skill') ? 'bot' : source;
             if (['bot', 'bot_basic', 'bot_skill'].includes(source)) bot.revealedTimer = 2000;
             if (target === bot && actual > 0) {
@@ -1010,7 +1021,7 @@
                 );
                 spawnFloatingText(
                     target.x, target.y - target.radius - 12,
-                    isStructureShielded ? `🛡️ -${Math.round(actual)}` : `-${Math.round(actual)}`,
+                    isStructureShielded ? `🛡️ -${Math.round(amount)}` : `-${Math.round(amount)}`,
                     isPlayerTookDmg ? '#ff6b81' : '#ffeb3b',
                     isPlayerTookDmg ? 15 : 14
                 );
@@ -1139,7 +1150,7 @@
             if (sellButton) {
                 sellButton.disabled = !selectedItem;
                 sellButton.innerText = selectedItem
-                    ? `SELL ${selectedItem.icon} (+${Math.floor(selectedItem.cost * 0.60)}g)`
+                    ? `SELL ${selectedItem.icon} (+60% · ${Math.floor(selectedItem.cost * 0.60)}g)`
                     : 'TAP SLOT TO SELL';
             }
 
@@ -1189,7 +1200,7 @@
                     const item = items[index];
                     return `<div class="inventory-slot" title="${item ? item.name : 'Empty slot'}">${item ? item.icon : ''}</div>`;
                 }).join('');
-                return `<div class="scoreboard-hero"><strong>${icon} ${label} · Lv.${entity.level}</strong><span>K ${entity.kills} / D ${entity.deaths} / A ${entity.assists}</span></div><div class="scoreboard-hero"><span>Total Gold</span><strong>🪙 ${Math.floor(entity.gold)}</strong></div><div class="scoreboard-items">${slots}</div>`;
+                return `<div class="scoreboard-hero"><strong>${icon} ${label} · Lv.${entity.level}</strong><span>${entity.kills} / ${entity.deaths} / ${entity.assists}</span></div><div class="scoreboard-hero"><span>Total Gold</span><strong>🪙 ${Math.floor(entity.gold)}</strong></div><div class="scoreboard-items">${slots}</div>`;
             };
             document.getElementById('scoreboardPlayer').innerHTML = renderHero(player, 'Vision', '💎');
             document.getElementById('scoreboardBot').innerHTML = renderHero(bot, 'Ultron AI', '🤖');
@@ -1495,7 +1506,7 @@
             laneManager.spawnQueue.length = 0;
 
             laneManager.waveTimer = 5000; gameOver = false;
-            camera.offsetX = 0; camera.offsetY = 0;
+            camera.offsetX = 0; camera.offsetY = 0; camera.panHoldTimer = 0;
             camera.spectatorX = 400; camera.spectatorY = 2000;
             lastBotHp = bot.hp;
             matchStartTime = performance.now();
@@ -1524,7 +1535,7 @@
             joyActive = false; joyTouchId = null;
             joyKnob.style.transform = 'translate(0px, 0px)';
             player.dx = 0; player.dy = 0;
-            camera.isPanning = false; camera.panTouchId = null;
+            camera.isPanning = false; camera.panTouchId = null; camera.panHoldTimer = 0;
             camera.minimapJumpActive = false; camera.minimapTouchId = null;
             if (activeAim.skillId) {
                 document.getElementById('cancelZone').classList.remove('active', 'hovered');
@@ -1579,8 +1590,7 @@
                     targetEl.closest('#miniInventoryRow') || targetEl.closest('#quickBuyBtn') ||
                     targetEl.closest('#shopModal') || targetEl.closest('#kdaBar') ||
                     targetEl.closest('#scoreboardBtn') || targetEl.closest('#scoreboardModal')) continue;
-                if (player.state === 'DEAD' && !camera.isPanning) {
-                    e.preventDefault();
+                if (player.state !== 'DEAD') {
                     camera.isPanning = true;
                     camera.panTouchId = touch.identifier;
                     camera.lastTouchX = x; camera.lastTouchY = y;
@@ -1631,18 +1641,14 @@
                         cancelEl.classList.remove('hovered');
                     }
                 }
-                if (camera.isPanning && touch.identifier === camera.panTouchId) {
+                if (camera.isPanning && touch.identifier === camera.panTouchId && player.state !== 'DEAD') {
                     e.preventDefault();
                     const dx = touch.clientX - camera.lastTouchX;
                     const dy = touch.clientY - camera.lastTouchY;
-                    if (player.state === 'DEAD') {
-                        camera.spectatorX = Math.max(0, Math.min(WORLD.width, camera.spectatorX - dx * 1.8));
-                        camera.spectatorY = Math.max(0, Math.min(WORLD.height, camera.spectatorY - dy * 1.8));
-                    } else {
-                        let maxPan = (activeAim.skillId === 's3' || camera.minimapJumpActive) ? 99999 : 450;
-                        camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
-                        camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
-                    }
+                    const maxPan = 750;
+                    camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
+                    camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
+                    camera.panHoldTimer = 2200;
                     camera.lastTouchX = touch.clientX;
                     camera.lastTouchY = touch.clientY;
                 }
@@ -1957,6 +1963,12 @@
         function findMinionTarget(m) {
             const aggroRange = 240;
             let best = null, bestDist = Infinity;
+            if (m.aggroTarget && m.aggroTarget.hp > 0 && m.aggroTarget.state !== 'DEAD' &&
+                Math.hypot(m.aggroTarget.x - m.x, m.aggroTarget.y - m.y) <= 260) return m.aggroTarget;
+
+            const enemyHero = m.team === 'enemy' ? player : bot;
+            if (enemyHero && enemyHero.hp > 0 && enemyHero.state !== 'DEAD' &&
+                Math.hypot(enemyHero.x - m.x, enemyHero.y - m.y) <= 160) return enemyHero;
             for (let o of minions) {
                 if (o === m || o.team === m.team || o.hp <= 0) continue;
                 const d = Math.hypot(o.x - m.x, o.y - m.y);
@@ -2001,6 +2013,8 @@
                 if (m.hp <= 0) continue;
                 if (m.spawnAlpha < 1) m.spawnAlpha = Math.min(1, m.spawnAlpha + dt / 500);
                 if (m.attackCd > 0) m.attackCd -= dt;
+                if (m.aggroTimer > 0) m.aggroTimer -= dt;
+                else m.aggroTarget = null;
                 const target = findMinionTarget(m);
                 if (target) {
                     const d = Math.hypot(target.x - m.x, target.y - m.y);
@@ -2021,13 +2035,11 @@
                         }
                     } else if (m.attackCd <= 0) {
                         const src = m.team === 'ally' ? 'ally_minion' : 'enemy_minion';
-                        if (structures.includes(target)) {
-                            botAtkTracers.push({
-                                x1: m.x, y1: m.y, x2: target.x, y2: target.y,
-                                duration: 90,
-                                color: m.team === 'ally' ? 'rgba(100, 181, 246, 0.85)' : 'rgba(255, 82, 82, 0.85)'
-                            });
-                        }
+                        botAtkTracers.push({
+                            x1: m.x, y1: m.y, x2: target.x, y2: target.y,
+                            duration: 90,
+                            color: m.team === 'ally' ? 'rgba(100, 181, 246, 0.85)' : 'rgba(255, 82, 82, 0.85)'
+                        });
                         dealDamage(target, m.dmg, src, false);
                         m.attackCd = m.attackInterval;
                     }
@@ -2309,7 +2321,7 @@
 
             const towerTargetingBot = structures.some(s => s.team === 'ally' && s.hp > 0 && s.currentTarget === bot);
 
-            if (bot.hp < bot.maxHp * 0.22) {
+            if (bot.hp < bot.maxHp * 0.35) {
                 bot.state = 'RETREATING';
             } else if (bot.state === 'RETREATING' && bot.hp >= bot.maxHp * 0.85 && !towerTargetingBot) {
                 bot.state = 'PUSHING';
@@ -2390,7 +2402,13 @@
             for (let s of structures) {
                 if (s.team === 'ally' && s.hp > 0) {
                     const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range);
-                    if (Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 35 && (!tanking || isEarlyGame)) {
+                    const towerDistance = Math.hypot(bot.x - s.x, bot.y - s.y);
+                    const beingHarassed = bot.damageRecoilTimer > 0 || bot.lastHeroHitTimer > 2500;
+                    if (!tanking && beingHarassed && towerDistance <= s.range + 160) {
+                        moveBotToward(1920, 480, spd, true, true);
+                        return;
+                    }
+                    if (towerDistance <= s.range + 35 && (!tanking || isEarlyGame)) {
                         underUntankedAllyTower = true;
                         break;
                     }
@@ -2769,9 +2787,10 @@
             else if (camera.zoomHoldTimer > 0) { camera.zoomHoldTimer -= deltaTime; targetZoom = 1.0 - (0.28 * Math.min(1, camera.zoomHoldTimer / 500)); }
             camera.zoom += (targetZoom - camera.zoom) * 0.22;
 
-            if (!camera.isPanning && !camera.minimapJumpActive && player.state !== 'DEAD') {
-                camera.offsetX *= 0.85;
-                camera.offsetY *= 0.85;
+            if (camera.panHoldTimer > 0) camera.panHoldTimer = Math.max(0, camera.panHoldTimer - deltaTime);
+            if (!camera.isPanning && !camera.minimapJumpActive && player.state !== 'DEAD' && camera.panHoldTimer <= 0) {
+                camera.offsetX *= 0.88;
+                camera.offsetY *= 0.88;
                 if (Math.abs(camera.offsetX) < 0.3) camera.offsetX = 0;
                 if (Math.abs(camera.offsetY) < 0.3) camera.offsetY = 0;
             }
@@ -2827,21 +2846,24 @@
                 if (bp.dist >= bp.maxDist) botProjectiles.splice(i, 1);
             }
             for (let i = slowFields.length - 1; i >= 0; i--) {
-                const f = slowFields[i]; f.duration -= deltaTime;
-                const itemScaleMult = 1 + (player.bonusAtk * 0.025) + (player.energyPower / 40) * 0.18;
-                const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * itemScaleMult;
-                const s2TickDmg = s2Dps * (deltaTime / 1000);
-                if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
-                    bot.isSlowed = true; bot.slowTimer = 500;
-                    dealDamage(bot, s2TickDmg, 'player', false);
-                    triggerStructureAggro(player, bot);
-                }
-                for (let m of minions) {
-                    if (m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
-                        dealDamage(m, s2TickDmg, 'player', false);
+                const f = slowFields[i];
+                f.duration -= deltaTime;
+                if (f.duration > 0) {
+                    const itemScaleMult = 1 + (player.bonusAtk * 0.025) + (player.energyPower / 40) * 0.18;
+                    const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * itemScaleMult;
+                    const s2TickDmg = s2Dps * (deltaTime / 1000);
+                    if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
+                        bot.isSlowed = true; bot.slowTimer = 500;
+                        dealDamage(bot, s2TickDmg, 'player', false);
+                        triggerStructureAggro(player, bot);
+                    }
+                    for (let m of minions) {
+                        if (m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
+                            dealDamage(m, s2TickDmg, 'player', false);
+                        }
                     }
                 }
-                if (f.duration <= 0) slowFields.splice(i, 1);
+                if (f.duration <= -600) slowFields.splice(i, 1);
             }
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const p = projectiles[i];
@@ -2910,8 +2932,8 @@
                 player.recallTimer = 0;
                 player.empoweredAtks = 0;
                 player.empoweredTimer = 0;
-                camera.spectatorX = player.x + camera.offsetX;
-                camera.spectatorY = player.y + camera.offsetY;
+                camera.spectatorX = player.x;
+                camera.spectatorY = player.y;
                 camera.offsetX = 0;
                 camera.offsetY = 0;
                 activeAim.skillId = null;
@@ -2963,6 +2985,26 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(`${entity.level}`, cx, cy + 0.5);
+
+            if (!isPlayer && activeAim.skillId === 's3') {
+                const dx = entity.x - player.x, dy = entity.y - player.y;
+                const d = Math.hypot(dx, dy);
+                let diff = Math.abs(Math.atan2(dy, dx) - activeAim.angle);
+                if (diff > Math.PI) diff = Math.PI * 2 - diff;
+                if (d <= 680 && diff < 1.2 && d * Math.sin(diff) <= entity.radius + 45) {
+                    const pulse = 1 + 0.2 * Math.sin(performance.now() * 0.015);
+                    ctx.save();
+                    ctx.translate(cx - 15, cy);
+                    ctx.scale(pulse, pulse);
+                    ctx.font = 'bold 14px "Segoe UI", sans-serif';
+                    ctx.fillStyle = '#ff1744';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2.5;
+                    ctx.strokeText('!', 0, 0);
+                    ctx.fillText('!', 0, 0);
+                    ctx.restore();
+                }
+            }
         }
 
         function drawFloatingTexts() {
@@ -3065,8 +3107,11 @@
             });
 
             slowFields.forEach(f => {
+                const fadeAlpha = f.duration > 0 ? 1.0 : Math.max(0, (600 + f.duration) / 600);
                 ctx.beginPath(); ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(233, 69, 96, 0.22)'; ctx.strokeStyle = '#e94560'; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
+                ctx.fillStyle = `rgba(233, 69, 96, ${0.22 * fadeAlpha})`;
+                ctx.strokeStyle = `rgba(233, 69, 96, ${fadeAlpha})`;
+                ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
             });
             beamTracers.forEach(b => {
                 ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(b.targetX, b.targetY);
