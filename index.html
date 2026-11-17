@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marvel Super War - Phase 10.2.5: Combat & Minion Upgrade</title>
+    <title>Marvel Super War - Phase 10.3.1: Shop, Scoreboard & Combat</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -349,7 +349,7 @@
             font-size: 12px;
         }
         .quick-buy-btn {
-            position: absolute; top: 222px; left: 20px; width: 130px; min-height: 34px;
+            position: absolute; top: 198px; left: 20px; width: 130px; height: 28px; min-height: 28px;
             display: none; align-items: center; justify-content: center; gap: 7px;
             padding: 4px 7px; border-radius: 8px;
             background: linear-gradient(135deg, rgba(50, 38, 12, 0.96), rgba(18, 16, 12, 0.98));
@@ -402,6 +402,35 @@
             color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer;
         }
         .shop-buy:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
+        .shop-card { width: min(760px, 96vw); padding: 0; overflow: hidden; }
+        .shop-layout { display: grid; grid-template-columns: 142px minmax(0, 1fr); min-height: min(520px, 86vh); }
+        .shop-sidebar { padding: 12px 8px; background: rgba(0,0,0,0.28); border-right: 1px solid rgba(255,213,79,0.2); }
+        .shop-sidebar-gold { color: #ffd54f; font-size: 11px; font-weight: 900; padding: 4px 7px 10px; }
+        .shop-tab { width: 100%; min-height: 36px; margin: 2px 0; padding: 5px 7px; text-align: left; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #c6d0dc; font-size: 9px; font-weight: 800; cursor: pointer; }
+        .shop-tab.active { color: #ffd54f; background: rgba(255,213,79,0.12); border-color: rgba(255,213,79,0.5); }
+        .shop-main { min-width: 0; display: flex; flex-direction: column; padding: 12px; }
+        .shop-header { flex: 0 0 auto; }
+        .shop-grid { flex: 1; align-content: start; overflow-y: auto; min-height: 100px; }
+        .shop-item { grid-template-columns: 38px 1fr; }
+        .shop-item-icon { position: relative; }
+        .shop-item-cost { color: #ffd54f; font-size: 8px; font-weight: 900; }
+        .shop-bottom-bar { margin-top: 10px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.055); }
+        .shop-bottom-inventory { display: flex; gap: 5px; margin-bottom: 7px; }
+        .shop-bottom-inventory .inventory-slot { width: 30px; height: 30px; font-size: 17px; }
+        .shop-bottom-stats { display: flex; flex-wrap: wrap; gap: 7px; color: #d9e3f0; font-size: 8px; }
+        #kdaBar { position: absolute; top: 10px; right: 16px; height: 30px; z-index: 45; display: flex; align-items: center; gap: 7px; padding: 0 8px; border: 1px solid rgba(69,243,255,0.45); border-radius: 8px; background: rgba(11,14,22,0.92); font-size: 11px; font-weight: 900; pointer-events: auto; }
+        #scoreboardBtn { height: 23px; padding: 0 7px; border: 1px solid #64b5f6; border-radius: 5px; background: rgba(33,150,243,0.2); color: #e3f2fd; font-weight: 900; cursor: pointer; }
+        .scoreboard-card { width: min(720px, 96vw); }
+        .scoreboard-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .scoreboard-team { padding: 12px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); }
+        .scoreboard-team.ally { border-color: rgba(69,243,255,0.55); }
+        .scoreboard-team.enemy { border-color: rgba(255,69,96,0.55); }
+        .scoreboard-team h3 { margin: 0 0 10px; font-size: 12px; }
+        .scoreboard-team.ally h3 { color: #45f3ff; }
+        .scoreboard-team.enemy h3 { color: #ff6b81; }
+        .scoreboard-hero { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; margin: 6px 0; }
+        .scoreboard-items { display: flex; gap: 4px; margin-top: 8px; }
+        .scoreboard-items .inventory-slot { width: 25px; height: 25px; }
         @media (max-width: 520px) {
             .shop-card { padding: 9px; }
             .shop-title { font-size: 11px; }
@@ -485,8 +514,11 @@
             <span class="shop-tag">SHOP</span>
         </div>
 
-        <div class="mini-inventory-row" id="miniInventoryRow" aria-label="Inventory"></div>
         <button class="quick-buy-btn" id="quickBuyBtn" type="button"></button>
+        <div id="kdaBar" aria-label="Kills deaths assists">
+            ⚔️ <span id="hudK">0</span> 💀 <span id="hudD">0</span> 🤝 <span id="hudA">0</span>
+            <button id="scoreboardBtn" type="button" aria-label="Open scoreboard">☰</button>
+        </div>
 
         <div class="announce-banner" id="announceBanner">
             <div class="announce-unit ally" id="announceLeftUnit">💎</div>
@@ -527,14 +559,50 @@
 
     <div class="shop-modal" id="shopModal" role="dialog" aria-modal="true" aria-label="MSW Armory">
         <div class="shop-card">
-            <div class="shop-header">
-                <div class="shop-title">🛒 MSW ARMORY — LEVEL 1</div>
-                <span class="shop-gold" id="shopGoldDisplay">🪙 0</span>
-                <span class="shop-slots" id="shopSlotDisplay">0/6</span>
-                <button class="shop-close" id="closeShopBtn" type="button" aria-label="Close shop">✕</button>
+            <div class="shop-layout">
+                <aside class="shop-sidebar">
+                    <div class="shop-sidebar-gold" id="shopSidebarGold">🪙 0</div>
+                    <button class="shop-tab active" type="button" data-category="RECOMMENDED">RECOMMENDED</button>
+                    <button class="shop-tab" type="button" data-category="PHYSICS">PHYSICS</button>
+                    <button class="shop-tab" type="button" data-category="ENERGY">ENERGY</button>
+                    <button class="shop-tab" type="button" data-category="DEFENSE">DEFENSE</button>
+                    <button class="shop-tab" type="button" data-category="JUNGLE">JUNGLE</button>
+                    <button class="shop-tab" type="button" data-category="SPEED">SPEED</button>
+                    <button class="shop-tab" type="button" data-category="SUPPORT">SUPPORT</button>
+                </aside>
+                <section class="shop-main">
+                    <div class="shop-header">
+                        <div class="shop-title">🛒 MSW ARMORY — LEVEL 1</div>
+                        <span class="shop-gold" id="shopGoldDisplay">🪙 0</span>
+                        <span class="shop-slots" id="shopSlotDisplay">0/6</span>
+                        <button class="shop-close" id="closeShopBtn" type="button" aria-label="Close shop">✕</button>
+                    </div>
+                    <div class="shop-grid" id="shopItemGrid"></div>
+                    <div class="shop-bottom-bar">
+                        <div class="shop-bottom-inventory" id="shopBottomInventory" aria-label="Equipped items"></div>
+                        <div class="shop-bottom-stats" id="shopStats"></div>
+                    </div>
+                </section>
             </div>
-            <div class="shop-stats" id="shopStats"></div>
-            <div class="shop-grid" id="shopItemGrid"></div>
+        </div>
+    </div>
+
+    <div class="shop-modal" id="scoreboardModal" role="dialog" aria-modal="true" aria-label="Match scoreboard">
+        <div class="shop-card scoreboard-card">
+            <div class="shop-header" style="padding:12px 14px 0;">
+                <div class="shop-title">⚔️ MATCH SCOREBOARD</div>
+                <button class="shop-close" id="closeScoreboardBtn" type="button" aria-label="Close scoreboard">✕</button>
+            </div>
+            <div class="scoreboard-teams" style="padding:14px;">
+                <section class="scoreboard-team ally">
+                    <h3>🔵 BLUE TEAM</h3>
+                    <div id="scoreboardPlayer"></div>
+                </section>
+                <section class="scoreboard-team enemy">
+                    <h3>🔴 RED TEAM</h3>
+                    <div id="scoreboardBot"></div>
+                </section>
+            </div>
         </div>
     </div>
 
@@ -569,7 +637,7 @@
             baseSpeed: 2.75, speed: 2.75, angle: -Math.PI / 4, dx: 0, dy: 0,
             hp: 550, maxHp: 550, autoAtkRange: 272,
             basicAtkDmg: 10,
-            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
+            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0, assists: 0,
             isInvincible: false, invincibleTimer: 0,
             passiveActive: false, passiveTimer: 0,
             attackStunTimer: 0, attackInterval: 0, attackFacingTimer: 0,
@@ -582,7 +650,7 @@
             skillPoints: 1,
             skillRanks: { s1: 0, s2: 0, s3: 0 },
             damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 },
-            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, epRecovery: 0, defense: 0
+            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0
         };
 
         const walls = [
@@ -611,15 +679,18 @@
 
         const SHOP_ITEMS = [
             { id: 'core', cat: 'ENERGY', name: 'Energy Core', icon: '🔮', cost: 85, desc: '+25% EP Recovery (+2 HP/s)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 0, unique: false },
-            { id: 'shoes', cat: 'SPEED', name: 'Light Running Shoes', icon: '👟', cost: 200, desc: 'Passive - Fast: +25 Movement Speed', spd: 0.35, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true },
+            { id: 'shoes', cat: 'SPEED', name: 'Light Running Shoes', icon: '👟', cost: 200, desc: 'Passive - Fast: +25 Movement Speed', spd: 0.35, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
             { id: 'pistol', cat: 'PHYSICS', name: 'SHIELD Pistol', icon: '🔫', cost: 200, desc: '+10% Attack Speed', spd: 0, atk: 0, aspd: 0.10, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
             { id: 'gear', cat: 'DEFENSE', name: 'SHIELD Combat Gear', icon: '🛡️', cost: 200, desc: '+45 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 45, hp: 0, unique: false },
             { id: 'blade', cat: 'PHYSICS', name: 'Army Blade', icon: '🗡️', cost: 235, desc: '+20 Physical Attack (+8 Base ATK)', spd: 0, atk: 8, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
             { id: 'blood', cat: 'DEFENSE', name: 'Bloodstone', icon: '♦️', cost: 265, desc: '+300 Stamina (+210 Max HP)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 210, unique: false },
             { id: 'hammer', cat: 'PHYSICS', name: "Warrior's Hammer", icon: '🔨', cost: 270, desc: '+8% Critical Rate (1.75x Crit Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
-            { id: 'rune', cat: 'ENERGY', name: 'Mystic Rune', icon: '📜', cost: 290, desc: '+40 Energy Power (+18% Skill Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 40, epRec: 0, def: 0, hp: 0, unique: false }
+            { id: 'rune', cat: 'ENERGY', name: 'Mystic Rune', icon: '📜', cost: 290, desc: '+40 Energy Power (+18% Skill Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 40, epRec: 0, def: 0, hp: 0, unique: false },
+            { id: 'shotgun', cat: 'JUNGLE', name: "Deadpool's Shotgun", icon: '💥', cost: 200, desc: '+15% Damage to Minions & Monsters', spd: 0, atk: 5, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
+            { id: 'badge', cat: 'SUPPORT', name: 'SHIELD Badge', icon: '🎖️', cost: 200, desc: '+150 Stamina (HP) & +3 HP/s Regen', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 150, unique: false }
         ];
-        const RECOMMENDED_BUILD = ['shoes', 'blade', 'rune', 'gear', 'blood', 'hammer'];
+        const RECOMMENDED_BUILD = ['shoes', 'blade', 'pistol', 'hammer', 'blood', 'gear'];
+        let activeShopCategory = 'RECOMMENDED';
 
         function generateDensePath(points, spacing) {
             const path = [];
@@ -652,17 +723,17 @@
             baseSpeed: 2.55, speed: 2.55, angle: (3 * Math.PI) / 4, vx: 0, vy: 0,
             hp: 550, maxHp: 550, autoAtkRange: 245,
             basicAtkDmg: 10,
-            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0,
+            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0, assists: 0,
             attackCd: 0, attackInterval: 850, attackStunTimer: 0,
             skillCd: 2000, skillMaxCd: 5500,
             state: 'PUSHING', respawnTimer: 0, lockedTarget: null,
             path: laneManager.enemyMidPath, waypointIdx: 4,
             isSlowed: false, slowTimer: 0,
-            isRecalling: false, recallProgress: 0, recallDuration: 3000,
+            isRecalling: false, recallProgress: 0, recallDuration: 3000, recallCooldown: 0,
             damageRecoilTimer: 0, lastDamagedBy: null,
             lastHeroHitTimer: 0,
             homeguardTimer: 0,
-            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, epRecovery: 0, defense: 0
+            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0
         };
 
         let lastBotHp = bot.hp;
@@ -688,7 +759,7 @@
             const startIdx = 2;
             return {
                 x: path[startIdx].x, y: path[startIdx].y,
-                radius: isSuper ? 20 : 14,
+                radius: isSuper ? 16.5 : 14,
                 hp: isSuper ? 250 : 100,
                 maxHp: isSuper ? 250 : 100,
                 speed: 1.15,
@@ -809,7 +880,7 @@
             }
 
             const actual = Math.min(amount, target.hp);
-            target.hp -= amount;
+            target.hp = Math.max(0, target.hp - amount);
             target.lastDamagedBy = (source === 'bot_basic' || source === 'bot_skill') ? 'bot' : source;
             if (target === bot && source === 'player') bot.lastHeroHitTimer = 5000;
             if (target === player && (source === 'bot_basic' || source === 'bot_skill' || source === 'bot')) {
@@ -908,6 +979,7 @@
             entity.baseSpeed += item.spd;
             if (!entity.passiveActive) entity.speed = entity.baseSpeed;
             entity.basicAtkDmg += item.atk;
+            entity.bonusAtk += item.atk;
             entity.aspdBonus += item.aspd;
             entity.critRate = Math.min(1.0, entity.critRate + item.crit);
             entity.energyPower += item.energyPow;
@@ -929,7 +1001,7 @@
 
         let lastShopRenderKey = '';
         function updateShopUI() {
-            const inventory = document.getElementById('miniInventoryRow');
+            const inventory = document.getElementById('shopBottomInventory');
             const quickBuy = document.getElementById('quickBuyBtn');
             const grid = document.getElementById('shopItemGrid');
             if (!inventory || !quickBuy || !grid) return;
@@ -942,9 +1014,9 @@
 
             let nextItem = null;
             if (player.items.length < 6) {
-                const preferredId = RECOMMENDED_BUILD.find(id => !player.items.includes(id));
-                nextItem = SHOP_ITEMS.find(item => item.id === preferredId && canBuyItem(player, item));
-                if (!nextItem) nextItem = SHOP_ITEMS.find(item => canBuyItem(player, item));
+                const nextRecId = RECOMMENDED_BUILD[player.items.length] || 'blade';
+                const candidate = SHOP_ITEMS.find(item => item.id === nextRecId);
+                if (candidate && canBuyItem(player, candidate)) nextItem = candidate;
             }
             if (nextItem) {
                 quickBuy.innerHTML = `<span class="qb-icon">${nextItem.icon}</span><span class="qb-text"><span class="qb-title">${nextItem.name}</span><span class="qb-price">🪙 ${nextItem.cost}</span></span>`;
@@ -961,18 +1033,38 @@
                 stats.innerHTML = `<span>⚔️ ATK ${Math.round(player.basicAtkDmg)}</span><span>⚡ ASPD ${(1 + player.aspdBonus).toFixed(2)}x</span><span>🎯 CRIT ${Math.round(player.critRate * 100)}%</span><span>📜 ENG +${player.energyPower}</span><span>🛡️ DEF ${player.defense}</span><span>❤️ HP ${Math.round(player.hp)}/${player.maxHp}</span><span>👟 SPD ${player.baseSpeed.toFixed(2)}</span><span>🔮 EP REC ${Math.round(player.epRecovery * 100)}%</span>`;
             }
             document.getElementById('shopGoldDisplay').innerText = `🪙 ${Math.floor(player.gold)}`;
+            document.getElementById('shopSidebarGold').innerText = `🪙 ${Math.floor(player.gold)}`;
             document.getElementById('shopSlotDisplay').innerText = `${player.items.length}/6`;
 
-            const renderKey = `${Math.floor(player.gold)}|${player.items.join(',')}|${player.basicAtkDmg}|${player.aspdBonus}|${player.critRate}|${player.energyPower}|${player.defense}|${player.maxHp}|${player.baseSpeed}|${player.epRecovery}`;
+            const renderKey = `${activeShopCategory}|${Math.floor(player.gold)}|${player.items.join(',')}|${player.basicAtkDmg}|${player.aspdBonus}|${player.critRate}|${player.energyPower}|${player.defense}|${player.maxHp}|${player.baseSpeed}|${player.epRecovery}`;
             if (renderKey !== lastShopRenderKey) {
                 lastShopRenderKey = renderKey;
-                grid.innerHTML = SHOP_ITEMS.map(item => {
+                let categoryItems = activeShopCategory === 'RECOMMENDED'
+                    ? RECOMMENDED_BUILD.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean)
+                    : SHOP_ITEMS.filter(item => item.cat === activeShopCategory);
+                grid.innerHTML = categoryItems.map(item => {
                     const canBuy = canBuyItem(player, item);
-                    const ownedUnique = item.unique && player.items.includes(item.id);
-                    const disabledLabel = ownedUnique ? 'MAXED' : (player.items.length >= 6 ? 'FULL' : `BUY ${item.cost}g`);
-                    return `<div class="shop-item"><div class="shop-item-icon">${item.icon}</div><div class="shop-item-cat">${item.cat}</div><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div><button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? `BUY ${item.cost}g` : disabledLabel}</button></div>`;
+                    const disabledLabel = player.items.length >= 6 ? 'FULL' : `BUY ${item.cost}g`;
+                    return `<div class="shop-item"><div class="shop-item-icon">${item.icon}<div class="shop-item-cost">🪙 ${item.cost}</div></div><div class="shop-item-cat">${item.cat}</div><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div><button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? `BUY ${item.cost}g` : disabledLabel}</button></div>`;
                 }).join('');
             }
+            updateScoreboardUI();
+        }
+
+        function updateScoreboardUI() {
+            const renderHero = (entity, label, icon) => {
+                const items = entity.items.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean);
+                const slots = Array.from({ length: 6 }, (_, index) => {
+                    const item = items[index];
+                    return `<div class="inventory-slot" title="${item ? item.name : 'Empty slot'}">${item ? item.icon : ''}</div>`;
+                }).join('');
+                return `<div class="scoreboard-hero"><strong>${icon} ${label} · Lv.${entity.level}</strong><span>K ${entity.kills} / D ${entity.deaths} / A ${entity.assists}</span></div><div class="scoreboard-hero"><span>Total Gold</span><strong>🪙 ${Math.floor(entity.gold)}</strong></div><div class="scoreboard-items">${slots}</div>`;
+            };
+            document.getElementById('scoreboardPlayer').innerHTML = renderHero(player, 'Vision', '💎');
+            document.getElementById('scoreboardBot').innerHTML = renderHero(bot, 'Ultron AI', '🤖');
+            document.getElementById('hudK').innerText = player.kills;
+            document.getElementById('hudD').innerText = player.deaths;
+            document.getElementById('hudA').innerText = player.assists;
         }
 
         function toggleShop() {
@@ -1089,8 +1181,8 @@
             const rankBaseMinion = [0, 105, 165, 240, 340][r] || 105;
             const base = (isMinion ? rankBaseMinion : rankBaseHero) + (player.level - 1) * 6;
             const mult = 0.4 + 0.6 * (chargePct !== undefined ? chargePct : 1.0);
-            const energyMult = 1 + (player.energyPower / 40) * 0.18;
-            return base * mult * energyMult;
+            const itemScaleMult = 1 + (player.bonusAtk * 0.025) + (player.energyPower / 40) * 0.18;
+            return base * mult * itemScaleMult;
         }
 
         function getBotSkillDamage() {
@@ -1127,6 +1219,29 @@
         goldShopBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); toggleShop(); }, { passive: false });
         document.getElementById('closeShopBtn').addEventListener('click', toggleShop);
         document.getElementById('closeShopBtn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); toggleShop(); }, { passive: false });
+        document.getElementById('shopModal').addEventListener('click', (e) => {
+            const tab = e.target.closest('.shop-tab');
+            if (tab) {
+                activeShopCategory = tab.dataset.category;
+                document.querySelectorAll('.shop-tab').forEach(button => button.classList.toggle('active', button === tab));
+                lastShopRenderKey = '';
+                updateShopUI();
+            }
+        });
+        document.getElementById('scoreboardBtn').addEventListener('click', () => {
+            updateScoreboardUI();
+            document.getElementById('scoreboardModal').classList.add('active');
+        });
+        document.getElementById('scoreboardBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            updateScoreboardUI();
+            document.getElementById('scoreboardModal').classList.add('active');
+        }, { passive: false });
+        document.getElementById('closeScoreboardBtn').addEventListener('click', () => document.getElementById('scoreboardModal').classList.remove('active'));
+        document.getElementById('closeScoreboardBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            document.getElementById('scoreboardModal').classList.remove('active');
+        }, { passive: false });
         document.getElementById('quickBuyBtn').addEventListener('click', (e) => {
             const itemId = e.currentTarget.dataset.itemId;
             if (itemId) buyItem(player, itemId);
@@ -1159,9 +1274,9 @@
             player.angle = -Math.PI / 4;
             player.hp = 550; player.maxHp = 550; player.level = 1;
             player.xp = 0; player.xpToNext = 140; player.gold = 0;
-            player.kills = 0; player.deaths = 0; player.basicAtkDmg = 10;
+            player.kills = 0; player.deaths = 0; player.assists = 0; player.basicAtkDmg = 10;
             player.baseSpeed = 2.75; player.speed = 2.75;
-            player.items = []; player.aspdBonus = 0; player.critRate = 0; player.energyPower = 0;
+            player.items = []; player.aspdBonus = 0; player.critRate = 0; player.energyPower = 0; player.bonusAtk = 0;
             player.epRecovery = 0; player.defense = 0;
             player.isInvincible = false; player.passiveActive = false;
             player.speed = player.baseSpeed; player.attackInterval = 0;
@@ -1202,13 +1317,13 @@
             bot.vx = 0; bot.vy = 0;
             bot.hp = 550; bot.maxHp = 550; bot.level = 1;
             bot.xp = 0; bot.xpToNext = 140; bot.gold = 0;
-            bot.kills = 0; bot.deaths = 0; bot.basicAtkDmg = 10;
+            bot.kills = 0; bot.deaths = 0; bot.assists = 0; bot.basicAtkDmg = 10;
             bot.baseSpeed = 2.55; bot.speed = 2.55;
-            bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0;
+            bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0; bot.bonusAtk = 0;
             bot.epRecovery = 0; bot.defense = 0;
             bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
-            bot.isRecalling = false; bot.recallProgress = 0; bot.damageRecoilTimer = 0;
+            bot.isRecalling = false; bot.recallProgress = 0; bot.recallCooldown = 0; bot.damageRecoilTimer = 0;
             bot.lastDamagedBy = null;
             bot.lastHeroHitTimer = 0;
             bot.homeguardTimer = 0;
@@ -1227,8 +1342,12 @@
             lastTimerSecond = -1;
             lastHudGold = -1; lastHudPlayerKills = -1; lastHudBotKills = -1;
             lastShopRenderKey = '';
+            activeShopCategory = 'RECOMMENDED';
             s3ChargingPC = false;
             announceTimer = 0;
+            document.getElementById('scoreboardModal').classList.remove('active');
+            document.getElementById('shopModal').classList.remove('active');
+            document.querySelectorAll('.shop-tab').forEach(button => button.classList.toggle('active', button.dataset.category === 'RECOMMENDED'));
             recapExpanded = false;
             document.getElementById('announceBanner').classList.remove('active');
             document.getElementById('deathToggleBtn').classList.remove('active');
@@ -1296,7 +1415,8 @@
                     targetEl.closest('#recallBtn') || targetEl.closest('#goldShopBtn') ||
                     targetEl.closest('#deathToggleBtn') || targetEl.closest('#deathRecapPanel') ||
                     targetEl.closest('#miniInventoryRow') || targetEl.closest('#quickBuyBtn') ||
-                    targetEl.closest('#shopModal')) continue;
+                    targetEl.closest('#shopModal') || targetEl.closest('#kdaBar') ||
+                    targetEl.closest('#scoreboardBtn') || targetEl.closest('#scoreboardModal')) continue;
                 if (!camera.isPanning) {
                     e.preventDefault();
                     camera.isPanning = true;
@@ -1600,14 +1720,15 @@
             else cooldowns.s3.current = cooldowns.s3.rechargeTimer;
         }
 
-        function fireS3Projectile(targetAngle, dynamicMaxDist, chargePct) {
+        function fireS3Projectile(targetAngle, dynamicMaxDist, chargePct, isCharged = false) {
             const spawnDist = player.radius + 42;
             projectiles.push({
                 x: player.x + Math.cos(targetAngle) * spawnDist, y: player.y + Math.sin(targetAngle) * spawnDist,
                 dx: Math.cos(targetAngle) * 30, dy: Math.sin(targetAngle) * 30,
                 distTraveled: 0, maxDist: dynamicMaxDist, radius: 6,
                 isSniper: true, angle: targetAngle, hitEntities: [],
-                chargePct: chargePct
+                chargePct: chargePct, isMaxCharge: isCharged && chargePct >= 0.98,
+                minionsPassed: 0
             });
             consumeS3Charge();
             camera.zoomHoldTimer = 800;
@@ -1640,7 +1761,7 @@
                 cooldowns.s2.current = cooldowns.s2.max;
             } else if (skill === 's3') {
                 const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
-                fireS3Projectile(activeAim.angle, 240 + (chargePct * 420), chargePct);
+                fireS3Projectile(activeAim.angle, 240 + (chargePct * 420), chargePct, true);
             }
         }
 
@@ -1959,6 +2080,7 @@
                     bot.isSlowed = false;
                     bot.isRecalling = false;
                     bot.recallProgress = 0;
+                    bot.recallCooldown = 0;
                     bot.damageRecoilTimer = 0;
                     bot.lastDamagedBy = null;
                     bot.lastHeroHitTimer = 0;
@@ -1979,9 +2101,10 @@
             if (bot.skillCd > 0) bot.skillCd -= dt;
             if (bot.attackStunTimer > 0) bot.attackStunTimer -= dt;
             if (bot.damageRecoilTimer > 0) bot.damageRecoilTimer -= dt;
+            if (bot.recallCooldown > 0) bot.recallCooldown -= dt;
             if (bot.homeguardTimer > 0) bot.homeguardTimer -= dt;
 
-            if (Math.hypot(bot.x - enemyNexus.x, bot.y - enemyNexus.y) <= 220 && (performance.now() - matchStartTime) > 12000) {
+            if (Math.hypot(bot.x - enemyNexus.x, bot.y - enemyNexus.y) <= 115 && (performance.now() - matchStartTime) > 12000) {
                 bot.homeguardTimer = 4000;
             }
 
@@ -1994,6 +2117,7 @@
                 if (!isBotSafeToRecall() || bot.damageRecoilTimer > 0) {
                     bot.isRecalling = false;
                     bot.recallProgress = 0;
+                    bot.recallCooldown = 4000;
                 } else {
                     bot.recallProgress += dt;
                     if (bot.recallProgress >= bot.recallDuration) {
@@ -2034,7 +2158,7 @@
             if (nexusInDanger && bot.hp > bot.maxHp * 0.25) {
                 const dBase = Math.hypot(enemyNexus.x - bot.x, enemyNexus.y - bot.y);
                 if (dBase > 600) {
-                    if (isBotSafeToRecall()) {
+                    if (bot.recallCooldown <= 0 && bot.damageRecoilTimer <= 0 && isBotSafeToRecall()) {
                         bot.isRecalling = true;
                         bot.recallProgress = 0;
                         return;
@@ -2075,7 +2199,7 @@
 
             if (bot.state === 'RETREATING') {
                 const dHome = Math.hypot(1920 - bot.x, 480 - bot.y);
-                if (dHome > 500 && bot.hp < bot.maxHp * 0.55 && isBotSafeToRecall()) {
+                if (dHome > 500 && bot.hp < bot.maxHp * 0.55 && bot.recallCooldown <= 0 && bot.damageRecoilTimer <= 0 && isBotSafeToRecall()) {
                     bot.isRecalling = true;
                     bot.recallProgress = 0;
                     return;
@@ -2093,16 +2217,18 @@
             let underUntankedAllyTower = false;
             for (let s of structures) {
                 if (s.team === 'ally' && s.hp > 0) {
-                    const playerInTowerRange = player.state !== 'DEAD' && player.hp > 0 &&
-                        Math.hypot(player.x - s.x, player.y - s.y) <= s.range + 20;
-                    const botInTowerRange = Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 15;
                     const tanking = minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range);
-                    if ((playerInTowerRange || botInTowerRange) && (!tanking || isEarlyGame)) {
+                    if (Math.hypot(bot.x - s.x, bot.y - s.y) <= s.range + 35 && (!tanking || isEarlyGame)) {
                         underUntankedAllyTower = true;
                         break;
                     }
                 }
             }
+            const playerUnderSafeTower = structures.some(s =>
+                s.team === 'ally' && s.hp > 0 &&
+                Math.hypot(player.x - s.x, player.y - s.y) <= s.range - 10 &&
+                !minions.some(m => m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - s.x, m.y - s.y) <= s.range)
+            );
 
             let target = null;
             let bestDist = Infinity;
@@ -2114,14 +2240,14 @@
                     (!structures.includes(locked) || locked.team === 'ally');
                 const lockedDist = Math.hypot(locked.x - bot.x, locked.y - bot.y);
                 if (lockedAlive && lockedDist <= bot.autoAtkRange + 75 &&
-                    !(locked === player && underUntankedAllyTower)) {
+                    !(locked === player && (underUntankedAllyTower || playerUnderSafeTower))) {
                     target = locked;
                     bestDist = lockedDist;
                 } else {
                     bot.lockedTarget = null;
                 }
             }
-            if (!target && player.hp > 0 && !player.isInvincible && player.state !== 'DEAD' && !underUntankedAllyTower) {
+            if (!target && player.hp > 0 && !player.isInvincible && player.state !== 'DEAD' && !underUntankedAllyTower && !playerUnderSafeTower) {
                 const dP = Math.hypot(player.x - bot.x, player.y - bot.y);
                 if (dP <= bot.autoAtkRange + 35) {
                     target = player;
@@ -2285,6 +2411,10 @@
                 lastHudBotKills = bot.kills;
                 document.getElementById('enemyKills').innerText = bot.kills;
             }
+            document.getElementById('hudK').innerText = player.kills;
+            document.getElementById('hudD').innerText = player.deaths;
+            document.getElementById('hudA').innerText = player.assists;
+            if (document.getElementById('scoreboardModal').classList.contains('active')) updateScoreboardUI();
             const atkBtn = document.getElementById('atkBtn');
             if (player.empoweredAtks > 0 && player.empoweredTimer > 0) {
                 atkBtn.style.boxShadow = '0 0 22px rgba(255,213,79,0.9), 0 0 12px rgba(69,243,255,0.7)';
@@ -2318,15 +2448,15 @@
             allyNexus.announceCd = Math.max(0, allyNexus.announceCd - deltaTime);
             enemyNexus.announceCd = Math.max(0, enemyNexus.announceCd - deltaTime);
 
-            if (player.state !== 'DEAD') {
-                player.gold += 1.4 * dtSec;
+            if (player.state !== 'DEAD' && player.hp > 0) {
+                player.gold += 0.35 * dtSec;
                 grantXP(player, 1.5 * dtSec, false);
                 if (player.epRecovery > 0 && player.hp > 0 && player.hp < player.maxHp) {
                     player.hp = Math.min(player.maxHp, player.hp + (player.epRecovery / 0.25) * 2 * dtSec);
                 }
             }
-            if (bot.state !== 'DEAD') {
-                bot.gold += 1.4 * dtSec;
+            if (bot.state !== 'DEAD' && bot.hp > 0) {
+                bot.gold += 0.35 * dtSec;
                 grantXP(bot, 1.5 * dtSec, false);
                 if (bot.epRecovery > 0 && bot.hp > 0 && bot.hp < bot.maxHp) {
                     bot.hp = Math.min(bot.maxHp, bot.hp + (bot.epRecovery / 0.25) * 2 * dtSec);
@@ -2338,7 +2468,7 @@
                 if (player.empoweredTimer <= 0) player.empoweredAtks = 0;
             }
             if (player.homeguardTimer > 0) player.homeguardTimer -= deltaTime;
-            if (player.state === 'ALIVE' && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 220 && (performance.now() - matchStartTime) > 12000) {
+            if (player.state === 'ALIVE' && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 115 && (performance.now() - matchStartTime) > 12000) {
                 player.homeguardTimer = 4000;
             }
 
@@ -2372,7 +2502,7 @@
                         player.recallTimer = 0; camera.offsetX = 0; camera.offsetY = 0;
                     }
                 }
-                if (player.hp > 0 && player.hp < player.maxHp && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 220) {
+                if (player.hp > 0 && player.hp < player.maxHp && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 115) {
                     player.hp = Math.min(player.maxHp, player.hp + 0.35 * deltaTime);
                 }
                 if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
@@ -2486,7 +2616,7 @@
             camera.x = Math.max(0, Math.min(WORLD.width - (canvas.width / camera.zoom), camera.x));
             camera.y = Math.max(0, Math.min(WORLD.height - (canvas.height / camera.zoom), camera.y));
 
-            updateLane(deltaTime); updateTowers(deltaTime); updateBot(deltaTime);
+            updateLane(deltaTime); updateTowers(deltaTime);
 
             if (bot.hp < lastBotHp - 3) bot.damageRecoilTimer = 400;
             lastBotHp = bot.hp;
@@ -2519,7 +2649,8 @@
             }
             for (let i = slowFields.length - 1; i >= 0; i--) {
                 const f = slowFields[i]; f.duration -= deltaTime;
-                const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * (1 + (player.energyPower / 40) * 0.18);
+                const itemScaleMult = 1 + (player.bonusAtk * 0.025) + (player.energyPower / 40) * 0.18;
+                const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * itemScaleMult;
                 const s2TickDmg = s2Dps * (deltaTime / 1000);
                 if (bot.state !== 'DEAD' && Math.hypot(bot.x - f.x, bot.y - f.y) < f.radius + bot.radius) {
                     bot.isSlowed = true; bot.slowTimer = 500;
@@ -2546,6 +2677,7 @@
                         if (m.team === 'enemy' && m.hp > 0 && !p.hitEntities.includes(m)) {
                             if (Math.hypot(cx - m.x, cy - m.y) < m.radius + p.radius) {
                                 p.hitEntities.push(m);
+                                p.minionsPassed = Math.min(2, (p.minionsPassed || 0) + 1);
                                 dealDamage(m, getS3Damage(true, p.chargePct), 'player', true);
                                 visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                             }
@@ -2553,7 +2685,15 @@
                     }
                     if (bot.state !== 'DEAD' && !p.hitEntities.includes(bot) && Math.hypot(cx - bot.x, cy - bot.y) < bot.radius + p.radius) {
                         p.hitEntities.push(bot);
-                        dealDamage(bot, getS3Damage(false, p.chargePct), 'player', true);
+                        const passThroughMult = 1 + Math.min(2, p.minionsPassed || 0) * 0.20;
+                        const ultCritMult = p.isMaxCharge ? 1.50 : 1.0;
+                        dealDamage(bot, getS3Damage(false, p.chargePct) * passThroughMult * ultCritMult, 'player', true);
+                        if (p.isMaxCharge || p.minionsPassed > 0) {
+                            const bonusText = p.isMaxCharge
+                                ? (p.minionsPassed > 0 ? `💥 PIERCE x${p.minionsPassed} CRIT!` : '💥 MAX CRIT!')
+                                : `⚡ PIERCE +${p.minionsPassed * 20}%!`;
+                            spawnFloatingText(bot.x, bot.y - bot.radius - 30, bonusText, '#ff5252', 16);
+                        }
                         bot.damageRecoilTimer = 400; activatePassive();
                         visualExplosions.push({ x: cx, y: cy, radius: 60, duration: 280 });
                         triggerStructureAggro(player, bot);
@@ -2568,6 +2708,8 @@
                 }
                 if (stoppedByHero || p.distTraveled >= p.maxDist) projectiles.splice(i, 1);
             }
+
+            updateBot(deltaTime);
 
             if (player.hp <= 0 && player.state !== 'DEAD') {
                 if (player.lastDamagedBy === 'bot' || player.lastHeroHitTimer > 0) {
@@ -2686,10 +2828,10 @@
             ctx.strokeStyle = '#293d47'; ctx.lineWidth = 164; drawLanePaths();
             ctx.strokeStyle = '#162329'; ctx.lineWidth = 146; drawLanePaths();
 
-            ctx.beginPath(); ctx.arc(400, 2000, 220, 0, Math.PI * 2);
+            ctx.beginPath(); ctx.arc(400, 2000, 115, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(33, 150, 243, 0.12)'; ctx.fill();
             ctx.strokeStyle = 'rgba(33, 150, 243, 0.35)'; ctx.lineWidth = 3; ctx.stroke();
-            ctx.beginPath(); ctx.arc(2000, 400, 220, 0, Math.PI * 2);
+            ctx.beginPath(); ctx.arc(2000, 400, 115, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(229, 57, 53, 0.12)'; ctx.fill();
             ctx.strokeStyle = 'rgba(229, 57, 53, 0.35)'; ctx.lineWidth = 3; ctx.stroke();
 
@@ -2817,10 +2959,10 @@
                 ctx.beginPath(); ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
                 ctx.fillStyle = baseColor; ctx.strokeStyle = strokeColor; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
                 if (m.isSuper) {
-                    ctx.beginPath(); ctx.arc(m.x, m.y, m.radius + 4, 0, Math.PI * 2);
-                    ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 3.5; ctx.stroke();
-                    ctx.beginPath(); ctx.arc(m.x, m.y, m.radius * 0.48, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fff176'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(m.x, m.y, m.radius + 1.5, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 2.5; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(m.x, m.y, m.radius * 0.65, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 2; ctx.stroke();
                 }
                 if (m.hp < m.maxHp) {
                     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(m.x - 15, m.y - 22, 30, 4);
@@ -2945,6 +3087,17 @@
             ctx.restore();
         }
 
+        function isVisibleToAllies(wx, wy) {
+            if (player.state !== 'DEAD' && Math.hypot(wx - player.x, wy - player.y) <= 480) return true;
+            for (const s of structures) {
+                if (s.team === 'ally' && s.hp > 0 && Math.hypot(wx - s.x, wy - s.y) <= 420) return true;
+            }
+            for (const m of minions) {
+                if (m.team === 'ally' && m.hp > 0 && Math.hypot(wx - m.x, wy - m.y) <= 320) return true;
+            }
+            return false;
+        }
+
         function drawMiniMap() {
             const mapSize = 130; const mx = 20, my = 20;
             const scale = mapSize / WORLD.width;
@@ -2963,10 +3116,16 @@
                 ctx.beginPath(); ctx.arc(mx + t.x * scale, my + t.y * scale, 3.5, 0, Math.PI * 2); ctx.fill();
             });
             minions.forEach(m => {
-                ctx.fillStyle = m.team === 'ally' ? '#64b5f6' : '#ef5350';
-                ctx.fillRect(mx + m.x * scale - 1, my + m.y * scale - 1, 2, 2);
+                if (m.team === 'enemy' && !isVisibleToAllies(m.x, m.y)) return;
+                if (m.isSuper) {
+                    ctx.fillStyle = '#ffd54f';
+                    ctx.fillRect(mx + m.x * scale - 2, my + m.y * scale - 2, 4, 4);
+                } else {
+                    ctx.fillStyle = m.team === 'ally' ? '#64b5f6' : '#ef5350';
+                    ctx.fillRect(mx + m.x * scale - 1, my + m.y * scale - 1, 2, 2);
+                }
             });
-            if (bot.state !== 'DEAD') {
+            if (bot.state !== 'DEAD' && isVisibleToAllies(bot.x, bot.y)) {
                 ctx.fillStyle = '#ff1744'; ctx.beginPath(); ctx.arc(mx + bot.x * scale, my + bot.y * scale, 4, 0, Math.PI * 2); ctx.fill();
             }
             if (player.state !== 'DEAD') {
