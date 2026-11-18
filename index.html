@@ -101,6 +101,38 @@
         }
         #recallBtn:active { transform: scale(0.92); }
         #recallBtn .hotkey { font-size: 8px; color: #aaa; margin-top: 1px; }
+        .tactical-spell-btn {
+            position: absolute; z-index: 10; width: 48px; height: 48px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #fff; font-size: 7px; font-weight: 900; letter-spacing: 0.3px;
+            overflow: hidden; touch-action: none; pointer-events: auto; cursor: pointer;
+        }
+        .tactical-spell-btn .btn-icon { font-size: 14px; margin: 0; }
+        .tactical-spell-btn .hotkey { font-size: 7px; color: #cbd5e1; }
+        .tactical-spell-btn .cd-overlay { position: absolute; inset: auto 0 0; height: 0; background: rgba(0,0,0,0.72); pointer-events: none; }
+        #healBtn { bottom: 24px; right: 320px; border: 2px solid #00e676; background: radial-gradient(circle at 30% 30%, rgba(0, 230, 118, 0.38), rgba(5, 35, 25, 0.96)); box-shadow: 0 0 12px rgba(0,230,118,0.3); }
+        #blinkBtn { bottom: 82px; right: 262px; border: 2px solid #ffd54f; background: radial-gradient(circle at 30% 30%, rgba(69, 243, 255, 0.38), rgba(35, 28, 7, 0.96)); box-shadow: 0 0 12px rgba(255,213,79,0.3); }
+        #pingBtn {
+            position: absolute; top: 48px; right: 18px; width: 34px; height: 34px; z-index: 48;
+            border-radius: 50%; border: 1.5px solid #ffd54f; background: rgba(24, 25, 31, 0.94);
+            color: #fff; font-size: 16px; pointer-events: auto; touch-action: none; cursor: pointer;
+        }
+        #pingWheel {
+            position: fixed; display: none; width: 120px; height: 120px; z-index: 80;
+            border-radius: 50%; background: rgba(8, 13, 22, 0.92); border: 1px solid rgba(255,213,79,0.65);
+            box-shadow: 0 0 22px rgba(0,0,0,0.7), 0 0 16px rgba(69,243,255,0.25); pointer-events: none;
+        }
+        #pingWheel.active { display: block; }
+        .ping-option {
+            position: absolute; width: 42px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; font-size: 17px; background: rgba(255,255,255,0.08); border: 1px solid transparent;
+            transform: translate(-50%, -50%);
+        }
+        .ping-option.selected { background: rgba(255,213,79,0.32); border-color: #ffd54f; box-shadow: 0 0 12px #ffd54f; }
+        #pingAttack { left: 60px; top: 18px; }
+        #pingRetreat { left: 60px; top: 102px; }
+        #pingAssemble { left: 18px; top: 60px; }
+        #pingMissing { left: 102px; top: 60px; }
         .cancel-zone {
             position: absolute;
             top: 16%;
@@ -164,7 +196,7 @@
             position: absolute;
             top: 162px;
             left: 20px;
-            width: 130px;
+            width: 110px;
             height: 32px;
             background: linear-gradient(135deg, rgba(20, 26, 38, 0.92), rgba(11, 14, 22, 0.96));
             border: 1.5px solid rgba(255, 213, 79, 0.6);
@@ -172,7 +204,8 @@
             padding: 0 10px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 8px;
             box-shadow: 0 0 12px rgba(255, 213, 79, 0.2), inset 0 0 6px rgba(255, 213, 79, 0.1);
             pointer-events: auto;
             cursor: pointer;
@@ -485,6 +518,12 @@
         .scoreboard-hero { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; margin: 6px 0; }
         .scoreboard-items { display: flex; gap: 4px; margin-top: 8px; }
         .scoreboard-items .inventory-slot { width: 25px; height: 25px; }
+        .scoreboard-hero-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; font-weight: 800; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; white-space: nowrap; }
+        .sb-gold { color: #ffd54f; }
+        @media (max-width: 520px) {
+            .scoreboard-teams { grid-template-columns: 1fr; }
+            .scoreboard-hero-row { gap: 8px; font-size: 10px; }
+        }
         @media (max-width: 520px) {
             .shop-card { padding: 9px; }
             .shop-title { font-size: 11px; }
@@ -548,6 +587,15 @@
         <button class="mini-atk-btn" id="atkMinionBtn">MINION</button>
         <button class="mini-atk-btn" id="atkTowerBtn">TOWER</button>
         <button id="recallBtn" class="interactive">RECALL<span class="hotkey">[B]</span></button>
+        <button id="healBtn" class="tactical-spell-btn" type="button" aria-label="Heal"><div class="cd-overlay" id="healCD"></div><span class="btn-icon">🩹</span>HEAL<span class="hotkey">[G]</span></button>
+        <button id="blinkBtn" class="tactical-spell-btn" type="button" aria-label="Blink"><div class="cd-overlay" id="blinkCD"></div><span class="btn-icon">⚡</span>BLINK<span class="hotkey">[V]</span></button>
+        <button id="pingBtn" type="button" aria-label="Quick ping">📢</button>
+        <div id="pingWheel" aria-hidden="true">
+            <span class="ping-option" id="pingAttack">⚔️</span>
+            <span class="ping-option" id="pingRetreat">🛡️</span>
+            <span class="ping-option" id="pingAssemble">🚩</span>
+            <span class="ping-option" id="pingMissing">❓</span>
+        </div>
 
         <div class="hud-panel" id="hudPanel">
             <span class="kills-ally" id="allyKills">0</span>
@@ -565,7 +613,6 @@
         <div class="gold-shop-pill interactive" id="goldShopBtn">
             <span class="gold-icon">🪙</span>
             <span class="gold-amount" id="goldDisplay">0</span>
-            <span class="shop-tag">SHOP</span>
         </div>
 
         <button class="quick-buy-btn" id="quickBuyBtn" type="button"></button>
@@ -682,7 +729,7 @@
             isPanning: false, panTouchId: null,
             lastTouchX: 0, lastTouchY: 0,
             minimapJumpActive: false, minimapTouchId: null,
-            minimapJumpX: 0, minimapJumpY: 0, zoomHoldTimer: 0, panHoldTimer: 0
+            minimapJumpX: 0, minimapJumpY: 0, zoomHoldTimer: 0
         };
 
         const player = {
@@ -690,7 +737,7 @@
             baseSpeed: 2.75, speed: 2.75, angle: -Math.PI / 4, dx: 0, dy: 0,
             hp: 550, maxHp: 550, autoAtkRange: 272,
             basicAtkDmg: 10,
-            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0, assists: 0,
+            xp: 0, xpToNext: 140, gold: 0, totalGold: 0, kills: 0, deaths: 0, assists: 0,
             isInvincible: false, invincibleTimer: 0,
             passiveActive: false, passiveTimer: 0,
             attackStunTimer: 0, attackInterval: 0, attackFacingTimer: 0,
@@ -776,7 +823,7 @@
             baseSpeed: 2.55, speed: 2.55, angle: (3 * Math.PI) / 4, vx: 0, vy: 0,
             hp: 550, maxHp: 550, autoAtkRange: 245,
             basicAtkDmg: 10,
-            xp: 0, xpToNext: 140, gold: 0, kills: 0, deaths: 0, assists: 0,
+            xp: 0, xpToNext: 140, gold: 0, totalGold: 0, kills: 0, deaths: 0, assists: 0,
             attackCd: 0, attackInterval: 850, attackStunTimer: 0,
             skillCd: 2000, skillMaxCd: 5500,
             state: 'PUSHING', respawnTimer: 0, lockedTarget: null,
@@ -863,7 +910,9 @@
         const cooldowns = {
             s1: { max: 7000, current: 0, activeDur: 1500 },
             s2: { max: 5000, current: 0, activeDur: 3500, range: 235 },
-            s3: { recastMax: 1000, current: 0, chargeDur: 900, maxChargeHoldLimit: 3000, charges: 0, maxCharges: 0, rechargeMax: 13000, rechargeTimer: 0 }
+            s3: { recastMax: 1000, current: 0, chargeDur: 900, maxChargeHoldLimit: 3000, charges: 0, maxCharges: 0, rechargeMax: 13000, rechargeTimer: 0 },
+            heal: { max: 45000, current: 0 },
+            blink: { max: 60000, current: 0, range: 210 }
         };
 
         const projectiles = [];
@@ -875,6 +924,8 @@
         const botAtkTracers = [];
         const visualExplosions = [];
         const floatingTexts = [];
+        const minimapPings = [];
+        const pingState = { active: false, touchId: null, startX: 0, startY: 0, selected: null };
 
         const activeAim = {
             skillId: null, touchId: null, startX: 0, startY: 0, currentX: 0, currentY: 0,
@@ -1048,6 +1099,7 @@
             if (entity.state === 'DEAD' || entity.hp <= 0) return;
             if (entity.level >= 12) {
                 entity.gold += amount * 0.42;
+                entity.totalGold += amount * 0.42;
                 return;
             }
             entity.xp += amount;
@@ -1060,6 +1112,7 @@
         function grantGold(entity, amount) {
             if (entity.state === 'DEAD' || entity.hp <= 0) return;
             entity.gold += amount;
+            entity.totalGold += amount;
             spawnFloatingText(entity.x, entity.y - 30, `+${amount}g`, '#ffd54f', 12);
         }
 
@@ -1200,7 +1253,7 @@
                     const item = items[index];
                     return `<div class="inventory-slot" title="${item ? item.name : 'Empty slot'}">${item ? item.icon : ''}</div>`;
                 }).join('');
-                return `<div class="scoreboard-hero"><strong>${icon} ${label} · Lv.${entity.level}</strong><span>${entity.kills} / ${entity.deaths} / ${entity.assists}</span></div><div class="scoreboard-hero"><span>Total Gold</span><strong>🪙 ${Math.floor(entity.gold)}</strong></div><div class="scoreboard-items">${slots}</div>`;
+                return `<div class="scoreboard-hero-row"><span class="sb-name">${icon} ${label}</span><span class="sb-lvl">Lv.${entity.level}</span><span class="sb-kda">${entity.kills} / ${entity.deaths} / ${entity.assists}</span><span class="sb-gold">🪙 ${Math.floor(entity.totalGold)}</span></div><div class="scoreboard-items">${slots}</div>`;
             };
             document.getElementById('scoreboardPlayer').innerHTML = renderHero(player, 'Vision', '💎');
             document.getElementById('scoreboardBot').innerHTML = renderHero(bot, 'Ultron AI', '🤖');
@@ -1237,6 +1290,7 @@
             }
             if (entity.level >= 12 && entity.xp > 0) {
                 entity.gold += entity.xp * 0.42;
+                entity.totalGold += entity.xp * 0.42;
                 entity.xp = 0;
             }
             if (entity === player) updateSkillUpgradeUI();
@@ -1284,18 +1338,18 @@
                     }
                     spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM RANK 2!', '#ffc107', 15);
                 } else if (rank === 3) {
-                    cooldowns.s3.rechargeMax = 10600;
-                    if (cooldowns.s3.charges < cooldowns.s3.maxCharges) {
-                        cooldowns.s3.charges += 1;
-                    }
-                    spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM RANK 3!', '#ffc107', 15);
-                } else if (rank === 4) {
                     cooldowns.s3.maxCharges = 3;
                     cooldowns.s3.charges = 3;
                     cooldowns.s3.current = 0;
                     cooldowns.s3.rechargeTimer = 0;
-                    cooldowns.s3.rechargeMax = 9500;
+                    cooldowns.s3.rechargeMax = 10600;
                     spawnFloatingText(player.x, player.y - 90, '3RD CHARGE UNLOCKED!', '#ffc107', 16);
+                } else if (rank === 4) {
+                    cooldowns.s3.rechargeMax = 9200;
+                    cooldowns.s3.charges = cooldowns.s3.maxCharges;
+                    cooldowns.s3.current = 0;
+                    cooldowns.s3.rechargeTimer = 0;
+                    spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM MAXED!', '#ffc107', 16);
                 }
             }
             spawnFloatingText(player.x, player.y - 70, `⬆️ ${sk.toUpperCase()} Lv.${rank}`, '#ffd54f', 14);
@@ -1350,6 +1404,7 @@
             const rightEl = document.getElementById('announceRightUnit');
             const verbEl = document.getElementById('announceVerb');
 
+            rightEl.style.display = 'flex';
             leftEl.innerText = leftIcon;
             leftEl.className = `announce-unit ${leftTeam}`;
             rightEl.innerText = rightIcon;
@@ -1357,9 +1412,97 @@
             verbEl.innerText = verbText;
             verbEl.style.color = verbColor;
 
-            banner.classList.add('active');
+                        banner.classList.add('active');
             announceTimer = 2600;
         }
+
+        function showPingAnnouncement(heroIcon, teamClass, messageText, textColor) {
+            const banner = document.getElementById('announceBanner');
+            const leftEl = document.getElementById('announceLeftUnit');
+            const rightEl = document.getElementById('announceRightUnit');
+            const verbEl = document.getElementById('announceVerb');
+            leftEl.innerText = heroIcon;
+            leftEl.className = `announce-unit ${teamClass}`;
+            rightEl.style.display = 'none';
+            verbEl.innerText = messageText;
+            verbEl.style.color = textColor;
+            banner.classList.add('active');
+            announceTimer = 2200;
+        }
+
+        const PING_TYPES = {
+            attack: { message: '⚔️ ATTACK!', color: '#ff6b81', option: 'pingAttack' },
+            retreat: { message: '🛡️ RETREAT!', color: '#64b5f6', option: 'pingRetreat' },
+            assemble: { message: '🚩 ASSEMBLE!', color: '#45f3ff', option: 'pingAssemble' },
+            missing: { message: '❓ ENEMY MISSING!', color: '#ffd54f', option: 'pingMissing' }
+        };
+        function triggerQuickPing(type) {
+            const ping = PING_TYPES[type];
+            if (!ping) return;
+            showPingAnnouncement('💎', 'ally', ping.message, ping.color);
+            minimapPings.push({ x: player.x, y: player.y, color: ping.color, timer: 2200, maxTimer: 2200 });
+        }
+        function updatePingSelection(x, y) {
+            if (!pingState.active) return;
+            const dx = x - pingState.startX, dy = y - pingState.startY;
+            pingState.selected = null;
+            if (Math.hypot(dx, dy) > 18) {
+                if (Math.abs(dx) > Math.abs(dy)) pingState.selected = dx < 0 ? 'assemble' : 'missing';
+                else pingState.selected = dy < 0 ? 'attack' : 'retreat';
+            }
+            Object.values(PING_TYPES).forEach(ping => {
+                document.getElementById(ping.option).classList.toggle('selected', ping.option === (PING_TYPES[pingState.selected] || {}).option);
+            });
+        }
+        function showPingWheel(x, y) {
+            const wheel = document.getElementById('pingWheel');
+            const left = Math.max(0, Math.min(window.innerWidth - 120, x - 60));
+            const top = Math.max(0, Math.min(window.innerHeight - 120, y - 60));
+            wheel.style.left = `${left}px`; wheel.style.top = `${top}px`;
+            wheel.classList.add('active');
+        }
+        function beginPing(x, y, touchId = null) {
+            pingState.active = true; pingState.touchId = touchId;
+            pingState.startX = x; pingState.startY = y; pingState.selected = null;
+            showPingWheel(x, y); updatePingSelection(x, y);
+        }
+        function finishPing(x, y) {
+            if (!pingState.active) return;
+            updatePingSelection(x, y);
+            const selected = pingState.selected;
+            pingState.active = false; pingState.touchId = null; pingState.selected = null;
+            document.getElementById('pingWheel').classList.remove('active');
+            document.querySelectorAll('.ping-option').forEach(option => option.classList.remove('selected'));
+            if (selected) triggerQuickPing(selected);
+        }
+
+        const pingBtn = document.getElementById('pingBtn');
+        pingBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const touch = e.changedTouches[0]; beginPing(touch.clientX, touch.clientY, touch.identifier);
+        }, { passive: false });
+        pingBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault(); beginPing(e.clientX, e.clientY);
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (!pingState.active || pingState.touchId === null) return;
+            for (const touch of e.touches) if (touch.identifier === pingState.touchId) updatePingSelection(touch.clientX, touch.clientY);
+        }, { passive: true });
+        window.addEventListener('touchend', (e) => {
+            if (!pingState.active || pingState.touchId === null) return;
+            for (const touch of e.changedTouches) if (touch.identifier === pingState.touchId) finishPing(touch.clientX, touch.clientY);
+        });
+        window.addEventListener('touchcancel', () => {
+            if (!pingState.active) return;
+            pingState.active = false; pingState.touchId = null;
+            document.getElementById('pingWheel').classList.remove('active');
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (pingState.active && pingState.touchId === null) updatePingSelection(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', (e) => {
+            if (pingState.active && pingState.touchId === null) finishPing(e.clientX, e.clientY);
+        });
 
         document.getElementById('restartBtn').addEventListener('click', restartGame);
         const goldShopBtn = document.getElementById('goldShopBtn');
@@ -1441,7 +1584,7 @@
             player.x = 400; player.y = 2000;
             player.angle = -Math.PI / 4;
             player.hp = 550; player.maxHp = 550; player.level = 1;
-            player.xp = 0; player.xpToNext = 140; player.gold = 0;
+            player.xp = 0; player.xpToNext = 140; player.gold = 0; player.totalGold = 0;
             player.kills = 0; player.deaths = 0; player.assists = 0; player.basicAtkDmg = 10;
             player.baseSpeed = 2.75; player.speed = 2.75;
             player.items = []; player.aspdBonus = 0; player.critRate = 0; player.energyPower = 0; player.bonusAtk = 0;
@@ -1460,6 +1603,7 @@
             player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
 
             cooldowns.s1.current = 0; cooldowns.s2.current = 0;
+            cooldowns.heal.current = 0; cooldowns.blink.current = 0;
             cooldowns.s3.current = 0; cooldowns.s3.charges = 0;
             cooldowns.s3.maxCharges = 0; cooldowns.s3.rechargeTimer = 0;
             cooldowns.s1.max = 7000;
@@ -1484,7 +1628,7 @@
             bot.angle = (3 * Math.PI) / 4;
             bot.vx = 0; bot.vy = 0;
             bot.hp = 550; bot.maxHp = 550; bot.level = 1;
-            bot.xp = 0; bot.xpToNext = 140; bot.gold = 0;
+            bot.xp = 0; bot.xpToNext = 140; bot.gold = 0; bot.totalGold = 0;
             bot.kills = 0; bot.deaths = 0; bot.assists = 0; bot.basicAtkDmg = 10;
             bot.baseSpeed = 2.55; bot.speed = 2.55;
             bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0; bot.bonusAtk = 0;
@@ -1503,10 +1647,13 @@
             towerShots.length = 0; slowFields.length = 0; beamTracers.length = 0;
             basicAtkTracers.length = 0; botAtkTracers.length = 0; visualExplosions.length = 0;
             floatingTexts.length = 0;
+            minimapPings.length = 0;
+            pingState.active = false; pingState.touchId = null; pingState.selected = null;
+            document.getElementById('pingWheel').classList.remove('active');
             laneManager.spawnQueue.length = 0;
 
             laneManager.waveTimer = 5000; gameOver = false;
-            camera.offsetX = 0; camera.offsetY = 0; camera.panHoldTimer = 0;
+            camera.offsetX = 0; camera.offsetY = 0;
             camera.spectatorX = 400; camera.spectatorY = 2000;
             lastBotHp = bot.hp;
             matchStartTime = performance.now();
@@ -1535,7 +1682,7 @@
             joyActive = false; joyTouchId = null;
             joyKnob.style.transform = 'translate(0px, 0px)';
             player.dx = 0; player.dy = 0;
-            camera.isPanning = false; camera.panTouchId = null; camera.panHoldTimer = 0;
+            camera.isPanning = false; camera.panTouchId = null;
             camera.minimapJumpActive = false; camera.minimapTouchId = null;
             if (activeAim.skillId) {
                 document.getElementById('cancelZone').classList.remove('active', 'hovered');
@@ -1585,16 +1732,15 @@
                 const targetEl = touch.target;
                 if (targetEl.closest('.joystick-container') || targetEl.closest('.abilities-container') ||
                     targetEl.closest('.hud-panel') || targetEl.closest('.mini-atk-btn') ||
-                    targetEl.closest('#recallBtn') || targetEl.closest('#goldShopBtn') ||
+                    targetEl.closest('#recallBtn') || targetEl.closest('#healBtn') || targetEl.closest('#blinkBtn') ||
+                    targetEl.closest('#pingBtn') || targetEl.closest('#pingWheel') || targetEl.closest('#goldShopBtn') ||
                     targetEl.closest('#deathToggleBtn') || targetEl.closest('#deathRecapPanel') ||
                     targetEl.closest('#miniInventoryRow') || targetEl.closest('#quickBuyBtn') ||
                     targetEl.closest('#shopModal') || targetEl.closest('#kdaBar') ||
                     targetEl.closest('#scoreboardBtn') || targetEl.closest('#scoreboardModal')) continue;
-                if (player.state !== 'DEAD') {
-                    camera.isPanning = true;
-                    camera.panTouchId = touch.identifier;
-                    camera.lastTouchX = x; camera.lastTouchY = y;
-                }
+                camera.isPanning = true;
+                camera.panTouchId = touch.identifier;
+                camera.lastTouchX = x; camera.lastTouchY = y;
             }
         });
 
@@ -1641,14 +1787,18 @@
                         cancelEl.classList.remove('hovered');
                     }
                 }
-                if (camera.isPanning && touch.identifier === camera.panTouchId && player.state !== 'DEAD') {
+                if (camera.isPanning && touch.identifier === camera.panTouchId) {
                     e.preventDefault();
                     const dx = touch.clientX - camera.lastTouchX;
                     const dy = touch.clientY - camera.lastTouchY;
-                    const maxPan = 750;
-                    camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
-                    camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
-                    camera.panHoldTimer = 2200;
+                    if (player.state === 'DEAD') {
+                        camera.spectatorX = Math.max(0, Math.min(WORLD.width, camera.spectatorX - dx * 1.8));
+                        camera.spectatorY = Math.max(0, Math.min(WORLD.height, camera.spectatorY - dy * 1.8));
+                    } else {
+                        const maxPan = 550;
+                        camera.offsetX = Math.max(-maxPan, Math.min(maxPan, camera.offsetX - dx * 1.5));
+                        camera.offsetY = Math.max(-maxPan, Math.min(maxPan, camera.offsetY - dy * 1.5));
+                    }
                     camera.lastTouchX = touch.clientX;
                     camera.lastTouchY = touch.clientY;
                 }
@@ -1679,6 +1829,8 @@
         document.getElementById('atkMinionBtn').addEventListener('touchstart', (e) => { e.preventDefault(); triggerBasicAttack('minion'); });
         document.getElementById('atkTowerBtn').addEventListener('touchstart', (e) => { e.preventDefault(); triggerBasicAttack('tower'); });
         document.getElementById('recallBtn').addEventListener('touchstart', (e) => { e.preventDefault(); startRecall(); });
+        document.getElementById('healBtn').addEventListener('touchstart', (e) => { e.preventDefault(); activateHeal(); });
+        document.getElementById('blinkBtn').addEventListener('touchstart', (e) => { e.preventDefault(); initSkillAim('blink', e); }, { passive: false });
 
         document.getElementById('s1Btn').addEventListener('mousedown', activateSkill1);
         document.getElementById('s2Btn').addEventListener('mousedown', () => {
@@ -1704,6 +1856,8 @@
         document.getElementById('atkMinionBtn').addEventListener('mousedown', () => triggerBasicAttack('minion'));
         document.getElementById('atkTowerBtn').addEventListener('mousedown', () => triggerBasicAttack('tower'));
         document.getElementById('recallBtn').addEventListener('mousedown', startRecall);
+        document.getElementById('healBtn').addEventListener('mousedown', activateHeal);
+        document.getElementById('blinkBtn').addEventListener('mousedown', startBlinkAimPC);
 
         document.getElementById('upS1Btn').addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s1'); }, { passive: false });
         document.getElementById('upS1Btn').addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); upgradeSkill('s1'); });
@@ -1746,6 +1900,8 @@
             }
             if (e.key.toLowerCase() === 'f') triggerBasicAttack('all');
             if (e.key.toLowerCase() === 'b') startRecall();
+            if (e.key.toLowerCase() === 'g') activateHeal();
+            if (e.key.toLowerCase() === 'v') activateBlink(player.angle);
             if (e.key.toLowerCase() === 'p') toggleShop();
             if (e.key.toLowerCase() === 'k') grantXP(player, 500);
             if (e.key === '1') upgradeSkill('s1');
@@ -1828,6 +1984,31 @@
             if (Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) < 120) return;
             player.recallTimer = 4000;
             player.dx = 0; player.dy = 0;
+        }
+
+        function activateHeal() {
+            if (player.state === 'DEAD' || cooldowns.heal.current > 0) return;
+            player.recallTimer = 0;
+            const healAmt = Math.round(player.maxHp * 0.18);
+            player.hp = Math.min(player.maxHp, player.hp + healAmt);
+            player.homeguardTimer = Math.max(player.homeguardTimer, 1500);
+            cooldowns.heal.current = cooldowns.heal.max;
+            spawnFloatingText(player.x, player.y - 60, `+${healAmt} HP`, '#00ff66', 15);
+            visualExplosions.push({ x: player.x, y: player.y, radius: 55, duration: 300, color: '#00e676' });
+        }
+
+        function activateBlink(targetAngle) {
+            if (player.state === 'DEAD' || cooldowns.blink.current > 0) return;
+            player.recallTimer = 0;
+            const startX = player.x, startY = player.y;
+            const angle = Number.isFinite(targetAngle) ? targetAngle : player.angle;
+            const destX = Math.max(player.radius, Math.min(WORLD.width - player.radius, player.x + Math.cos(angle) * cooldowns.blink.range));
+            const destY = Math.max(player.radius, Math.min(WORLD.height - player.radius, player.y + Math.sin(angle) * cooldowns.blink.range));
+            player.x = destX; player.y = destY;
+            ejectFromWall(player);
+            visualExplosions.push({ x: startX, y: startY, radius: 55, duration: 320, color: '#ffd54f' });
+            visualExplosions.push({ x: player.x, y: player.y, radius: 65, duration: 360, color: '#45f3ff' });
+            cooldowns.blink.current = cooldowns.blink.max;
         }
 
         function triggerBasicAttack(priority) {
@@ -1937,12 +2118,14 @@
             } else if (skill === 's3') {
                 const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
                 fireS3Projectile(activeAim.angle, 240 + (chargePct * 420), chargePct, true);
+            } else if (skill === 'blink') {
+                activateBlink(activeAim.hasMoved ? activeAim.angle : player.angle);
             }
         }
 
         function initSkillAim(skillId, touchEvent) {
             if (player.state === 'DEAD') return;
-            if (player.skillRanks[skillId] <= 0) return;
+            if (skillId !== 'blink' && player.skillRanks[skillId] <= 0) return;
             if (skillId === 's3') {
                 if (cooldowns.s3.charges <= 0 || cooldowns.s3.current > 0) return;
             } else if (cooldowns[skillId].current > 0) return;
@@ -1955,10 +2138,36 @@
             activeAim.dragDist = 0; activeAim.chargeTime = 0; activeAim.fullZoomHoldTime = 0;
             activeAim.isCanceled = false; activeAim.hasMoved = false;
             const smart = getSmartTargetCoords(skillId === 's2' ? cooldowns.s2.range : 660);
-            activeAim.angle = smart.angle;
+            activeAim.angle = skillId === 'blink' ? player.angle : smart.angle;
             if (skillId === 's3') player.angle = activeAim.angle;
             document.getElementById('cancelZone').classList.add('active');
         }
+
+        function startBlinkAimPC(e) {
+            if (player.state === 'DEAD' || cooldowns.blink.current > 0 || activeAim.skillId) return;
+            e.preventDefault();
+            player.recallTimer = 0;
+            activeAim.skillId = 'blink';
+            activeAim.touchId = -2;
+            activeAim.startX = e.clientX; activeAim.startY = e.clientY;
+            activeAim.currentX = e.clientX; activeAim.currentY = e.clientY;
+            activeAim.angle = player.angle;
+            activeAim.dragDist = 0; activeAim.chargeTime = 0;
+            activeAim.isCanceled = false; activeAim.hasMoved = false;
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            if (activeAim.skillId === 'blink' && activeAim.touchId === -2) {
+                const dx = e.clientX - activeAim.startX, dy = e.clientY - activeAim.startY;
+                if (Math.hypot(dx, dy) > 8) {
+                    activeAim.hasMoved = true;
+                    activeAim.angle = Math.atan2(dy, dx);
+                }
+            }
+        });
+        window.addEventListener('mouseup', () => {
+            if (activeAim.skillId === 'blink' && activeAim.touchId === -2) resolveSkillRelease();
+        });
 
         function findMinionTarget(m) {
             const aggroRange = 240;
@@ -2647,6 +2856,7 @@
 
             if (player.state !== 'DEAD' && player.hp > 0) {
                 player.gold += 0.35 * dtSec;
+                player.totalGold += 0.35 * dtSec;
                 grantXP(player, 1.5 * dtSec, false);
                 if (player.epRecovery > 0 && player.hp > 0 && player.hp < player.maxHp) {
                     player.hp = Math.min(player.maxHp, player.hp + (player.epRecovery / 0.25) * 2 * dtSec);
@@ -2654,10 +2864,16 @@
             }
             if (bot.state !== 'DEAD' && bot.hp > 0) {
                 bot.gold += 0.35 * dtSec;
+                bot.totalGold += 0.35 * dtSec;
                 grantXP(bot, 1.5 * dtSec, false);
                 if (bot.epRecovery > 0 && bot.hp > 0 && bot.hp < bot.maxHp) {
                     bot.hp = Math.min(bot.maxHp, bot.hp + (bot.epRecovery / 0.25) * 2 * dtSec);
                 }
+            }
+
+            for (let i = minimapPings.length - 1; i >= 0; i--) {
+                minimapPings[i].timer -= deltaTime;
+                if (minimapPings[i].timer <= 0) minimapPings.splice(i, 1);
             }
 
             if (player.empoweredTimer > 0) {
@@ -2745,7 +2961,7 @@
                 }
             }
 
-            ['s1', 's2'].forEach(key => {
+            ['s1', 's2', 'heal', 'blink'].forEach(key => {
                 if (cooldowns[key].current > 0) {
                     cooldowns[key].current = Math.max(0, cooldowns[key].current - deltaTime);
                     document.getElementById(`${key}CD`).style.height = `${(cooldowns[key].current / cooldowns[key].max) * 100}%`;
@@ -2787,10 +3003,9 @@
             else if (camera.zoomHoldTimer > 0) { camera.zoomHoldTimer -= deltaTime; targetZoom = 1.0 - (0.28 * Math.min(1, camera.zoomHoldTimer / 500)); }
             camera.zoom += (targetZoom - camera.zoom) * 0.22;
 
-            if (camera.panHoldTimer > 0) camera.panHoldTimer = Math.max(0, camera.panHoldTimer - deltaTime);
-            if (!camera.isPanning && !camera.minimapJumpActive && player.state !== 'DEAD' && camera.panHoldTimer <= 0) {
-                camera.offsetX *= 0.88;
-                camera.offsetY *= 0.88;
+            if (!camera.isPanning && !camera.minimapJumpActive && player.state !== 'DEAD') {
+                camera.offsetX *= 0.80;
+                camera.offsetY *= 0.80;
                 if (Math.abs(camera.offsetX) < 0.3) camera.offsetX = 0;
                 if (Math.abs(camera.offsetY) < 0.3) camera.offsetY = 0;
             }
@@ -3161,6 +3376,15 @@
                     ctx.strokeStyle = iC; ctx.lineWidth = 1.5; ctx.setLineDash([6, 6]); ctx.stroke(); ctx.setLineDash([]);
                     ctx.beginPath(); ctx.arc(aX, aY, 80, 0, Math.PI * 2);
                     ctx.fillStyle = aC; ctx.strokeStyle = iC; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
+                } else if (activeAim.skillId === 'blink') {
+                    const destX = player.x + Math.cos(activeAim.angle) * cooldowns.blink.range;
+                    const destY = player.y + Math.sin(activeAim.angle) * cooldowns.blink.range;
+                    ctx.beginPath(); ctx.arc(player.x, player.y, cooldowns.blink.range, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 213, 79, 0.35)'; ctx.lineWidth = 2; ctx.setLineDash([7, 7]); ctx.stroke(); ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(destX, destY);
+                    ctx.strokeStyle = '#45f3ff'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(destX, destY, 18, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(69, 243, 255, 0.2)'; ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
                 } else if (activeAim.skillId === 's3') {
                     const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
                     const L = 240 + (chargePct * 420);
@@ -3285,7 +3509,8 @@
             visualExplosions.forEach(exp => {
                 const currentRadius = Math.max(0, exp.radius * (1.0 - exp.duration / 350));
                 ctx.beginPath(); ctx.arc(exp.x, exp.y, currentRadius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 235, 59, 0.35)'; ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
+                ctx.fillStyle = exp.color ? `${exp.color}33` : 'rgba(255, 235, 59, 0.35)';
+                ctx.strokeStyle = exp.color || '#ffc107'; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
             });
 
             drawFloatingTexts();
@@ -3357,6 +3582,13 @@
             if (player.state !== 'DEAD') {
                 ctx.fillStyle = '#00ff66'; ctx.beginPath(); ctx.arc(mx + player.x * scale, my + player.y * scale, 4, 0, Math.PI * 2); ctx.fill();
             }
+            minimapPings.forEach(ping => {
+                const progress = 1 - ping.timer / ping.maxTimer;
+                const radius = 5 + progress * 20;
+                ctx.beginPath(); ctx.arc(mx + ping.x * scale, my + ping.y * scale, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = ping.color; ctx.globalAlpha = 1 - progress; ctx.lineWidth = 2; ctx.stroke();
+                ctx.globalAlpha = 1;
+            });
             ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1;
             ctx.strokeRect(mx + camera.x * scale, my + camera.y * scale, (canvas.width / camera.zoom) * scale, (canvas.height / camera.zoom) * scale);
         }
