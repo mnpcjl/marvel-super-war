@@ -60,9 +60,16 @@
         }
         .skill-btn .cd-overlay {
             position: absolute; bottom: 0; left: 0;
-            width: 100%; height: 0%; background: rgba(0, 0, 0, 0.78);
+            width: 100%; height: 0%; background: rgba(0, 0, 0, 0.82);
             pointer-events: none;
         }
+        @keyframes skillReadyShine {
+            0% { box-shadow: 0 0 0 rgba(69,243,255,0); filter: brightness(1); }
+            35% { box-shadow: 0 0 28px rgba(69,243,255,0.95), inset 0 0 16px rgba(255,213,79,0.7); filter: brightness(1.5); }
+            100% { box-shadow: 0 0 8px rgba(69,243,255,0.25); filter: brightness(1); }
+        }
+        .skill-ready-shine { animation: skillReadyShine 600ms ease-out; }
+        .skill-btn:has(.cd-overlay[style*="height: "]) { --cooldown-dim: 1; }
         .hotkey { display: none; font-size: 7px; color: #aaa; margin-top: 1px; }
         body.show-hotkeys .hotkey { display: inline; }
         body.hide-emojis .btn-icon { display: none; }
@@ -222,20 +229,29 @@
         .gold-icon { font-size: 13px; }
         .gold-amount { color: #ffd54f; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; }
         .shop-tag { font-size: 8px; font-weight: 800; color: #90a4ae; background: rgba(255,255,255,0.08); padding: 2px 5px; border-radius: 6px; }
-        .enemy-respawn-badge {
-            position: absolute;
-            top: 10px; left: calc(50% + 84px);
-            min-height: 30px; width: max-content; max-width: 42vw; padding: 0 9px;
-            border-radius: 8px;
-            background: rgba(45, 10, 18, 0.94);
-            border: 1.5px solid #ff4560;
-            color: #ffccd5;
-            font-size: 11px; font-weight: 900;
-            display: none; align-items: center; gap: 5px;
-            box-shadow: 0 0 12px rgba(255, 69, 96, 0.45);
-            pointer-events: none; z-index: 45;
+        .enemy-respawn-badge, .ally-respawn-badge {
+            position: absolute; top: 10px;
+            min-height: 30px; width: max-content; max-width: 27vw; padding: 0 6px;
+            border-radius: 8px; font-size: 10px; font-weight: 900;
+            display: none; align-items: center; gap: 4px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; pointer-events: none; z-index: 45;
         }
-        .enemy-respawn-badge.active { display: flex; }
+        .enemy-respawn-badge {
+            left: calc(50% + 84px); background: rgba(45, 10, 18, 0.94);
+            border: 1.5px solid #ff4560; color: #ffccd5;
+            box-shadow: 0 0 12px rgba(255, 69, 96, 0.45);
+        }
+        .ally-respawn-badge {
+            right: calc(50% + 84px); background: rgba(8, 27, 43, 0.94);
+            border: 1.5px solid #45f3ff; color: #d8fbff;
+            box-shadow: 0 0 12px rgba(69, 243, 255, 0.4);
+        }
+        .enemy-respawn-badge.active, .ally-respawn-badge.active { display: flex; }
+        @media (max-width: 700px) {
+            .enemy-respawn-badge, .ally-respawn-badge { max-width: 20vw; font-size: 8px; }
+            .enemy-respawn-badge { left: calc(50% + 78px); }
+            .ally-respawn-badge { right: calc(50% + 78px); }
+        }
         .death-dim-overlay {
             position: absolute;
             inset: 0;
@@ -251,21 +267,45 @@
         }
         .death-dim-overlay.active { opacity: 1; }
         .game-over-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.88); z-index: 100;
-            display: none; align-items: center; justify-content: center;
-            flex-direction: column; pointer-events: auto;
+            position: absolute; inset: 0; background: rgba(0, 0, 0, 0.91); z-index: 100;
+            display: none; align-items: center; justify-content: center; pointer-events: auto; padding: 12px;
         }
         .game-over-overlay.active { display: flex; }
-        .game-over-overlay h1 { font-size: 56px; margin: 0 0 30px 0; letter-spacing: 4px; }
-        .game-over-overlay h1.victory { color: #45f3ff; text-shadow: 0 0 24px #45f3ff; }
-        .game-over-overlay h1.defeat { color: #e94560; text-shadow: 0 0 24px #e94560; }
-        .restart-btn {
-            background: #263238; color: #45f3ff; border: 2px solid #45f3ff;
-            border-radius: 8px; padding: 14px 40px; font-size: 18px;
-            cursor: pointer; font-weight: bold; letter-spacing: 2px;
-        }
+        .postmatch-card { width: min(980px, 98vw); max-height: 96vh; overflow: auto; padding: 14px; border-radius: 14px; background: linear-gradient(145deg, #172233, #080c14); border: 1px solid rgba(69,243,255,.55); box-shadow: 0 0 32px rgba(0,0,0,.8); }
+        .postmatch-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+        .postmatch-header h1 { margin: 0; font-size: 26px; letter-spacing: 2px; }
+        .postmatch-header h1.victory { color: #45f3ff; text-shadow: 0 0 18px #45f3ff; }
+        .postmatch-header h1.defeat { color: #ff4560; text-shadow: 0 0 18px #ff4560; }
+        .postmatch-summary { color: #d7e0eb; font-size: 11px; font-weight: 800; text-align: right; }
+        .postmatch-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .postmatch-team { min-width: 0; padding: 8px; border-radius: 9px; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.14); }
+        .postmatch-team.blue { border-color: rgba(69,243,255,.5); }
+        .postmatch-team.red { border-color: rgba(255,69,96,.5); }
+        .postmatch-team h2 { margin: 0 0 7px; font-size: 12px; }
+        .postmatch-team.blue h2 { color: #45f3ff; }
+        .postmatch-team.red h2 { color: #ff6b81; }
+        .postmatch-row { padding: 7px 5px; margin: 4px 0; border-radius: 6px; background: rgba(0,0,0,.24); font-size: 9px; }
+        .postmatch-row-top { display: flex; align-items: center; justify-content: space-between; gap: 5px; font-weight: 800; }
+        .postmatch-build { display: flex; gap: 3px; margin-top: 5px; }
+        .postmatch-build span { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; background: rgba(255,213,79,.1); }
+        .mvp-badge { padding: 2px 4px; border-radius: 4px; background: #ffd54f; color: #201600; font-size: 7px; }
+        .mvp-badge.loser { background: #b388ff; color: #160c2b; }
+        .postmatch-combat { margin-top: 5px; display: grid; gap: 3px; }
+        .postmatch-stat { display: grid; grid-template-columns: 68px 1fr 40px; align-items: center; gap: 4px; color: #cbd5e1; font-size: 7px; }
+        .postmatch-stat-bg { height: 5px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; }
+        .postmatch-stat-fill { height: 100%; border-radius: inherit; }
+        .postmatch-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .postmatch-toggle, .restart-btn { border-radius: 7px; padding: 8px 12px; cursor: pointer; font-weight: 900; }
+        .postmatch-toggle { border: 1px solid #64b5f6; background: rgba(33,150,243,.16); color: #e3f2fd; }
+        .restart-btn { background: #263238; color: #45f3ff; border: 2px solid #45f3ff; padding: 9px 24px; font-size: 12px; letter-spacing: 1px; }
         .restart-btn:active { transform: scale(0.95); }
+        @media (max-width: 600px) {
+            .postmatch-card { padding: 8px; }
+            .postmatch-teams { gap: 5px; }
+            .postmatch-row { padding: 5px 3px; font-size: 7px; }
+            .postmatch-build span { width: 16px; height: 16px; font-size: 10px; }
+            .postmatch-header h1 { font-size: 18px; }
+        }
 
         @keyframes pulseUp {
             0% { transform: scale(0.95); box-shadow: 0 0 8px rgba(255, 213, 79, 0.7); }
@@ -609,14 +649,12 @@
 
         <div class="hud-panel" id="hudPanel">
             <span class="kills-ally" id="allyKills">0</span>
-            <span class="hud-divider">vs</span>
             <span class="hud-timer" id="matchTimer">00:00</span>
-            <span class="hud-divider">vs</span>
             <span class="kills-enemy" id="enemyKills">0</span>
         </div>
 
+        <div class="ally-respawn-badge" id="allyRespawnBadge"><span id="allyRespawnText"></span></div>
         <div class="enemy-respawn-badge" id="enemyRespawnBadge">
-            <span>🤖</span>
             <span id="enemyRespawnText">0s</span>
         </div>
 
@@ -722,8 +760,20 @@
     </div>
 
     <div class="game-over-overlay" id="gameOverOverlay">
-        <h1 id="gameOverText" class="victory">VICTORY</h1>
-        <button class="restart-btn" id="restartBtn">RESTART</button>
+        <section class="postmatch-card">
+            <header class="postmatch-header">
+                <h1 id="gameOverText" class="victory">VICTORY</h1>
+                <div class="postmatch-summary"><span id="postMatchDuration">00:00</span><br><span id="postMatchKills">BLUE 0 — 0 RED</span></div>
+            </header>
+            <div class="postmatch-teams">
+                <section class="postmatch-team blue"><h2>BLUE TEAM</h2><div id="postMatchBlue"></div></section>
+                <section class="postmatch-team red"><h2>RED TEAM</h2><div id="postMatchRed"></div></section>
+            </div>
+            <div class="postmatch-actions">
+                <button class="postmatch-toggle" id="postMatchStatsToggle" type="button">📊 COMBAT STATS</button>
+                <button class="restart-btn" id="restartBtn">PLAY AGAIN</button>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -764,7 +814,8 @@
             empoweredTimer: 0,
             skillPoints: 1,
             skillRanks: { s1: 0, s2: 0, s3: 0 },
-            damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 },
+            damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }, damageEvents: [],
+            dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
             items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0
         };
 
@@ -850,6 +901,7 @@
             revealedTimer: 0,
             homeguardTimer: 0,
             items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
+            dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
             id: 'ultron', name: 'Ultron AI', icon: '🤖', laneIndex: 1,
             homeX: 1920, homeY: 480, recentDamagers: {}, pingOrder: null, pingTimer: 0
         };
@@ -864,6 +916,7 @@
                 hp: 550, maxHp: 550, basicAtkDmg: 10, autoAtkRange: 235,
                 xp: 0, xpToNext: 140, gold: 0, totalGold: 0, kills: 0, deaths: 0, assists: 0,
                 items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
+                dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
                 attackCd: 0, attackInterval: 900, respawnTimer: 0, state: 'PUSHING', waypointIdx: 4,
                 recentDamagers: {}, pingOrder: null, pingTimer: 0, lastDamagedBy: null, lastHeroHitTimer: 0,
                 vx: 0, vy: 0, angle: 0, skillCd: 2800, revealedTimer: 0
@@ -982,6 +1035,30 @@
         let recapExpanded = false;
 
         let lastHudGold = -1, lastHudPlayerKills = -1, lastHudBotKills = -1;
+        const priorSkillReadyState = {
+            s1: cooldowns.s1.current <= 0, s2: cooldowns.s2.current <= 0,
+            s3: cooldowns.s3.charges > 0 && cooldowns.s3.current <= 0,
+            heal: cooldowns.heal.current <= 0, blink: cooldowns.blink.current <= 0
+        };
+        function markSkillReadyTransitions() {
+            const ready = {
+                s1: cooldowns.s1.current <= 0,
+                s2: cooldowns.s2.current <= 0,
+                s3: cooldowns.s3.charges > 0 && cooldowns.s3.current <= 0,
+                heal: cooldowns.heal.current <= 0,
+                blink: cooldowns.blink.current <= 0
+            };
+            Object.keys(ready).forEach(key => {
+                if (ready[key] && !priorSkillReadyState[key]) {
+                    const button = document.getElementById(`${key}Btn`);
+                    button.classList.remove('skill-ready-shine');
+                    void button.offsetWidth;
+                    button.classList.add('skill-ready-shine');
+                    setTimeout(() => button.classList.remove('skill-ready-shine'), 650);
+                }
+                priorSkillReadyState[key] = ready[key];
+            });
+        }
 
         function spawnFloatingText(x, y, text, color, size) {
             floatingTexts.push({
@@ -1053,7 +1130,7 @@
             const isStructure = structures.includes(target);
             const sourceHero = source === 'player' ? player
                 : (source === 'bot' || source === 'bot_basic' || source === 'bot_skill') ? bot
-                : (typeof source === 'string' && source.startsWith('hero:') ? allBots.find(b => b.id === source.slice(5)) : null);
+                : (typeof source === 'string' && /^(hero|hero_basic|hero_skill):/.test(source) ? allBots.find(b => b.id === source.split(':')[1]) : null);
             const isHeroAttacker = !!sourceHero || ['player', 'bot', 'bot_basic', 'bot_skill'].includes(source);
             if ((target === player || allBots.includes(target)) && target.defense > 0) {
                 amount *= 180 / (180 + target.defense);
@@ -1095,11 +1172,19 @@
             }
             if (target === bot && target.hp <= 0) triggerBotDeath();
 
+            if (sourceHero && actual > 0) {
+                if (target === player || allBots.includes(target)) sourceHero.dmgToHeroes += actual;
+                else if (isStructure) sourceHero.dmgToTowers += actual;
+            }
+            if (actual > 0 && (target === player || allBots.includes(target))) target.dmgTaken = (target.dmgTaken || 0) + actual;
             if (target === player && actual > 0) {
-                if (source === 'bot_basic') player.damageLog.botBasic += actual;
-                else if (source === 'bot_skill') player.damageLog.botSkill += actual;
+                const now = performance.now();
+                if (source === 'bot_basic' || source === 'bot' || source.startsWith('hero_basic:')) player.damageLog.botBasic += actual;
+                else if (source === 'bot_skill' || source.startsWith('hero_skill:')) player.damageLog.botSkill += actual;
                 else if (source === 'enemy_tower') player.damageLog.tower += actual;
                 else if (source === 'enemy_minion') player.damageLog.minion += actual;
+                player.damageEvents.push({ time: now, source, amount: actual });
+                player.damageEvents = player.damageEvents.filter(event => now - event.time <= 12000);
             }
 
             // Phase 10.2.1 - Nexus out-of-combat regen timers
@@ -1315,12 +1400,59 @@
                 }).join('');
                 return `<div class="scoreboard-hero-row"><span class="sb-name">${icon} ${label}</span><span class="sb-lvl">Lv.${entity.level}</span><span class="sb-kda">${entity.kills} / ${entity.deaths} / ${entity.assists}</span><span class="sb-gold">🪙 ${Math.floor(entity.totalGold)}</span></div><div class="scoreboard-items">${slots}</div>`;
             };
-            document.getElementById('scoreboardPlayer').innerHTML = [renderHero(player, 'Vision', '💎'), renderHero(allyTopBot, 'Thor AI', '⚡'), renderHero(allyBotBot, 'Iron Man AI', '🛡️')].join('');
-            document.getElementById('scoreboardBot').innerHTML = [renderHero(enemyTopBot, 'Loki AI', '🔨'), renderHero(bot, 'Ultron AI', '🤖'), renderHero(enemyBotBot, 'Thanos AI', '🩸')].join('');
+            document.getElementById('scoreboardPlayer').innerHTML = [[player, 'Vision', '💎'], [allyTopBot, 'Thor AI', '⚡'], [allyBotBot, 'Iron Man AI', '🛡️']].sort((a, b) => b[0].totalGold - a[0].totalGold).map(entry => renderHero(...entry)).join('');
+            document.getElementById('scoreboardBot').innerHTML = [[enemyTopBot, 'Loki AI', '🔨'], [bot, 'Ultron AI', '🤖'], [enemyBotBot, 'Thanos AI', '🩸']].sort((a, b) => b[0].totalGold - a[0].totalGold).map(entry => renderHero(...entry)).join('');
             document.getElementById('hudK').innerText = player.kills;
             document.getElementById('hudD').innerText = player.deaths;
             document.getElementById('hudA').innerText = player.assists;
         }
+
+        let showPostMatchStats = false;
+        function matchRating(hero) {
+            return hero.kills * 3 + hero.assists * 1.5 - hero.deaths * 1.2 + hero.totalGold / 250 + hero.dmgToHeroes / 500 + hero.dmgToTowers / 700;
+        }
+        function renderPostMatch() {
+            const blue = [[player, 'Vision', '💎'], [allyTopBot, 'Thor AI', '⚡'], [allyBotBot, 'Iron Man AI', '🛡️']];
+            const red = [[enemyTopBot, 'Loki AI', '🔨'], [bot, 'Ultron AI', '🤖'], [enemyBotBot, 'Thanos AI', '🩸']];
+            blue.sort((a, b) => matchRating(b[0]) - matchRating(a[0]));
+            red.sort((a, b) => matchRating(b[0]) - matchRating(a[0]));
+            const winner = enemyNexus.hp <= 0 ? 'blue' : 'red';
+            const allHeroes = [...blue.map(row => row[0]), ...red.map(row => row[0])];
+            const maxStats = {
+                heroes: Math.max(1, ...allHeroes.map(hero => hero.dmgToHeroes)),
+                towers: Math.max(1, ...allHeroes.map(hero => hero.dmgToTowers)),
+                taken: Math.max(1, ...allHeroes.map(hero => hero.dmgTaken)),
+                healing: Math.max(1, ...allHeroes.map(hero => hero.healingDone))
+            };
+            const statRows = (hero) => [
+                ['Hero DMG', hero.dmgToHeroes, maxStats.heroes, '#ff4560'],
+                ['Tower DMG', hero.dmgToTowers, maxStats.towers, '#ffd54f'],
+                ['DMG Taken', hero.dmgTaken, maxStats.taken, '#45f3ff'],
+                ['Healing', hero.healingDone, maxStats.healing, '#00e676']
+            ].map(([label, value, max, color]) => {
+                const pct = Math.round(value / max * 100);
+                return `<div class="postmatch-stat"><span>${label}</span><div class="postmatch-stat-bg"><div class="postmatch-stat-fill" style="width:${pct}%;background:${color}"></div></div><span>${Math.round(value)} · ${pct}%</span></div>`;
+            }).join('');
+            const renderRows = (team, side) => team.map(([hero, name, icon], index) => {
+                const items = hero.items.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean);
+                const rating = matchRating(hero).toFixed(1);
+                const mvp = index === 0 ? `<span class="mvp-badge ${side === winner ? '' : 'loser'}">MVP</span>` : '';
+                const build = Array.from({ length: 6 }, (_, i) => `<span title="${items[i] ? items[i].name : 'Empty'}">${items[i] ? items[i].icon : ''}</span>`).join('');
+                const combat = showPostMatchStats ? `<div class="postmatch-combat">${statRows(hero)}</div>` : `<div class="postmatch-build">${build}<span>K/D/A ${hero.kills}/${hero.deaths}/${hero.assists}</span></div>`;
+                return `<article class="postmatch-row"><div class="postmatch-row-top"><span>${icon} ${name} · Lv.${hero.level}</span><span>${hero.kills}/${hero.deaths}/${hero.assists}</span><span>🪙${Math.floor(hero.totalGold)}</span><span>★${rating} ${mvp}</span></div>${combat}</article>`;
+            }).join('');
+            document.getElementById('postMatchBlue').innerHTML = renderRows(blue, 'blue');
+            document.getElementById('postMatchRed').innerHTML = renderRows(red, 'red');
+            document.getElementById('postMatchDuration').innerText = formatTime(Math.floor((performance.now() - matchStartTime) / 1000));
+            const blueKills = player.kills + allyBots.reduce((sum, hero) => sum + hero.kills, 0);
+            const redKills = enemyBots.reduce((sum, hero) => sum + hero.kills, 0);
+            document.getElementById('postMatchKills').innerText = `BLUE ${blueKills} — ${redKills} RED`;
+            document.getElementById('postMatchStatsToggle').innerText = showPostMatchStats ? '📊 ITEMS / KDA' : '📊 COMBAT STATS';
+        }
+        document.getElementById('postMatchStatsToggle').addEventListener('click', () => {
+            showPostMatchStats = !showPostMatchStats;
+            renderPostMatch();
+        });
 
         function toggleShop() {
             const modal = document.getElementById('shopModal');
@@ -1500,9 +1632,9 @@
             const ping = PING_TYPES[type];
             if (!ping) return;
             if (type === 'assemble' || type === 'attack') {
-                allyBots.forEach(b => { if (b.hp > 0) { b.pingOrder = 'ASSIST_PLAYER'; b.pingTimer = 12000; } });
+                allyBots.forEach(b => { if (b.hp > b.maxHp * 0.35 && b.state !== 'DEAD') { b.pingOrder = 'ASSIST_PLAYER'; b.pingTimer = 10000; } });
             } else if (type === 'retreat') {
-                allyBots.forEach(b => { if (b.hp > 0 && Math.hypot(b.x - player.x, b.y - player.y) <= 650) { b.pingOrder = 'RETREAT'; b.pingTimer = 6000; } });
+                allyBots.forEach(b => { if (b.state !== 'DEAD' && Math.hypot(b.x - player.x, b.y - player.y) <= 900) { b.pingOrder = 'RETREAT'; b.pingTimer = 6000; } });
             }
             showPingAnnouncement('💎', 'ally', ping.message, ping.color);
             minimapPings.push({ x: player.x, y: player.y, color: ping.color, timer: 2200, maxTimer: 2200 });
@@ -1680,9 +1812,13 @@
             player.homeguardTimer = 0; player.healBoostTimer = 0;
             player.empoweredAtks = 0;
             player.empoweredTimer = 0;
+            player.dmgToHeroes = 0; player.dmgToTowers = 0; player.dmgTaken = 0; player.healingDone = 0;
+            player.damageEvents = [];
             player.skillPoints = 1;
             player.skillRanks = { s1: 0, s2: 0, s3: 0 };
             player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
+            player.damageEvents = [];
+            player.dmgToHeroes = 0; player.dmgToTowers = 0; player.dmgTaken = 0; player.healingDone = 0;
             player.recentDamagers = {};
 
             cooldowns.s1.current = 0; cooldowns.s2.current = 0;
@@ -1716,6 +1852,7 @@
             bot.baseSpeed = 2.55; bot.speed = 2.55;
             bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0; bot.bonusAtk = 0;
             bot.epRecovery = 0; bot.defense = 0;
+            bot.dmgToHeroes = 0; bot.dmgToTowers = 0; bot.dmgTaken = 0; bot.healingDone = 0;
             bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.recallCooldown = 0; bot.damageRecoilTimer = 0;
@@ -1731,6 +1868,7 @@
                 b.kills = 0; b.deaths = 0; b.assists = 0; b.basicAtkDmg = 10;
                 b.baseSpeed = 2.45; b.speed = 2.45; b.items = []; b.aspdBonus = 0; b.critRate = 0;
                 b.energyPower = 0; b.bonusAtk = 0; b.epRecovery = 0; b.defense = 0;
+                b.dmgToHeroes = 0; b.dmgToTowers = 0; b.dmgTaken = 0; b.healingDone = 0;
                 b.attackCd = 0; b.state = 'PUSHING'; b.respawnTimer = 0; b.waypointIdx = 4;
                 b.recentDamagers = {}; b.pingOrder = null; b.pingTimer = 0; b.lastDamagedBy = null;
                 b.lastHeroHitTimer = 0; b.revealedTimer = 0; b.isSlowed = false; b.slowTimer = 0;
@@ -1753,6 +1891,7 @@
             matchStartTime = performance.now();
             lastTimerSecond = -1;
             lastHudGold = -1; lastHudPlayerKills = -1; lastHudBotKills = -1;
+            Object.keys(priorSkillReadyState).forEach(key => { priorSkillReadyState[key] = true; });
             lastShopRenderKey = '';
             activeShopCategory = 'RECOMMENDED';
             selectedInventoryIndex = -1;
@@ -1767,6 +1906,8 @@
             document.getElementById('deathRecapPanel').classList.remove('active');
             document.getElementById('deathDimOverlay').classList.remove('active');
             document.getElementById('enemyRespawnBadge').classList.remove('active');
+            document.getElementById('allyRespawnBadge').classList.remove('active');
+            document.getElementById('postMatchStatsToggle').dataset.stats = 'false';
             updateSkillUpgradeUI();
             updateShopUI();
             document.getElementById('gameOverOverlay').classList.remove('active');
@@ -2087,7 +2228,9 @@
             if (player.state === 'DEAD' || cooldowns.heal.current > 0) return;
             player.recallTimer = 0;
             const healAmt = Math.round(player.maxHp * 0.18);
+            const hpBeforeHeal = player.hp;
             player.hp = Math.min(player.maxHp, player.hp + healAmt);
+            player.healingDone += player.hp - hpBeforeHeal;
             player.healBoostTimer = 1500;
             cooldowns.heal.current = cooldowns.heal.max;
             spawnFloatingText(player.x, player.y - 60, `+${healAmt} HP`, '#00ff66', 15);
@@ -2877,10 +3020,29 @@
                 .sort((a, b) => victim.recentDamagers[b === player ? 'vision' : b.id] - victim.recentDamagers[a === player ? 'vision' : a.id])[0] || null;
         }
 
+        function moveExtraBot(b, tx, ty, step) {
+            const dx = tx - b.x, dy = ty - b.y;
+            const distance = Math.hypot(dx, dy) || 1;
+            const angle = Math.atan2(dy, dx);
+            b.angle = angle;
+            const sx = Math.cos(angle) * step, sy = Math.sin(angle) * step;
+            if (canMoveTo(b.x + sx, b.y + sy, b.radius, false)) { b.x += sx; b.y += sy; return true; }
+            const moveX = canMoveTo(b.x + sx, b.y, b.radius, false);
+            const moveY = canMoveTo(b.x, b.y + sy, b.radius, false);
+            if (moveX) b.x += sx;
+            if (moveY) b.y += sy;
+            if (moveX || moveY) return true;
+            for (const turn of [Math.PI / 2, -Math.PI / 2]) {
+                const steer = angle + turn;
+                const px = Math.cos(steer) * step, py = Math.sin(steer) * step;
+                if (canMoveTo(b.x + px, b.y + py, b.radius, false)) { b.x += px; b.y += py; b.angle = steer; return true; }
+            }
+            return false;
+        }
         function updateExtraBots(dt) {
             const ff = dt / 16.67;
             for (const b of [allyTopBot, allyBotBot, enemyTopBot, enemyBotBot]) {
-                if (b.hp <= 0 || b.state === 'DEAD') {
+                                    if (b.hp <= 0 || b.state === 'DEAD') {
                     if (b.state !== 'DEAD') {
                         const killer = getRecentHeroKiller(b);
                         b.state = 'DEAD'; b.deaths += 1; b.respawnTimer = (7 + b.level * 2.2) * 1000;
@@ -2888,12 +3050,15 @@
                         if (killer) {
                             killer.kills += 1; grantXP(killer, 180, killer === player); grantGold(killer, 140);
                             awardAssistCredit(b, killer);
+                            showAnnouncement(killer.icon || (killer === player ? '💎' : '🤖'), killer.team, '💀 SLAIN', b.icon, b.team, '#ff4560');
+                        } else {
+                            showAnnouncement('🗼', b.team === 'ally' ? 'enemy' : 'ally', '⚔️ EXECUTED', b.icon, b.team, '#ffd54f');
                         }
+                        visualExplosions.push({ x: b.x, y: b.y, radius: 65, duration: 300 });
                     }
                     b.respawnTimer -= dt;
                     if (b.respawnTimer <= 0) {
-                        const homeNexus = b.team === 'ally' ? allyNexus : enemyNexus;
-                        b.x = b.homeX; b.y = b.homeY; b.hp = b.maxHp; b.state = 'PUSHING';
+                                            b.x = b.homeX; b.y = b.homeY; b.hp = b.maxHp; b.state = 'PUSHING';
                         b.waypointIdx = 4; b.attackCd = 0; b.recentDamagers = {};
                     }
                     continue;
@@ -2901,7 +3066,11 @@
                 b.gold += 0.35 * dt / 1000; b.totalGold += 0.35 * dt / 1000;
                 grantXP(b, 1.5 * dt / 1000, false);
                 const teamNexus = b.team === 'ally' ? allyNexus : enemyNexus;
-                if (Math.hypot(b.x - teamNexus.x, b.y - teamNexus.y) <= 115) b.hp = Math.min(b.maxHp, b.hp + 0.35 * dt);
+                if (Math.hypot(b.x - teamNexus.x, b.y - teamNexus.y) <= 115) {
+                    const before = b.hp;
+                    b.hp = Math.min(b.maxHp, b.hp + 0.35 * dt);
+                    b.healingDone += b.hp - before;
+                }
                 if (b.items.length < 6) {
                     const item = SHOP_ITEMS.find(entry => entry.id === RECOMMENDED_BUILD[b.items.length]);
                     if (canBuyItem(b, item)) buyItem(b, item.id);
@@ -2914,12 +3083,22 @@
                 const home = b.team === 'ally' ? allyNexus : enemyNexus;
                 if (b.hp < b.maxHp * 0.35) b.state = 'RETREATING';
                 else if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85) b.state = 'PUSHING';
-                if (b.team === 'ally' && b.pingOrder === 'RETREAT' && b.pingTimer > 0) {
-                    const awayAngle = Math.atan2(home.y - b.y, home.x - b.x), awayStep = b.baseSpeed * ff;
-                    if (Math.hypot(home.x - b.x, home.y - b.y) > 75) {
-                        if (canMoveTo(b.x + Math.cos(awayAngle) * awayStep, b.y, b.radius, false)) b.x += Math.cos(awayAngle) * awayStep;
-                        if (canMoveTo(b.x, b.y + Math.sin(awayAngle) * awayStep, b.radius, false)) b.y += Math.sin(awayAngle) * awayStep;
+                const untankedTowerThreat = structures.some(st => st.team !== b.team && st.hp > 0 && st.currentTarget === b &&
+                    !minions.some(m => m.team === b.team && m.hp > 0 && Math.hypot(m.x - st.x, m.y - st.y) <= st.range));
+                if (b.hp < b.maxHp * 0.35 || untankedTowerThreat) b.state = 'RETREATING';
+                if (b.state === 'RETREATING') {
+                    const homeDist = Math.hypot(home.x - b.x, home.y - b.y);
+                    if (homeDist > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * ff);
+                    else {
+                        const healed = Math.min(b.maxHp - b.hp, dt * 0.18);
+                        b.hp += healed; b.healingDone += healed;
+                        if (b.hp >= b.maxHp * 0.85 && !untankedTowerThreat) b.state = 'PUSHING';
                     }
+                    continue;
+                }
+                if (b.team === 'ally' && b.pingOrder === 'RETREAT' && b.pingTimer > 0) {
+                    if (Math.hypot(home.x - b.x, home.y - b.y) > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * ff);
+                    else { const healed = Math.min(b.maxHp - b.hp, dt * 0.18); b.hp += healed; b.healingDone += healed; }
                     continue;
                 }
                 const targets = b.team === 'ally' ? [...enemyBots] : [player, ...allyBots];
@@ -2945,29 +3124,22 @@
                     }
                     if (bestDist > b.autoAtkRange + (target.radius || 0) - 12) {
                         const step = (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff;
-                        const nx = b.x + Math.cos(b.angle) * step, ny = b.y + Math.sin(b.angle) * step;
-                        if (canMoveTo(nx, b.y, b.radius, false)) b.x = nx;
-                        if (canMoveTo(b.x, ny, b.radius, false)) b.y = ny;
+                        moveExtraBot(b, target.x, target.y, step);
                     } else if (b.attackCd <= 0) {
                         botAtkTracers.push({ x1: b.x, y1: b.y, x2: target.x, y2: target.y, duration: 110, color: b.team === 'ally' ? 'rgba(100,181,246,.9)' : 'rgba(255,82,82,.9)' });
-                        dealDamage(target, b.basicAtkDmg, `hero:${b.id}`, target === player);
+                        dealDamage(target, b.basicAtkDmg, `hero_basic:${b.id}`, target === player);
                         b.attackCd = Math.max(380, b.attackInterval / (1 + b.aspdBonus));
                     }
                     continue;
                 }
                 if (b.state === 'RETREATING' || (b.pingOrder === 'RETREAT' && b.pingTimer > 0)) {
                     const dHome = Math.hypot(home.x - b.x, home.y - b.y);
-                    if (dHome > 75) {
-                        const a = Math.atan2(home.y - b.y, home.x - b.x), step = b.baseSpeed * ff;
-                        if (canMoveTo(b.x + Math.cos(a) * step, b.y, b.radius, false)) b.x += Math.cos(a) * step;
-                        if (canMoveTo(b.x, b.y + Math.sin(a) * step, b.radius, false)) b.y += Math.sin(a) * step;
-                    } else b.hp = Math.min(b.maxHp, b.hp + dt * 0.18);
+                    if (dHome > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * ff);
+                    else { const healed = Math.min(b.maxHp - b.hp, dt * 0.18); b.hp += healed; b.healingDone += healed; }
                     continue;
                 }
-                if (b.pingOrder === 'ASSIST_PLAYER' && b.pingTimer > 0 && b.hp > b.maxHp * 0.4 && Math.hypot(player.x - b.x, player.y - b.y) > 180) {
-                    const a = Math.atan2(player.y - b.y, player.x - b.x), step = b.baseSpeed * ff;
-                    if (canMoveTo(b.x + Math.cos(a) * step, b.y, b.radius, false)) b.x += Math.cos(a) * step;
-                    if (canMoveTo(b.x, b.y + Math.sin(a) * step, b.radius, false)) b.y += Math.sin(a) * step;
+                if (b.pingOrder === 'ASSIST_PLAYER' && b.pingTimer > 0 && Math.hypot(player.x - b.x, player.y - b.y) > 180) {
+                    moveExtraBot(b, player.x, player.y, b.baseSpeed * ff);
                     continue;
                 }
                 const enemyStructure = structures.find(st => st.team !== b.team && st.hp > 0 &&
@@ -2987,9 +3159,7 @@
                 if (Math.hypot(node.x - b.x, node.y - b.y) < 35 && b.waypointIdx < path.length - 1) b.waypointIdx++;
                 const destination = path[Math.min(path.length - 1, b.waypointIdx)];
                 const a = Math.atan2(destination.y - b.y, destination.x - b.x), step = b.baseSpeed * ff;
-                b.angle = a;
-                if (canMoveTo(b.x + Math.cos(a) * step, b.y, b.radius, false)) b.x += Math.cos(a) * step;
-                if (canMoveTo(b.x, b.y + Math.sin(a) * step, b.radius, false)) b.y += Math.sin(a) * step;
+                moveExtraBot(b, destination.x, destination.y, step);
             }
         }
 
@@ -2998,11 +3168,11 @@
             if (enemyNexus.hp <= 0) {
                 gameOver = true;
                 const el = document.getElementById('gameOverOverlay'), txt = document.getElementById('gameOverText');
-                txt.innerText = 'VICTORY'; txt.className = 'victory'; el.classList.add('active');
+                txt.innerText = 'VICTORY'; txt.className = 'victory'; showPostMatchStats = false; renderPostMatch(); el.classList.add('active');
             } else if (allyNexus.hp <= 0) {
                 gameOver = true;
                 const el = document.getElementById('gameOverOverlay'), txt = document.getElementById('gameOverText');
-                txt.innerText = 'DEFEAT'; txt.className = 'defeat'; el.classList.add('active');
+                txt.innerText = 'DEFEAT'; txt.className = 'defeat'; showPostMatchStats = false; renderPostMatch(); el.classList.add('active');
             }
         }
 
@@ -3013,9 +3183,11 @@
             const enemyRespawnBadge = document.getElementById('enemyRespawnBadge');
             const deadEnemies = enemyBots.filter(hero => hero.state === 'DEAD');
             enemyRespawnBadge.classList.toggle('active', deadEnemies.length > 0);
-            if (deadEnemies.length) {
-                document.getElementById('enemyRespawnText').innerText = deadEnemies.map(hero => `${hero.icon} ${Math.ceil(hero.respawnTimer / 1000)}s`).join(' ');
-            }
+            if (deadEnemies.length) document.getElementById('enemyRespawnText').innerText = deadEnemies.map(hero => `${hero.icon} ${Math.ceil(hero.respawnTimer / 1000)}s`).join(' · ');
+            const allyRespawnBadge = document.getElementById('allyRespawnBadge');
+            const deadAllies = [player, ...allyBots].filter(hero => hero.state === 'DEAD');
+            allyRespawnBadge.classList.toggle('active', deadAllies.length > 0);
+            if (deadAllies.length) document.getElementById('allyRespawnText').innerText = deadAllies.map(hero => `${hero === player ? '💎' : hero.icon} ${Math.ceil(hero.respawnTimer / 1000)}s`).join(' · ');
             if (player.state === 'DEAD') {
                 deathToggle.classList.add('active');
                 recapPanel.classList.toggle('active', recapExpanded);
@@ -3027,9 +3199,17 @@
                     { key: 'tower', label: 'recapTowerLabel', bar: 'recapTowerBar' },
                     { key: 'minion', label: 'recapMinionLabel', bar: 'recapMinionBar' }
                 ];
-                const totalDamage = Math.max(1, Object.values(player.damageLog).reduce((sum, value) => sum + value, 0));
+                            const recentDamage = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
+                player.damageEvents = player.damageEvents.filter(event => performance.now() - event.time <= 12000);
+                            player.damageEvents.forEach(event => {
+                    if (event.source === 'bot_basic' || event.source === 'bot' || event.source.startsWith('hero_basic:')) recentDamage.botBasic += event.amount;
+                    else if (event.source === 'bot_skill' || event.source.startsWith('hero_skill:')) recentDamage.botSkill += event.amount;
+                    else if (event.source === 'enemy_tower') recentDamage.tower += event.amount;
+                    else if (event.source === 'enemy_minion') recentDamage.minion += event.amount;
+                });
+                const totalDamage = Math.max(1, Object.values(recentDamage).reduce((sum, value) => sum + value, 0));
                 entries.forEach(entry => {
-                    const damage = player.damageLog[entry.key];
+                    const damage = recentDamage[entry.key];
                     const percent = Math.round((damage / totalDamage) * 100);
                     document.getElementById(entry.label).innerText = `${Math.round(damage)} (${percent}%)`;
                     document.getElementById(entry.bar).style.width = `${percent}%`;
@@ -3100,7 +3280,9 @@
                 player.totalGold += 0.35 * dtSec;
                 grantXP(player, 1.5 * dtSec, false);
                 if (player.epRecovery > 0 && player.hp > 0 && player.hp < player.maxHp) {
+                    const before = player.hp;
                     player.hp = Math.min(player.maxHp, player.hp + (player.epRecovery / 0.25) * 2 * dtSec);
+                    player.healingDone += player.hp - before;
                 }
             }
             if (bot.state !== 'DEAD' && bot.hp > 0) {
@@ -3108,7 +3290,9 @@
                 bot.totalGold += 0.35 * dtSec;
                 grantXP(bot, 1.5 * dtSec, false);
                 if (bot.epRecovery > 0 && bot.hp > 0 && bot.hp < bot.maxHp) {
+                    const before = bot.hp;
                     bot.hp = Math.min(bot.maxHp, bot.hp + (bot.epRecovery / 0.25) * 2 * dtSec);
+                    bot.healingDone += bot.hp - before;
                 }
             }
 
@@ -3133,9 +3317,10 @@
                     player.state = 'ALIVE'; player.hp = player.maxHp;
                     player.angle = -Math.PI / 4;
                     recapExpanded = false;
-                    player.lastHeroHitTimer = 0;
-                    player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
-                    player.x = allyNexus.x; player.y = allyNexus.y;
+                                            player.lastHeroHitTimer = 0;
+                        player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
+                        player.damageEvents = [];
+                        player.x = allyNexus.x; player.y = allyNexus.y;
                     player.recallTimer = 0; player.dx = 0; player.dy = 0;
                     player.isInvincible = false; player.passiveActive = false;
                     player.speed = player.baseSpeed;
@@ -3158,7 +3343,9 @@
                     }
                 }
                 if (player.hp > 0 && player.hp < player.maxHp && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 115) {
+                    const before = player.hp;
                     player.hp = Math.min(player.maxHp, player.hp + 0.35 * deltaTime);
+                    player.healingDone += player.hp - before;
                 }
                 if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
                 if (activeAim.skillId === 's3') {
@@ -3253,6 +3440,7 @@
                 }
             }
 
+            markSkillReadyTransitions();
             let targetZoom = 1.0;
             if (activeAim.skillId === 's3') targetZoom = 1.0 - (Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur) * 0.28);
             else if (camera.zoomHoldTimer > 0) { camera.zoomHoldTimer -= deltaTime; targetZoom = 1.0 - (0.28 * Math.min(1, camera.zoomHoldTimer / 500)); }
@@ -3311,7 +3499,7 @@
                 for (const target of targets) {
                     if (target.hp <= 0 || target.state === 'DEAD' || (target === player && target.isInvincible)) continue;
                     if (Math.hypot(bp.x - target.x, bp.y - target.y) < target.radius + bp.radius) {
-                        const damageSource = owner === bot ? 'bot_skill' : `hero:${owner.id}`;
+                        const damageSource = owner === bot ? 'bot_skill' : `hero_skill:${owner.id}`;
                         dealDamage(target, bp.dmg, damageSource, target === player);
                         visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 });
                         if (owner.team === 'enemy') triggerStructureAggro(owner, target);
@@ -3393,7 +3581,16 @@
             updateBot(deltaTime);
             updateExtraBots(deltaTime);
 
-            if (player.hp <= 0 && player.state !== 'DEAD') {
+                        if (player.hp <= 0 && player.state !== 'DEAD') {
+                const deathTime = performance.now();
+                player.damageEvents = player.damageEvents.filter(event => deathTime - event.time <= 12000);
+                player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
+                player.damageEvents.forEach(event => {
+                    if (event.source === 'bot_basic' || event.source === 'bot' || event.source.startsWith('hero_basic:')) player.damageLog.botBasic += event.amount;
+                    else if (event.source === 'bot_skill' || event.source.startsWith('hero_skill:')) player.damageLog.botSkill += event.amount;
+                    else if (event.source === 'enemy_tower') player.damageLog.tower += event.amount;
+                    else if (event.source === 'enemy_minion') player.damageLog.minion += event.amount;
+                });
                 const heroKiller = getRecentHeroKiller(player);
                 if (heroKiller) {
                     heroKiller.kills += 1; grantXP(heroKiller, 180, false); grantGold(heroKiller, 140);
@@ -3432,6 +3629,15 @@
             checkGameOver();
         }
 
+        function drawHeroCorpse(hero) {
+            ctx.save();
+            ctx.globalAlpha = 0.45;
+            ctx.fillStyle = '#24272d'; ctx.strokeStyle = '#89909a'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(hero.x, hero.y, hero.radius || 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.globalAlpha = 0.8; ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#d0d4da'; ctx.fillText('💀', hero.x, hero.y);
+            ctx.restore();
+        }
         function drawHeroHealthAndLevel(entity, isPlayer) {
             const barW = 58;
             const barH = 6;
@@ -3694,7 +3900,8 @@
             });
 
             for (const hero of [allyTopBot, allyBotBot, enemyTopBot, enemyBotBot]) {
-                if (hero.state === 'DEAD' || (hero.team === 'enemy' && !isVisibleToAllies(hero.x, hero.y))) continue;
+                if (hero.state === 'DEAD') { drawHeroCorpse(hero); continue; }
+                if (hero.team === 'enemy' && !isVisibleToAllies(hero.x, hero.y)) continue;
                 ctx.save(); ctx.translate(hero.x, hero.y); ctx.rotate(hero.angle || 0);
                 ctx.beginPath(); ctx.moveTo(-9, -11); ctx.lineTo(-31, -19); ctx.lineTo(-31, 19); ctx.lineTo(-9, 11);
                 ctx.fillStyle = hero.capeColor; ctx.fill();
@@ -3705,6 +3912,7 @@
                 drawHeroHealthAndLevel(hero, hero.team === 'ally');
             }
 
+            if (bot.state === 'DEAD') drawHeroCorpse(bot);
             if (bot.state !== 'DEAD' && isVisibleToAllies(bot.x, bot.y)) {
                 ctx.save(); ctx.translate(bot.x, bot.y); ctx.rotate(bot.angle);
                 ctx.beginPath(); ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
@@ -3728,6 +3936,7 @@
                 drawHeroHealthAndLevel(bot, false);
             }
 
+            if (player.state === 'DEAD') drawHeroCorpse(player);
             if (player.state !== 'DEAD') {
                 drawHeroHealthAndLevel(player, true);
                 ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
