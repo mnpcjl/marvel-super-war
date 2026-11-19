@@ -76,7 +76,7 @@
         .cd-num {
             position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
             font-size: 14px; font-weight: 900; color: #fff; text-shadow: 0 0 6px #000, 0 1px 3px #000;
-            z-index: 6; color: #ffffff; pointer-events: none;
+            z-index: 10; color: #ffffff; opacity: 1 !important; filter: none !important; pointer-events: none;
         }
         .tactical-spell-btn .cd-num { font-size: 11px; }
         .ammo-badge {
@@ -117,6 +117,7 @@
         .tactical-spell-btn { color: #fff; }
         .tactical-spell-btn .btn-icon { font-size: 14px; margin: 0; }
         .tactical-spell-btn .cd-overlay { position: absolute; inset: auto 0 0; height: 0; background: rgba(0,0,0,0.72); pointer-events: none; }
+        .skill-btn .cd-overlay, .tactical-spell-btn .cd-overlay { z-index: 4; }
         #healBtn { bottom: 22px; right: 298px; border: 2px solid #00e676; background: radial-gradient(circle at 30% 30%, rgba(0, 230, 118, 0.38), rgba(5, 35, 25, 0.96)); box-shadow: 0 0 12px rgba(0,230,118,0.3); }
         #blinkBtn { bottom: 22px; right: 350px; border: 2px solid #ffd54f; background: radial-gradient(circle at 30% 30%, rgba(69, 243, 255, 0.38), rgba(35, 28, 7, 0.96)); box-shadow: 0 0 12px rgba(255,213,79,0.3); }
         #pingBtn {
@@ -600,7 +601,7 @@
         <button class="mini-atk-btn" id="atkTowerBtn">TOWER</button>
         <button id="recallBtn" class="interactive">RECALL<span class="hotkey">[B]</span></button>
         <button id="healBtn" class="tactical-spell-btn" type="button" aria-label="Heal"><div class="cd-overlay" id="healCD"></div><span class="cd-num" id="healNum"></span><span class="btn-icon">🩹</span>HEAL<span class="hotkey">[G]</span></button>
-        <button id="blinkBtn" class="tactical-spell-btn" type="button" aria-label="Blink"><div class="cd-overlay" id="blinkCD"></div><span class="cd-num" id="blinkNum"></span><span class="btn-icon">⚡</span>BLINK<span class="hotkey">[D]</span></button>
+        <button id="blinkBtn" class="tactical-spell-btn" type="button" aria-label="Blink"><div class="cd-overlay" id="blinkCD"></div><span class="cd-num" id="blinkNum"></span><span class="btn-icon">⚡</span>BLINK<span class="hotkey">[V]</span></button>
         <button id="pingBtn" type="button" aria-label="Quick ping">📢</button>
         <div id="pingWheel" aria-hidden="true">
             <span class="ping-option" id="pingAttack">⚔️</span>
@@ -826,6 +827,15 @@
             { id: 'avengers_medal', cat: 'SUPPORT', name: 'Avengers Medal', icon: '🏅', cost: 565, desc: '+300 Max HP, +50% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.50, def: 0, hp: 300, unique: false, tier: 2, buildsFrom: ['badge', 'core'] },
             { id: 'enhancement_serum', cat: 'SUPPORT', name: 'Enhancement Serum', icon: '🧪', cost: 1400, desc: '+800 Max HP, +50% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.50, def: 0, hp: 800, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'blood'] },
             { id: 'regeneration_cradle', cat: 'SUPPORT', name: 'Regeneration Cradle', icon: '💚', cost: 1685, desc: '+100 Energy Power, +0.20 Speed, +75% Recovery', spd: 0.20, atk: 0, aspd: 0, crit: 0, energyPow: 100, epRec: 0.75, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'rune'] },
+            { id: 'necrosword', cat: 'PHYSICS', name: 'All-Black the Necrosword', icon: '🗡️', cost: 1400, desc: '+55 Base ATK, +120 Energy Power', spd: 0, atk: 55, aspd: 0, crit: 0, energyPow: 120, epRec: 0, def: 0, hp: 0, unique: true, tier: 1, buildsFrom: [] },
+            { id: 'celestial_dagger', cat: 'PHYSICS', name: 'Celestial Dagger', icon: '🔪', cost: 665, desc: '+30% Attack Speed', spd: 0, atk: 0, aspd: 0.30, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol'] },
+            { id: 'broken_sword', cat: 'PHYSICS', name: 'Broken Sword', icon: '🗡️', cost: 675, desc: '+18 Base ATK, +5% Cooldown Reduction', spd: 0, atk: 18, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'yaka_arrow', cat: 'PHYSICS', name: 'Yaka Arrow', icon: '🏹', cost: 845, desc: '+15% ASPD, +15% Crit, +0.15 Speed', spd: 0.15, atk: 0, aspd: 0.15, crit: 0.15, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol', 'hammer'] },
+            { id: 'executioners_axe', cat: 'PHYSICS', name: "Executioner's Axe", icon: '🪓', cost: 865, desc: '+16 Base ATK, +60 Defense', spd: 0, atk: 16, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 60, hp: 0, unique: false, tier: 2, buildsFrom: ['blade', 'gear'] },
+            { id: 'abyss_broadaxe', cat: 'PHYSICS', name: 'Abyss Broadaxe', icon: '🪓', cost: 755, desc: '+14 Base ATK, +400 Max HP', spd: 0, atk: 14, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 400, unique: false, tier: 2, buildsFrom: ['blade', 'blood'] },
+            { id: 'bone_knife', cat: 'PHYSICS', name: 'Bone Knife', icon: '🦴', cost: 590, desc: '+12 Base ATK, +10% Lifesteal', spd: 0, atk: 12, aspd: 0, crit: 0, energyPow: 0, epRec: 0.15, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'dragons_breath', cat: 'PHYSICS', name: "Dragon's Breath", icon: '🐉', cost: 865, desc: '+20 Base ATK, +10% Armor Penetration', spd: 0, atk: 20, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'fenrirs_fang', cat: 'PHYSICS', name: "Fenrir's Fang", icon: '🐺', cost: 525, desc: '+14 Base ATK · Passive: 20% Healing Reduction', spd: 0, atk: 14, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
             { id: 'ebony_blade', cat: 'PHYSICS', name: 'Ebony Blade', icon: '⚔️', cost: 520, desc: '+16 Base ATK, +8% Crit Rate', spd: 0, atk: 16, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
             { id: 'sonic_rifle', cat: 'PHYSICS', name: 'Sonic Rifle', icon: '🔊', cost: 480, desc: '+22% Attack Speed, +0.15 Speed', spd: 0.15, atk: 0, aspd: 0.22, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol'] },
             { id: 'precision_scope', cat: 'PHYSICS', name: 'Precision Scope', icon: '🎯', cost: 540, desc: '+16% Crit Rate, +6 Base ATK', spd: 0, atk: 6, aspd: 0, crit: 0.16, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['hammer'] },
@@ -2140,7 +2150,7 @@
             if (e.key.toLowerCase() === 'f') triggerBasicAttack('all');
             if (e.key.toLowerCase() === 'b') startRecall();
             if (e.key.toLowerCase() === 'g') activateHeal();
-            if (e.key.toLowerCase() === 'd' || e.key.toLowerCase() === 'v') activateBlink(player.angle);
+            if (e.key.toLowerCase() === 'v') activateBlink(player.angle);
             if (e.key.toLowerCase() === 'p') toggleShop();
             if (e.key.toLowerCase() === 'k') grantXP(player, 500);
             if (e.key === '1') upgradeSkill('s1');
