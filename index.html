@@ -47,7 +47,7 @@
             transition: transform 0.12s ease-out, opacity 0.2s, filter 0.2s, box-shadow 0.2s;
         }
         .skill-btn:active { transform: scale(0.92); }
-        .skill-btn.on-cooldown, .tactical-spell-btn.on-cooldown { filter: brightness(0.55) !important; }
+        .skill-btn.on-cooldown > :not(.cd-num):not(.cd-overlay), .tactical-spell-btn.on-cooldown > :not(.cd-num):not(.cd-overlay) { opacity: 0.45; }
         .btn-icon { font-size: 15px; line-height: 1; margin-bottom: 1px; filter: drop-shadow(0 0 4px rgba(255,255,255,0.4)); }
         #s1Btn { bottom: 24px; right: 178px; }
         #s2Btn { bottom: 112px; right: 145px; }
@@ -76,7 +76,7 @@
         .cd-num {
             position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
             font-size: 14px; font-weight: 900; color: #fff; text-shadow: 0 0 6px #000, 0 1px 3px #000;
-            z-index: 5; pointer-events: none;
+            z-index: 6; color: #ffffff; pointer-events: none;
         }
         .tactical-spell-btn .cd-num { font-size: 11px; }
         .ammo-badge {
@@ -478,12 +478,13 @@
         .shop-item-desc { color: #cfd8e3; font-size: 10px; line-height: 1.35; }
         .shop-item-tier { color: #ffd54f; font-size: 8px; font-weight: 900; }
         .shop-item-recipe { color: #c6d0dc; font-size: 10px; letter-spacing: 1px; }
-        .shop-item-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .shop-item-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
         .shop-item-cost { color: #ffd54f; font-size: 10px; font-weight: 900; }
         .shop-buy {
             min-height: 28px; padding: 6px 12px; border-radius: 6px;
             border: 1px solid #ffd54f; background: rgba(255, 193, 7, 0.2);
             color: #ffd54f; font-size: 10px; font-weight: 900; cursor: pointer;
+            flex-shrink: 0; white-space: nowrap;
         }
         .shop-buy:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
         .shop-layout { display: grid; grid-template-columns: 128px minmax(0, 1fr); height: 100%; min-height: 0; overflow: hidden; }
@@ -497,9 +498,6 @@
         .shop-tab.active { color: #ffd54f; background: rgba(255,213,79,0.12); border-color: rgba(255,213,79,0.5); }
         .shop-main { min-width: 0; height: 100%; min-height: 0; display: flex; flex-direction: column; padding: 8px 10px; overflow: hidden; }
         .shop-main > .shop-header { margin-bottom: 6px; }
-        .shop-item-cost { color: #ffd54f; font-size: 8px; font-weight: 900; }
-        .shop-item-tier { color: #ffd54f; font-size: 7px; font-weight: 900; }
-        .shop-item-recipe { grid-column: 2; color: #c6d0dc; font-size: 9px; letter-spacing: 2px; }
         .shop-bottom-bar {
             flex: 0 0 auto; margin-top: 6px; padding: 6px 8px; border-radius: 8px;
             background: rgba(255, 255, 255, 0.06); display: flex;
@@ -538,7 +536,6 @@
             .shop-main { padding: 6px; }
             .shop-title { font-size: 10px; }
             .shop-grid { grid-template-columns: 1fr; }
-            .shop-item { min-height: 50px; }
             .shop-bottom-bar { gap: 5px; padding: 5px; }
             .shop-bottom-inventory .inventory-slot { width: 25px; height: 25px; font-size: 14px; }
             .sell-item-btn { padding: 3px 5px; font-size: 7px; }
@@ -2437,29 +2434,27 @@
             if (m.aggroTarget && m.aggroTarget.hp > 0 && m.aggroTarget.state !== 'DEAD' &&
                 Math.hypot(m.aggroTarget.x - m.x, m.aggroTarget.y - m.y) <= 260) return m.aggroTarget;
 
-            const opposingHeroes = m.team === 'enemy' ? [player, ...allyBots] : enemyBots;
-            let nearbyHero = null, nearbyHeroDist = Infinity;
-            for (const hero of opposingHeroes) {
-                if (hero.hp > 0 && hero.state !== 'DEAD') {
-                    const dHero = Math.hypot(hero.x - m.x, hero.y - m.y);
-                    if (dHero <= 160 && dHero < nearbyHeroDist) { nearbyHero = hero; nearbyHeroDist = dHero; }
-                }
-            }
-            if (nearbyHero) return nearbyHero;
             for (let o of minions) {
                 if (o === m || o.team === m.team || o.hp <= 0) continue;
                 const d = Math.hypot(o.x - m.x, o.y - m.y);
                 if (d <= aggroRange && d < bestDist) { best = o; bestDist = d; }
             }
-            for (const hero of opposingHeroes) {
-                if (hero.hp <= 0 || hero.state === 'DEAD' || (hero === player && hero.isInvincible)) continue;
-                const d = Math.hypot(hero.x - m.x, hero.y - m.y);
-                if (d <= aggroRange && d < bestDist) { best = hero; bestDist = d; }
-            }
+            if (best) return best;
+
+            bestDist = Infinity;
             for (let t of structures) {
                 if (t.team === m.team || t.hp <= 0) continue;
                 const d = Math.hypot(t.x - m.x, t.y - m.y);
                 if (d <= aggroRange + t.radius && d < bestDist) { best = t; bestDist = d; }
+            }
+            if (best) return best;
+
+            bestDist = Infinity;
+            const opposingHeroes = m.team === 'enemy' ? [player, ...allyBots] : enemyBots;
+            for (const hero of opposingHeroes) {
+                if (hero.hp <= 0 || hero.state === 'DEAD' || (hero === player && hero.isInvincible)) continue;
+                const d = Math.hypot(hero.x - m.x, hero.y - m.y);
+                if (d <= aggroRange && d < bestDist) { best = hero; bestDist = d; }
             }
             return best;
         }
