@@ -465,18 +465,25 @@
             flex: 1 1 auto; min-height: 0; overflow-y: auto; align-content: start; padding-right: 2px;
         }
         .shop-item {
-            display: grid; grid-template-columns: 38px 1fr; gap: 2px 7px; align-items: center;
-            min-height: 54px; padding: 5px 6px; border-radius: 8px;
+            display: flex; flex-direction: column; justify-content: space-between; gap: 6px;
+            min-height: 112px; padding: 10px; border-radius: 8px;
             background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1);
         }
-        .shop-item-icon { grid-row: span 3; position: relative; font-size: 22px; text-align: center; }
-        .shop-item-cat { color: #64b5f6; font-size: 7px; font-weight: 900; letter-spacing: 0.7px; }
-        .shop-item-name { color: #fff; font-size: 9px; font-weight: 900; }
-        .shop-item-desc { color: #aeb9c7; font-size: 8px; }
+        .shop-item-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .shop-item-icon { position: relative; flex: 0 0 auto; font-size: 24px; text-align: center; }
+        .shop-item-heading { min-width: 0; }
+        .shop-item-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+        .shop-item-cat { color: #64b5f6; font-size: 8px; font-weight: 900; letter-spacing: 0.7px; }
+        .shop-item-name { color: #fff; font-size: 12px; font-weight: 900; }
+        .shop-item-desc { color: #cfd8e3; font-size: 10px; line-height: 1.35; }
+        .shop-item-tier { color: #ffd54f; font-size: 8px; font-weight: 900; }
+        .shop-item-recipe { color: #c6d0dc; font-size: 10px; letter-spacing: 1px; }
+        .shop-item-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .shop-item-cost { color: #ffd54f; font-size: 10px; font-weight: 900; }
         .shop-buy {
-            grid-column: 2; justify-self: start; padding: 3px 8px; border-radius: 5px;
+            min-height: 28px; padding: 6px 12px; border-radius: 6px;
             border: 1px solid #ffd54f; background: rgba(255, 193, 7, 0.2);
-            color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer;
+            color: #ffd54f; font-size: 10px; font-weight: 900; cursor: pointer;
         }
         .shop-buy:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
         .shop-layout { display: grid; grid-template-columns: 128px minmax(0, 1fr); height: 100%; min-height: 0; overflow: hidden; }
@@ -504,7 +511,8 @@
         .shop-bottom-stats { display: flex; flex-wrap: wrap; gap: 7px; color: #d9e3f0; font-size: 8px; width: 100%; }
         .sell-item-btn { min-height: 30px; padding: 4px 8px; border: 1px solid #ffd54f; border-radius: 6px; background: rgba(255, 193, 7, 0.18); color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer; white-space: nowrap; }
         .sell-item-btn:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
-        #shopModal .shop-card { width: min(720px, 95vw); height: min(340px, 88vh); max-height: 88vh; display: flex; flex-direction: column; }
+        #shopModal .shop-card { width: min(820px, 95vw); height: min(520px, 90vh); max-height: 90vh; display: flex; flex-direction: column; }
+        #shopModal .shop-grid { gap: 10px; padding: 4px; }
         @media (max-height: 400px) {
             .shop-main > .shop-header { margin-bottom: 3px; }
             .shop-main { padding-top: 5px; padding-bottom: 5px; }
@@ -804,6 +812,9 @@
         const SHOP_ITEMS = [
             { id: 'core', cat: 'ENERGY', name: 'Energy Core', icon: '🔮', cost: 85, desc: '+25% EP Recovery (+2 HP/s)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
             { id: 'shoes', cat: 'SPEED', name: 'Light Running Shoes', icon: '👟', cost: 200, desc: 'Passive - Fast: +25 Movement Speed', spd: 0.35, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'hydra_boots', cat: 'SPEED', name: 'Hydra Boots', icon: '🥾', cost: 735, desc: '+0.65 Speed, +90 Defense', spd: 0.65, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 90, hp: 0, unique: true, tier: 2, buildsFrom: ['shoes', 'gear'] },
+            { id: 'hunting_greaves', cat: 'SPEED', name: 'Hunting Greaves', icon: '👢', cost: 735, desc: '+0.65 Speed, +25% Attack Speed', spd: 0.65, atk: 0, aspd: 0.25, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 2, buildsFrom: ['shoes', 'pistol'] },
+            { id: 'rocket_boots', cat: 'SPEED', name: 'Rocket Boots', icon: '🚀', cost: 600, desc: '+0.85 Movement Speed', spd: 0.85, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 2, buildsFrom: ['shoes'] },
             { id: 'pistol', cat: 'PHYSICS', name: 'SHIELD Pistol', icon: '🔫', cost: 200, desc: '+10% Attack Speed', spd: 0, atk: 0, aspd: 0.10, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
             { id: 'gear', cat: 'DEFENSE', name: 'SHIELD Combat Gear', icon: '🛡️', cost: 200, desc: '+45 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 45, hp: 0, unique: false, tier: 1, buildsFrom: [] },
             { id: 'blade', cat: 'PHYSICS', name: 'Army Blade', icon: '🗡️', cost: 235, desc: '+20 Physical Attack (+8 Base ATK)', spd: 0, atk: 8, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
@@ -811,7 +822,13 @@
             { id: 'hammer', cat: 'PHYSICS', name: "Warrior's Hammer", icon: '🔨', cost: 270, desc: '+8% Critical Rate (1.75x Crit Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
             { id: 'rune', cat: 'ENERGY', name: 'Mystic Rune', icon: '📜', cost: 290, desc: '+40 Energy Power (+18% Skill Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 40, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
             { id: 'shotgun', cat: 'JUNGLE', name: "Deadpool's Shotgun", icon: '💥', cost: 200, desc: '+15% Damage to Minions & Monsters', spd: 0, atk: 5, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'punisher_shotgun', cat: 'JUNGLE', name: "Punisher's Shotgun", icon: '🔫', cost: 535, desc: '+12 Base ATK, +50% EP/HP Recovery', spd: 0, atk: 12, aspd: 0, crit: 0, energyPow: 0, epRec: 0.50, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['shotgun'] },
+            { id: 'quantum_rifle', cat: 'JUNGLE', name: 'Quantum Rifle', icon: '🌀', cost: 1750, desc: '+34 Base ATK, +75% Recovery', spd: 0, atk: 34, aspd: 0, crit: 0, energyPow: 0, epRec: 0.75, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['punisher_shotgun', 'blade'] },
+            { id: 'rapid_fire_rifle', cat: 'JUNGLE', name: 'Rapid Fire Rifle', icon: '🎯', cost: 1750, desc: '+50% Attack Speed, +75% Recovery', spd: 0, atk: 0, aspd: 0.50, crit: 0, energyPow: 0, epRec: 0.75, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['punisher_shotgun', 'pistol'] },
             { id: 'badge', cat: 'SUPPORT', name: 'SHIELD Badge', icon: '🎖️', cost: 200, desc: '+150 Stamina (HP) & +3 HP/s Regen', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 150, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'avengers_medal', cat: 'SUPPORT', name: 'Avengers Medal', icon: '🏅', cost: 565, desc: '+300 Max HP, +50% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.50, def: 0, hp: 300, unique: false, tier: 2, buildsFrom: ['badge', 'core'] },
+            { id: 'enhancement_serum', cat: 'SUPPORT', name: 'Enhancement Serum', icon: '🧪', cost: 1400, desc: '+800 Max HP, +50% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.50, def: 0, hp: 800, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'blood'] },
+            { id: 'regeneration_cradle', cat: 'SUPPORT', name: 'Regeneration Cradle', icon: '💚', cost: 1685, desc: '+100 Energy Power, +0.20 Speed, +75% Recovery', spd: 0.20, atk: 0, aspd: 0, crit: 0, energyPow: 100, epRec: 0.75, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'rune'] },
             { id: 'ebony_blade', cat: 'PHYSICS', name: 'Ebony Blade', icon: '⚔️', cost: 520, desc: '+16 Base ATK, +8% Crit Rate', spd: 0, atk: 16, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
             { id: 'sonic_rifle', cat: 'PHYSICS', name: 'Sonic Rifle', icon: '🔊', cost: 480, desc: '+22% Attack Speed, +0.15 Speed', spd: 0.15, atk: 0, aspd: 0.22, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol'] },
             { id: 'precision_scope', cat: 'PHYSICS', name: 'Precision Scope', icon: '🎯', cost: 540, desc: '+16% Crit Rate, +6 Base ATK', spd: 0, atk: 6, aspd: 0, crit: 0.16, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['hammer'] },
@@ -1378,7 +1395,7 @@
                     const label = plan.consumedIndices.length ? `UPGRADE ${plan.effectiveCost}g` : `BUY ${plan.effectiveCost}g`;
                     const disabledLabel = player.items.length - plan.consumedIndices.length >= 6 ? 'FULL' : `BUY ${plan.effectiveCost}g`;
                     const recipe = (item.buildsFrom || []).map(id => SHOP_ITEMS.find(component => component.id === id)).filter(Boolean).map(component => component.icon).join(' + ');
-                    return `<div class="shop-item"><div class="shop-item-icon">${item.icon}<div class="shop-item-cost">🪙 ${item.cost}</div></div><div class="shop-item-cat">${item.cat} <span class="shop-item-tier">T${item.tier}</span></div><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div>${recipe ? `<div class="shop-item-recipe" title="Builds from ${item.buildsFrom.join(', ')}">${recipe}</div>` : ''}<button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? label : disabledLabel}</button></div>`;
+                    return `<div class="shop-item"><div class="shop-item-top"><div class="shop-item-icon">${item.icon}</div><div class="shop-item-heading"><div class="shop-item-meta"><span class="shop-item-cat">${item.cat}</span><span class="shop-item-tier">T${item.tier}</span></div><div class="shop-item-name">${item.name}</div></div></div><div class="shop-item-desc">${item.desc}</div>${recipe ? `<div class="shop-item-recipe" title="Builds from ${item.buildsFrom.join(', ')}">${recipe}</div>` : ''}<div class="shop-item-footer"><span class="shop-item-cost">🪙 ${item.cost}</span><button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? label : disabledLabel}</button></div></div>`;
                 }).join('');
             }
         }
