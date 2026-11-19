@@ -866,7 +866,17 @@
             { id: 'precision_scope', cat: 'PHYSICS', name: 'Precision Scope', icon: '🎯', cost: 540, desc: '+16% Crit Rate, +6 Base ATK', spd: 0, atk: 6, aspd: 0, crit: 0.16, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['hammer'] },
             { id: 'stormbreaker', cat: 'PHYSICS', name: 'Stormbreaker', icon: '🪓', cost: 1150, desc: '+32 Base ATK, +15% Crit · Passive: Every 3rd basic attack deals +35% bonus damage', spd: 0, atk: 32, aspd: 0, crit: 0.15, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['ebony_blade', 'blade'] },
             { id: 'mjolnir', cat: 'PHYSICS', name: 'Mjolnir', icon: '🔨', cost: 1080, desc: '+40% ASPD, +14 Base ATK, +0.25 Speed · Passive: 25% chance on basic attack to zap 2 nearby enemies for 35 dmg', spd: 0.25, atk: 14, aspd: 0.40, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['sonic_rifle', 'pistol'] },
-            { id: 'godslayer', cat: 'PHYSICS', name: 'Godslayer', icon: '💠', cost: 1180, desc: '+26 Base ATK, +25% Crit · Passive: Critical hits deal 2.0x damage instead of 1.75x', spd: 0, atk: 26, aspd: 0, crit: 0.25, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['precision_scope', 'ebony_blade'] }
+            { id: 'godslayer', cat: 'PHYSICS', name: 'Godslayer', icon: '💠', cost: 1180, desc: '+26 Base ATK, +25% Crit · Passive: Critical hits deal 2.0x damage instead of 1.75x', spd: 0, atk: 26, aspd: 0, crit: 0.25, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['precision_scope', 'ebony_blade'] },
+            { id: 'orb_eternity', cat: 'ENERGY', name: 'Orb of Eternity', icon: '🔮', cost: 725, desc: '+100 Energy Power', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 100, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['rune'] },
+            { id: 'frozen_orb', cat: 'ENERGY', name: 'Frozen Spirit Orb', icon: '❄️', cost: 400, desc: '+50 Energy Power, +50% EP Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 50, epRec: 0.50, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['rune', 'core'] },
+            { id: 'wand_watoomb', cat: 'ENERGY', name: 'Wand of Watoomb', icon: '🪄', cost: 2400, desc: '+240 Energy Power · Passive: +35% Skill Damage', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 240, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'orb_eternity'] },
+            { id: 'arc_reactor', cat: 'ENERGY', name: 'Arc Reactor', icon: '⚛️', cost: 1825, desc: '+180 Energy Power, +100% EP Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 180, epRec: 1.0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['frozen_orb', 'rune'] },
+            { id: 'darkhold', cat: 'ENERGY', name: 'Darkhold', icon: '📕', cost: 2080, desc: '+170 Energy Power, +500 HP', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 170, epRec: 0, def: 0, hp: 500, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'blood'] },
+            { id: 'alloy_shield', cat: 'DEFENSE', name: 'Alloy Shield', icon: '🛡️', cost: 535, desc: '+120 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 120, hp: 0, unique: false, tier: 2, buildsFrom: ['gear'] },
+            { id: 'crystal_gallantry', cat: 'DEFENSE', name: 'Crystal of Gallantry', icon: '💎', cost: 665, desc: '+760 Stamina (Max HP)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 760, unique: false, tier: 2, buildsFrom: ['blood'] },
+            { id: 'vibranium_suit', cat: 'DEFENSE', name: 'Vibranium Suit', icon: '🦾', cost: 1835, desc: '+320 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 320, hp: 0, unique: true, tier: 3, buildsFrom: ['alloy_shield', 'gear'] },
+            { id: 'cloak_levitation', cat: 'DEFENSE', name: 'Cloak of Levitation', icon: '🧥', cost: 1865, desc: '+950 Max HP, +180 Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 180, hp: 950, unique: true, tier: 3, buildsFrom: ['crystal_gallantry', 'gear'] },
+            { id: 'megingjord', cat: 'DEFENSE', name: 'Megingjord', icon: '🪢', cost: 2015, desc: '+1600 Max HP, +25% EP Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 1600, unique: true, tier: 3, buildsFrom: ['crystal_gallantry', 'core'] }
         ];
         const RECOMMENDED_BUILD = ['shoes', 'blade', 'pistol', 'hammer', 'blood', 'gear'];
         const BOT_BUILD_ORDER = ['shoes', 'blade', 'pistol', 'hammer', 'blood', 'ebony_blade', 'sonic_rifle', 'precision_scope', 'blade', 'stormbreaker', 'pistol', 'mjolnir', 'blade', 'ebony_blade', 'godslayer'];
@@ -2116,7 +2126,7 @@
             player.angle = Math.atan2(smart.y - player.y, smart.x - player.x);
             player.attackFacingTimer = 180; player.attackStunTimer = 30;
             beamTracers.push({ targetX: smart.x, targetY: smart.y, duration: 220 });
-            slowFields.push({ x: smart.x, y: smart.y, radius: 80, duration: cooldowns.s2.activeDur });
+            slowFields.push({ x: smart.x, y: smart.y, radius: 80, duration: cooldowns.s2.activeDur, textTimer: 0 });
             cooldowns.s2.current = cooldowns.s2.max;
         });
         document.getElementById('s3Btn').addEventListener('mousedown', () => {
@@ -2407,7 +2417,7 @@
                 player.angle = Math.atan2(targetY - player.y, targetX - player.x);
                 player.attackFacingTimer = 180; player.attackStunTimer = 30;
                 beamTracers.push({ targetX: targetX, targetY: targetY, duration: 220 });
-                slowFields.push({ x: targetX, y: targetY, radius: 80, duration: cooldowns.s2.activeDur });
+                slowFields.push({ x: targetX, y: targetY, radius: 80, duration: cooldowns.s2.activeDur, textTimer: 0 });
                 cooldowns.s2.current = cooldowns.s2.max;
             } else if (skill === 's3') {
                 const chargePct = Math.min(1.0, activeAim.chargeTime / cooldowns.s3.chargeDur);
@@ -3645,16 +3655,21 @@
                     const itemScaleMult = 1 + (player.bonusAtk * 0.025) + (player.energyPower / 40) * 0.18;
                     const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * itemScaleMult;
                     const s2TickDmg = s2Dps * (deltaTime / 1000);
+                    f.textTimer = (f.textTimer || 0) - deltaTime;
+                    const showTickNumber = f.textTimer <= 0;
+                    if (showTickNumber) f.textTimer = 350;
                     for (const enemy of enemyBots) {
                         if (enemy.state !== 'DEAD' && Math.hypot(enemy.x - f.x, enemy.y - f.y) < f.radius + enemy.radius) {
                             enemy.isSlowed = true; enemy.slowTimer = 500;
                             dealDamage(enemy, s2TickDmg, 'player', false);
+                            if (showTickNumber) spawnFloatingText(enemy.x, enemy.y - enemy.radius - 12, `-${Math.max(1, Math.round(s2Dps * 0.35))}`, '#ffeb3b', 14);
                             triggerStructureAggro(player, enemy);
                         }
                     }
                     for (let m of minions) {
                         if (m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
                             dealDamage(m, s2TickDmg, 'player', false);
+                            if (showTickNumber) spawnFloatingText(m.x, m.y - m.radius - 12, `-${Math.max(1, Math.round(s2Dps * 0.35))}`, '#ffeb3b', 14);
                         }
                     }
                 }
@@ -4012,6 +4027,12 @@
                 }
             }
 
+            for (const hero of [allyTopBot, allyBotBot, enemyTopBot, enemyBotBot]) {
+                if (hero.state === 'DEAD') drawHeroCorpse(hero);
+            }
+            if (bot.state === 'DEAD') drawHeroCorpse(bot);
+            if (player.state === 'DEAD') drawHeroCorpse(player);
+
             minions.forEach(m => {
                 if (m.team === 'enemy' && !isVisibleToAllies(m.x, m.y)) return;
                 const alpha = m.spawnAlpha !== undefined ? m.spawnAlpha : 1;
@@ -4035,7 +4056,7 @@
             });
 
             for (const hero of [allyTopBot, allyBotBot, enemyTopBot, enemyBotBot]) {
-                if (hero.state === 'DEAD') { drawHeroCorpse(hero); continue; }
+                if (hero.state === 'DEAD') continue;
                 if (hero.team === 'enemy' && !isVisibleToAllies(hero.x, hero.y)) continue;
                 ctx.save(); ctx.translate(hero.x, hero.y); ctx.rotate(hero.angle || 0);
                 ctx.beginPath(); ctx.moveTo(-9, -11); ctx.lineTo(-31, -19); ctx.lineTo(-31, 19); ctx.lineTo(-9, 11);
@@ -4047,7 +4068,6 @@
                 drawHeroHealthAndLevel(hero, hero.team === 'ally');
             }
 
-            if (bot.state === 'DEAD') drawHeroCorpse(bot);
             if (bot.state !== 'DEAD' && isVisibleToAllies(bot.x, bot.y)) {
                 ctx.save(); ctx.translate(bot.x, bot.y); ctx.rotate(bot.angle);
                 ctx.beginPath(); ctx.moveTo(-10, -12); ctx.lineTo(-36, -22); ctx.lineTo(-36, 22); ctx.lineTo(-10, 12);
@@ -4071,7 +4091,6 @@
                 drawHeroHealthAndLevel(bot, false);
             }
 
-            if (player.state === 'DEAD') drawHeroCorpse(player);
             if (player.state !== 'DEAD') {
                 drawHeroHealthAndLevel(player, true);
                 ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
