@@ -780,6 +780,7 @@
             damageEvents: [],
             dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
             items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
+            cdr: 0, lifesteal: 0, energyAbsorb: 0, armorPen: 0, energyPen: 0, healRed: 0, grievedTimer: 0, grievedFactor: 0,
             deathRecapSnapshot: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }
         };
 
@@ -830,20 +831,20 @@
             { id: 'avengers_medal', cat: 'SUPPORT', name: 'Avengers Medal', icon: '🏅', cost: 565, desc: '+300 Max HP, +50% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.50, def: 0, hp: 300, unique: false, tier: 2, buildsFrom: ['badge', 'core'] },
             { id: 'enhancement_serum', cat: 'SUPPORT', name: 'Enhancement Serum', icon: '🧪', cost: 1400, desc: '+800 Max HP, +50% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.50, def: 0, hp: 800, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'blood'] },
             { id: 'regeneration_cradle', cat: 'SUPPORT', name: 'Regeneration Cradle', icon: '💚', cost: 1685, desc: '+100 Energy Power, +0.20 Speed, +75% Recovery', spd: 0.20, atk: 0, aspd: 0, crit: 0, energyPow: 100, epRec: 0.75, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'rune'] },
-            { id: 'frequency_bracelet', cat: 'SUPPORT', name: 'Frequency Bracelet', icon: '📿', cost: 620, desc: '+350 Max HP, +45% Recovery, +5% CDR', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.45, def: 0, hp: 350, unique: false, tier: 2, buildsFrom: ['badge', 'core'] },
+            { id: 'frequency_bracelet', cat: 'SUPPORT', name: 'Frequency Bracelet', icon: '📿', cost: 620, desc: '+350 Max HP, +45% Recovery, +5% CDR', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.45, def: 0, hp: 350, cdr: 0.05, unique: false, tier: 2, buildsFrom: ['badge', 'core'] },
             { id: 'mars_blaze', cat: 'SUPPORT', name: 'Mars Blaze', icon: '🔥', cost: 1580, desc: '+600 Max HP, +90 Energy Power, +60% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 90, epRec: 0.60, def: 0, hp: 600, unique: true, tier: 3, buildsFrom: ['frequency_bracelet', 'rune'] },
             { id: 'shining_ether', cat: 'SUPPORT', name: 'Shining Ether', icon: '✨', cost: 1620, desc: '+700 Max HP, +130 Defense, +60% Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.60, def: 130, hp: 700, unique: true, tier: 3, buildsFrom: ['frequency_bracelet', 'gear'] },
             { id: 'first_aid_kit', cat: 'SUPPORT', name: 'First Aid Kit', icon: '🧰', cost: 1540, desc: '+850 Max HP, +100% EP/HP Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 1.0, def: 0, hp: 850, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'core'] },
             { id: 'gemstone_prism', cat: 'SUPPORT', name: 'Gemstone Prism', icon: '💎', cost: 1740, desc: '+950 Max HP, +150 Defense, +0.20 Speed', spd: 0.20, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 150, hp: 950, unique: true, tier: 3, buildsFrom: ['avengers_medal', 'gear'] },
             { id: 'necrosword', cat: 'PHYSICS', name: 'All-Black the Necrosword', icon: '🗡️', cost: 1400, desc: '+55 Base ATK, +120 Energy Power', spd: 0, atk: 55, aspd: 0, crit: 0, energyPow: 120, epRec: 0, def: 0, hp: 0, unique: true, tier: 1, buildsFrom: [] },
             { id: 'celestial_dagger', cat: 'PHYSICS', name: 'Celestial Dagger', icon: '🔪', cost: 665, desc: '+30% Attack Speed', spd: 0, atk: 0, aspd: 0.30, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol'] },
-            { id: 'broken_sword', cat: 'PHYSICS', name: 'Broken Sword', icon: '🗡️', cost: 675, desc: '+18 Base ATK, +5% Cooldown Reduction', spd: 0, atk: 18, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'broken_sword', cat: 'PHYSICS', name: 'Broken Sword', icon: '🗡️', cost: 675, desc: '+18 Base ATK, +5% Cooldown Reduction', spd: 0, atk: 18, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, cdr: 0.05, unique: false, tier: 2, buildsFrom: ['blade'] },
             { id: 'yaka_arrow', cat: 'PHYSICS', name: 'Yaka Arrow', icon: '🏹', cost: 845, desc: '+15% ASPD, +15% Crit, +0.15 Speed', spd: 0.15, atk: 0, aspd: 0.15, crit: 0.15, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol', 'hammer'] },
             { id: 'executioners_axe', cat: 'PHYSICS', name: "Executioner's Axe", icon: '🪓', cost: 865, desc: '+16 Base ATK, +60 Defense', spd: 0, atk: 16, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 60, hp: 0, unique: false, tier: 2, buildsFrom: ['blade', 'gear'] },
             { id: 'abyss_broadaxe', cat: 'PHYSICS', name: 'Abyss Broadaxe', icon: '🪓', cost: 755, desc: '+14 Base ATK, +400 Max HP', spd: 0, atk: 14, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 400, unique: false, tier: 2, buildsFrom: ['blade', 'blood'] },
-            { id: 'bone_knife', cat: 'PHYSICS', name: 'Bone Knife', icon: '🦴', cost: 590, desc: '+12 Base ATK, +10% Lifesteal', spd: 0, atk: 12, aspd: 0, crit: 0, energyPow: 0, epRec: 0.15, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
-            { id: 'dragons_breath', cat: 'PHYSICS', name: "Dragon's Breath", icon: '🐉', cost: 865, desc: '+20 Base ATK, +10% Armor Penetration', spd: 0, atk: 20, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
-            { id: 'fenrirs_fang', cat: 'PHYSICS', name: "Fenrir's Fang", icon: '🐺', cost: 525, desc: '+14 Base ATK · Passive: 20% Healing Reduction', spd: 0, atk: 14, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'bone_knife', cat: 'PHYSICS', name: 'Bone Knife', icon: '🦴', cost: 590, desc: '+12 Base ATK, +10% Lifesteal', spd: 0, atk: 12, aspd: 0, crit: 0, energyPow: 0, epRec: 0.15, def: 0, hp: 0, lifesteal: 0.10, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'dragons_breath', cat: 'PHYSICS', name: "Dragon's Breath", icon: '🐉', cost: 865, desc: '+20 Base ATK, +10% Armor Penetration', spd: 0, atk: 20, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, armorPen: 0.10, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'fenrirs_fang', cat: 'PHYSICS', name: "Fenrir's Fang", icon: '🐺', cost: 525, desc: '+14 Base ATK · Passive: 20% Healing Reduction', spd: 0, atk: 14, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, healRed: 0.20, unique: false, tier: 2, buildsFrom: ['blade'] },
             { id: 'ebony_blade', cat: 'PHYSICS', name: 'Ebony Blade', icon: '⚔️', cost: 520, desc: '+16 Base ATK, +8% Crit Rate', spd: 0, atk: 16, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
             { id: 'sonic_rifle', cat: 'PHYSICS', name: 'Sonic Rifle', icon: '🔊', cost: 480, desc: '+22% Attack Speed, +0.15 Speed', spd: 0.15, atk: 0, aspd: 0.22, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol'] },
             { id: 'precision_scope', cat: 'PHYSICS', name: 'Precision Scope', icon: '🎯', cost: 540, desc: '+16% Crit Rate, +6 Base ATK', spd: 0, atk: 6, aspd: 0, crit: 0.16, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['hammer'] },
@@ -855,14 +856,14 @@
             { id: 'silent_hunter', cat: 'PHYSICS', name: 'Silent Hunter', icon: '🏹', cost: 1920, desc: '+24 Base ATK, +30% ASPD, +25% Crit', spd: 0, atk: 24, aspd: 0.30, crit: 0.25, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['yaka_arrow', 'precision_scope'] },
             { id: 'valkyrior_bow', cat: 'PHYSICS', name: 'Valkyrior Bow', icon: '🏹', cost: 1880, desc: '+20 Base ATK, +40% ASPD, +20% Crit', spd: 0, atk: 20, aspd: 0.40, crit: 0.20, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['celestial_dagger', 'hammer'] },
             { id: 'titans_glory', cat: 'PHYSICS', name: "Titan's Glory", icon: '🛡️', cost: 2050, desc: '+32 Base ATK, +650 Max HP, +80 Defense', spd: 0, atk: 32, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 80, hp: 650, unique: true, tier: 3, buildsFrom: ['abyss_broadaxe', 'executioners_axe'] },
-            { id: 'hofnung', cat: 'PHYSICS', name: 'Hofnung', icon: '⚔️', cost: 1980, desc: '+42 Base ATK, +0.10 Speed, +20% Armor Penetration', spd: 0.10, atk: 42, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['dragons_breath', 'broken_sword'] },
-            { id: 'gungnir', cat: 'PHYSICS', name: 'Gungnir', icon: '🔱', cost: 2020, desc: '+36 Base ATK, +20% Crit, +15% Armor Penetration', spd: 0, atk: 36, aspd: 0, crit: 0.20, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['dragons_breath', 'precision_scope'] },
-            { id: 'levatein', cat: 'PHYSICS', name: 'Levatein', icon: '🔥', cost: 1900, desc: '+34 Base ATK, +80 Energy Power, +10% CDR', spd: 0, atk: 34, aspd: 0, crit: 0, energyPow: 80, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['broken_sword', 'rune'] },
-            { id: 'nightsword', cat: 'PHYSICS', name: 'Nightsword', icon: '🌙', cost: 1960, desc: '+35 Base ATK, +450 Max HP, +15% Lifesteal', spd: 0, atk: 35, aspd: 0, crit: 0, energyPow: 0, epRec: 0.35, def: 0, hp: 450, unique: true, tier: 3, buildsFrom: ['bone_knife', 'abyss_broadaxe'] },
-            { id: 'double_daggers', cat: 'PHYSICS', name: 'Double Daggers', icon: '🗡️', cost: 1840, desc: '+24 Base ATK, +35% ASPD, +12% Lifesteal', spd: 0, atk: 24, aspd: 0.35, crit: 0, energyPow: 0, epRec: 0.30, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['celestial_dagger', 'bone_knife'] },
+            { id: 'hofnung', cat: 'PHYSICS', name: 'Hofnung', icon: '⚔️', cost: 1980, desc: '+42 Base ATK, +0.10 Speed, +20% Armor Penetration', spd: 0.10, atk: 42, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, armorPen: 0.20, unique: true, tier: 3, buildsFrom: ['dragons_breath', 'broken_sword'] },
+            { id: 'gungnir', cat: 'PHYSICS', name: 'Gungnir', icon: '🔱', cost: 2020, desc: '+36 Base ATK, +20% Crit, +15% Armor Penetration', spd: 0, atk: 36, aspd: 0, crit: 0.20, energyPow: 0, epRec: 0, def: 0, hp: 0, armorPen: 0.15, unique: true, tier: 3, buildsFrom: ['dragons_breath', 'precision_scope'] },
+            { id: 'levatein', cat: 'PHYSICS', name: 'Levatein', icon: '🔥', cost: 1900, desc: '+34 Base ATK, +80 Energy Power, +10% CDR', spd: 0, atk: 34, aspd: 0, crit: 0, energyPow: 80, epRec: 0, def: 0, hp: 0, cdr: 0.10, unique: true, tier: 3, buildsFrom: ['broken_sword', 'rune'] },
+            { id: 'nightsword', cat: 'PHYSICS', name: 'Nightsword', icon: '🌙', cost: 1960, desc: '+35 Base ATK, +450 Max HP, +15% Lifesteal', spd: 0, atk: 35, aspd: 0, crit: 0, energyPow: 0, epRec: 0.35, def: 0, hp: 450, lifesteal: 0.15, unique: true, tier: 3, buildsFrom: ['bone_knife', 'abyss_broadaxe'] },
+            { id: 'double_daggers', cat: 'PHYSICS', name: 'Double Daggers', icon: '🗡️', cost: 1840, desc: '+24 Base ATK, +35% ASPD, +12% Lifesteal', spd: 0, atk: 24, aspd: 0.35, crit: 0, energyPow: 0, epRec: 0.30, def: 0, hp: 0, lifesteal: 0.12, unique: true, tier: 3, buildsFrom: ['celestial_dagger', 'bone_knife'] },
             { id: 'immortal_glaive', cat: 'PHYSICS', name: 'Immortal Glaive', icon: '🛡️', cost: 2040, desc: '+28 Base ATK, +140 Defense, +350 Max HP', spd: 0, atk: 28, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 140, hp: 350, unique: true, tier: 3, buildsFrom: ['executioners_axe', 'gear'] },
             { id: 'deadpools_bazooka', cat: 'PHYSICS', name: "Deadpool's Bazooka", icon: '💥', cost: 2100, desc: '+45 Base ATK, +20% Crit, +15% ASPD', spd: 0, atk: 45, aspd: 0.15, crit: 0.20, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['ebony_blade', 'yaka_arrow'] },
-            { id: 'reinforced_scimitar', cat: 'PHYSICS', name: 'Reinforced Scimitar', icon: '⚔️', cost: 1890, desc: '+34 Base ATK, +75 Defense · Passive: 30% Healing Reduction', spd: 0, atk: 34, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 75, hp: 0, unique: true, tier: 3, buildsFrom: ['fenrirs_fang', 'executioners_axe'] },
+            { id: 'reinforced_scimitar', cat: 'PHYSICS', name: 'Reinforced Scimitar', icon: '⚔️', cost: 1890, desc: '+34 Base ATK, +75 Defense · Passive: 30% Healing Reduction', spd: 0, atk: 34, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 75, hp: 0, healRed: 0.30, unique: true, tier: 3, buildsFrom: ['fenrirs_fang', 'executioners_axe'] },
             { id: 'shield_rifle', cat: 'PHYSICS', name: 'Shield Rifle', icon: '🔫', cost: 1860, desc: '+22 Base ATK, +38% ASPD, +0.25 Speed', spd: 0.25, atk: 22, aspd: 0.38, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['sonic_rifle', 'yaka_arrow'] },
             { id: 'galahorn', cat: 'PHYSICS', name: 'Galahorn', icon: '📯', cost: 1940, desc: '+30 Base ATK, +500 Max HP, +25% Recovery', spd: 0, atk: 30, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 500, unique: true, tier: 3, buildsFrom: ['abyss_broadaxe', 'fenrirs_fang'] },
             { id: 'orb_eternity', cat: 'ENERGY', name: 'Orb of Eternity', icon: '🔮', cost: 725, desc: '+100 Energy Power', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 100, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['rune'] },
@@ -870,18 +871,18 @@
             { id: 'wand_watoomb', cat: 'ENERGY', name: 'Wand of Watoomb', icon: '🪄', cost: 2400, desc: '+240 Energy Power · Passive: +35% Skill Damage', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 240, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'orb_eternity'] },
             { id: 'arc_reactor', cat: 'ENERGY', name: 'Arc Reactor', icon: '⚛️', cost: 1825, desc: '+180 Energy Power, +100% EP Recovery', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 180, epRec: 1.0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['frozen_orb', 'rune'] },
             { id: 'darkhold', cat: 'ENERGY', name: 'Darkhold', icon: '📕', cost: 2080, desc: '+170 Energy Power, +500 HP', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 170, epRec: 0, def: 0, hp: 500, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'blood'] },
-            { id: 'chthon_manuscript', cat: 'ENERGY', name: 'Chthon Manuscript', icon: '📜', cost: 1000, desc: '+45 Energy Power, +400 Max HP, +10% Energy Absorb', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 45, epRec: 0, def: 0, hp: 400, unique: false, tier: 2, buildsFrom: ['rune'] },
+            { id: 'chthon_manuscript', cat: 'ENERGY', name: 'Chthon Manuscript', icon: '📜', cost: 1000, desc: '+45 Energy Power, +400 Max HP, +10% Energy Absorb', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 45, epRec: 0, def: 0, hp: 400, energyAbsorb: 0.10, unique: false, tier: 2, buildsFrom: ['rune'] },
             { id: 'aim_cannon', cat: 'ENERGY', name: 'AIM Cannon', icon: '🔫', cost: 1000, desc: '+65 Energy Power, +400 Max HP', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 65, epRec: 0, def: 0, hp: 400, unique: false, tier: 2, buildsFrom: ['rune', 'blood'] },
-            { id: 'scatter_bombs', cat: 'ENERGY', name: 'Scatter Bombs', icon: '💣', cost: 625, desc: '+65 Energy Power, +5% Cooldown Reduction', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 65, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['rune'] },
+            { id: 'scatter_bombs', cat: 'ENERGY', name: 'Scatter Bombs', icon: '💣', cost: 625, desc: '+65 Energy Power, +5% Cooldown Reduction', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 65, epRec: 0, def: 0, hp: 0, cdr: 0.05, unique: false, tier: 2, buildsFrom: ['rune'] },
             { id: 'golden_crow_staff', cat: 'ENERGY', name: 'Golden Crow Staff', icon: '🪄', cost: 565, desc: '+60 Energy Power, +0.15 Speed', spd: 0.15, atk: 0, aspd: 0, crit: 0, energyPow: 60, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['rune'] },
             { id: 'chest_of_order', cat: 'ENERGY', name: 'Chest of Order', icon: '📦', cost: 735, desc: '+60 Energy Power, +110 Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 60, epRec: 0, def: 110, hp: 0, unique: false, tier: 2, buildsFrom: ['rune', 'gear'] },
             { id: 'cosmic_cube', cat: 'ENERGY', name: 'Cosmic Cube', icon: '🧊', cost: 2135, desc: '+240 Energy Power, +0.20 Speed', spd: 0.20, atk: 0, aspd: 0, crit: 0, energyPow: 240, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'golden_crow_staff'] },
-            { id: 'divine_wings', cat: 'ENERGY', name: 'Divine Wings', icon: '🪽', cost: 1725, desc: '+160 Energy Power, +600 Max HP, +15% CDR', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 160, epRec: 0, def: 0, hp: 600, unique: true, tier: 3, buildsFrom: ['scatter_bombs', 'blood'] },
-            { id: 'chitauri_scepter', cat: 'ENERGY', name: 'Chitauri Scepter', icon: '🪄', cost: 1975, desc: '+180 Energy Power, +45% Energy Penetration', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 180, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'rune'] },
-            { id: 'casket_winters', cat: 'ENERGY', name: 'Casket of Ancient Winters', icon: '❄️', cost: 1925, desc: '+180 Energy Power, +900 Max HP · Passive: 35% Healing Reduction', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 180, epRec: 0, def: 0, hp: 900, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'crystal_gallantry'] },
+            { id: 'divine_wings', cat: 'ENERGY', name: 'Divine Wings', icon: '🪽', cost: 1725, desc: '+160 Energy Power, +600 Max HP, +15% CDR', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 160, epRec: 0, def: 0, hp: 600, cdr: 0.15, unique: true, tier: 3, buildsFrom: ['scatter_bombs', 'blood'] },
+            { id: 'chitauri_scepter', cat: 'ENERGY', name: 'Chitauri Scepter', icon: '🪄', cost: 1975, desc: '+180 Energy Power, +45% Energy Penetration', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 180, epRec: 0, def: 0, hp: 0, energyPen: 0.45, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'rune'] },
+            { id: 'casket_winters', cat: 'ENERGY', name: 'Casket of Ancient Winters', icon: '❄️', cost: 1925, desc: '+180 Energy Power, +900 Max HP · Passive: 35% Healing Reduction', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 180, epRec: 0, def: 0, hp: 900, healRed: 0.35, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'crystal_gallantry'] },
             { id: 'virus_cannon', cat: 'ENERGY', name: 'Virus Cannon', icon: '☣️', cost: 2135, desc: '+140 Energy Power, +500 Max HP, +0.25 Speed', spd: 0.25, atk: 0, aspd: 0, crit: 0, energyPow: 140, epRec: 0, def: 0, hp: 500, unique: true, tier: 3, buildsFrom: ['orb_eternity', 'blood'] },
-            { id: 'eye_of_agamotto', cat: 'ENERGY', name: 'Eye of Agamotto', icon: '👁️', cost: 1925, desc: '+160 Energy Power, +120 Defense, +10% CDR', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 160, epRec: 0, def: 120, hp: 0, unique: true, tier: 3, buildsFrom: ['chest_of_order', 'orb_eternity'] },
-            { id: 'antimatter_cannon', cat: 'ENERGY', name: 'Antimatter Cannon', icon: '🌌', cost: 2200, desc: '+170 Energy Power, +700 Max HP, +25% Energy Absorb', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 170, epRec: 0, def: 0, hp: 700, unique: true, tier: 3, buildsFrom: ['scatter_bombs', 'chthon_manuscript'] },
+            { id: 'eye_of_agamotto', cat: 'ENERGY', name: 'Eye of Agamotto', icon: '👁️', cost: 1925, desc: '+160 Energy Power, +120 Defense, +10% CDR', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 160, epRec: 0, def: 120, hp: 0, cdr: 0.10, unique: true, tier: 3, buildsFrom: ['chest_of_order', 'orb_eternity'] },
+            { id: 'antimatter_cannon', cat: 'ENERGY', name: 'Antimatter Cannon', icon: '🌌', cost: 2200, desc: '+170 Energy Power, +700 Max HP, +25% Energy Absorb', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 170, epRec: 0, def: 0, hp: 700, energyAbsorb: 0.25, unique: true, tier: 3, buildsFrom: ['scatter_bombs', 'chthon_manuscript'] },
             { id: 'alloy_shield', cat: 'DEFENSE', name: 'Alloy Shield', icon: '🛡️', cost: 535, desc: '+120 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 120, hp: 0, unique: false, tier: 2, buildsFrom: ['gear'] },
             { id: 'crystal_gallantry', cat: 'DEFENSE', name: 'Crystal of Gallantry', icon: '💎', cost: 665, desc: '+760 Stamina (Max HP)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 760, unique: false, tier: 2, buildsFrom: ['blood'] },
             { id: 'vibranium_suit', cat: 'DEFENSE', name: 'Vibranium Suit', icon: '🦾', cost: 1835, desc: '+320 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 320, hp: 0, unique: true, tier: 3, buildsFrom: ['alloy_shield', 'gear'] },
@@ -948,6 +949,7 @@
             revealedTimer: 0,
             homeguardTimer: 0,
             items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
+            cdr: 0, lifesteal: 0, energyAbsorb: 0, armorPen: 0, energyPen: 0, healRed: 0, grievedTimer: 0, grievedFactor: 0,
             dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
             id: 'ultron', name: 'Ultron AI', icon: '🤖', laneIndex: 1,
             homeX: 1920, homeY: 480, recentDamagers: {}, pingOrder: null, pingTimer: 0,
@@ -964,6 +966,7 @@
                 hp: 550, maxHp: 550, basicAtkDmg: 10, autoAtkRange: 235,
                 xp: 0, xpToNext: 140, gold: 0, totalGold: 0, kills: 0, deaths: 0, assists: 0,
                 items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
+                cdr: 0, lifesteal: 0, energyAbsorb: 0, armorPen: 0, energyPen: 0, healRed: 0, grievedTimer: 0, grievedFactor: 0,
                 dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
                 attackCd: 0, attackInterval: 900, respawnTimer: 0, state: 'PUSHING', waypointIdx: 4,
                 recentDamagers: {}, pingOrder: null, pingTimer: 0, lastDamagedBy: null, lastHeroHitTimer: 0,
@@ -1174,7 +1177,21 @@
             visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
         }
 
-        function dealDamage(target, amount, source, showNumber) {
+        function getHealingReceivedMultiplier(hero) {
+            return hero.grievedTimer > 0 ? 1 - (hero.grievedFactor || 0) : 1;
+        }
+
+        function healHero(hero, amount) {
+            if (!hero || hero.hp <= 0 || hero.state === 'DEAD') return 0;
+            const healing = Math.max(0, amount) * getHealingReceivedMultiplier(hero);
+            const before = hero.hp;
+            hero.hp = Math.min(hero.maxHp, hero.hp + healing);
+            const actualHealing = hero.hp - before;
+            hero.healingDone = (hero.healingDone || 0) + actualHealing;
+            return actualHealing;
+        }
+
+        function dealDamage(target, amount, source, showNumber, dmgType = 'physical') {
             if (!target || target.hp <= 0) return;
 
             const isStructure = structures.includes(target);
@@ -1182,8 +1199,13 @@
                 : (source === 'bot' || source === 'bot_basic' || source === 'bot_skill') ? bot
                 : (typeof source === 'string' && /^(hero|hero_basic|hero_skill):/.test(source) ? allBots.find(b => b.id === source.split(':')[1]) : null);
             const isHeroAttacker = !!sourceHero || ['player', 'bot', 'bot_basic', 'bot_skill'].includes(source);
+            if (sourceHero && minions.includes(target) && ['shotgun', 'punisher_shotgun', 'quantum_rifle', 'rapid_fire_rifle'].some(id => sourceHero.items.includes(id))) {
+                amount *= 1.15;
+            }
             if ((target === player || allBots.includes(target)) && target.defense > 0) {
-                amount *= 180 / (180 + target.defense);
+                const penetration = dmgType === 'energy' ? (sourceHero?.energyPen || 0) : (sourceHero?.armorPen || 0);
+                const effectiveDef = target.defense * (1 - penetration);
+                amount *= 180 / (180 + effectiveDef);
             }
             if (isStructure && isHeroAttacker) {
                 const attackerTeam = sourceHero ? sourceHero.team : (source === 'player' ? 'ally' : 'enemy');
@@ -1198,6 +1220,14 @@
 
             const actual = Math.min(amount, target.hp);
             target.hp = Math.max(0, target.hp - amount);
+            if (sourceHero && sourceHero.hp > 0 && sourceHero.state !== 'DEAD' && actual > 0 && !isStructure) {
+                const absorbRate = dmgType === 'energy' ? sourceHero.energyAbsorb : sourceHero.lifesteal;
+                if (absorbRate > 0) healHero(sourceHero, actual * absorbRate);
+            }
+            if (sourceHero && actual > 0 && (target === player || allBots.includes(target)) && target.team !== sourceHero.team && sourceHero.healRed > 0) {
+                target.grievedTimer = 3000;
+                target.grievedFactor = Math.max(target.grievedFactor || 0, sourceHero.healRed);
+            }
             if (sourceHero && target.team && sourceHero.team !== target.team && sourceHero !== player && allBots.includes(sourceHero)) {
                 // Store the exact hero attacker for assist credit and target attribution.
                 if (target.recentDamagers) target.recentDamagers[sourceHero.id] = performance.now();
@@ -1335,6 +1365,18 @@
 
         function recomputeHeroStats(entity) {
             const ownedItems = entity.items.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean);
+            entity.cdr = Math.min(0.40, ownedItems.reduce((sum, item) => sum + (item.cdr || 0), 0));
+            entity.lifesteal = Math.min(0.50, ownedItems.reduce((sum, item) => sum + (item.lifesteal || 0), 0));
+            entity.energyAbsorb = Math.min(0.50, ownedItems.reduce((sum, item) => sum + (item.energyAbsorb || 0), 0));
+            entity.armorPen = Math.min(0.60, ownedItems.reduce((sum, item) => sum + (item.armorPen || 0), 0));
+            entity.energyPen = Math.min(0.60, ownedItems.reduce((sum, item) => sum + (item.energyPen || 0), 0));
+            entity.healRed = Math.max(0, ...ownedItems.map(item => item.healRed || 0));
+            if (entity === player) {
+                cooldowns.s1.max = (7000 - Math.max(0, player.skillRanks.s1 - 1) * 700) * (1 - player.cdr);
+                cooldowns.s2.max = (5000 - Math.max(0, player.skillRanks.s2 - 1) * 350) * (1 - player.cdr);
+                const s3Base = [13000, 11800, 10600, 9200][Math.max(0, player.skillRanks.s3 - 1)] || 13000;
+                cooldowns.s3.rechargeMax = s3Base * (1 - player.cdr);
+            }
             const innateSpeed = entity === player ? 2.75 : entity === bot ? 2.55 : 2.45;
             entity.baseSpeed = innateSpeed + ownedItems.reduce((sum, item) => sum + item.spd, 0);
             entity.basicAtkDmg = 10 + (entity.level - 1) * 3.5 + ownedItems.reduce((sum, item) => sum + item.atk, 0);
@@ -1577,19 +1619,19 @@
             const rank = player.skillRanks[sk];
 
             if (sk === 's1') {
-                cooldowns.s1.max = 7000 - (rank - 1) * 700;
+                cooldowns.s1.max = (7000 - (rank - 1) * 700) * (1 - player.cdr);
             } else if (sk === 's2') {
-                cooldowns.s2.max = 5000 - (rank - 1) * 350;
+                cooldowns.s2.max = (5000 - (rank - 1) * 350) * (1 - player.cdr);
             } else if (sk === 's3') {
                 if (rank === 1) {
                     cooldowns.s3.maxCharges = 2;
                     cooldowns.s3.charges = 2;
                     cooldowns.s3.current = 0;
                     cooldowns.s3.rechargeTimer = 0;
-                    cooldowns.s3.rechargeMax = 13000;
+                    cooldowns.s3.rechargeMax = 13000 * (1 - player.cdr);
                     spawnFloatingText(player.x, player.y - 90, 'SOLAR BEAM UNLOCKED!', '#ffc107', 16);
                 } else if (rank === 2) {
-                    cooldowns.s3.rechargeMax = 11800;
+                    cooldowns.s3.rechargeMax = 11800 * (1 - player.cdr);
                     if (cooldowns.s3.charges < cooldowns.s3.maxCharges) {
                         cooldowns.s3.charges += 1;
                     }
@@ -1599,10 +1641,10 @@
                     cooldowns.s3.charges = 3;
                     cooldowns.s3.current = 0;
                     cooldowns.s3.rechargeTimer = 0;
-                    cooldowns.s3.rechargeMax = 10600;
+                    cooldowns.s3.rechargeMax = 10600 * (1 - player.cdr);
                     spawnFloatingText(player.x, player.y - 90, '3RD CHARGE UNLOCKED!', '#ffc107', 16);
                 } else if (rank === 4) {
-                    cooldowns.s3.rechargeMax = 9200;
+                    cooldowns.s3.rechargeMax = 9200 * (1 - player.cdr);
                     cooldowns.s3.charges = cooldowns.s3.maxCharges;
                     cooldowns.s3.current = 0;
                     cooldowns.s3.rechargeTimer = 0;
@@ -1641,7 +1683,8 @@
             const base = (isMinion ? rankBaseMinion : rankBaseHero) + (player.level - 1) * 6;
             const mult = 0.4 + 0.6 * (chargePct !== undefined ? chargePct : 1.0);
             const itemScaleMult = 1 + (player.bonusAtk * 0.025) + (player.energyPower / 40) * 0.18;
-            return base * mult * itemScaleMult;
+            const wandMult = player.items.includes('wand_watoomb') ? 1.35 : 1;
+            return base * mult * itemScaleMult * wandMult;
         }
 
         function getBotSkillDamage() {
@@ -1868,6 +1911,7 @@
             player.baseSpeed = 2.75; player.speed = 2.75;
             player.items = []; player.aspdBonus = 0; player.critRate = 0; player.energyPower = 0; player.bonusAtk = 0;
             player.epRecovery = 0; player.defense = 0;
+            player.cdr = 0; player.lifesteal = 0; player.energyAbsorb = 0; player.armorPen = 0; player.energyPen = 0; player.healRed = 0; player.grievedTimer = 0; player.grievedFactor = 0;
             player.isInvincible = false; player.passiveActive = false;
             player.speed = player.baseSpeed; player.attackInterval = 0;
             player.attackStunTimer = 0; player.attackFacingTimer = 0;
@@ -1915,6 +1959,7 @@
             bot.baseSpeed = 2.55; bot.speed = 2.55;
             bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0; bot.bonusAtk = 0; bot.buildOrderIndex = 0;
             bot.epRecovery = 0; bot.defense = 0;
+            bot.cdr = 0; bot.lifesteal = 0; bot.energyAbsorb = 0; bot.armorPen = 0; bot.energyPen = 0; bot.healRed = 0; bot.grievedTimer = 0; bot.grievedFactor = 0;
             bot.dmgToHeroes = 0; bot.dmgToTowers = 0; bot.dmgTaken = 0; bot.healingDone = 0;
             bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
@@ -1930,6 +1975,7 @@
                 b.kills = 0; b.deaths = 0; b.assists = 0; b.basicAtkDmg = 10;
                 b.baseSpeed = 2.45; b.speed = 2.45; b.items = []; b.aspdBonus = 0; b.critRate = 0; b.buildOrderIndex = 0;
                 b.energyPower = 0; b.bonusAtk = 0; b.epRecovery = 0; b.defense = 0;
+                b.cdr = 0; b.lifesteal = 0; b.energyAbsorb = 0; b.armorPen = 0; b.energyPen = 0; b.healRed = 0; b.grievedTimer = 0; b.grievedFactor = 0;
                 b.dmgToHeroes = 0; b.dmgToTowers = 0; b.dmgTaken = 0; b.healingDone = 0;
                 b.attackCd = 0; b.state = 'PUSHING'; b.respawnTimer = 0; b.waypointIdx = 4;
                 b.recentDamagers = {}; b.pingOrder = null; b.pingTimer = 0; b.lastDamagedBy = null;
@@ -2289,12 +2335,10 @@
             if (player.state === 'DEAD' || cooldowns.heal.current > 0) return;
             player.recallTimer = 0;
             const healAmt = Math.round(player.maxHp * 0.18);
-            const hpBeforeHeal = player.hp;
-            player.hp = Math.min(player.maxHp, player.hp + healAmt);
-            player.healingDone += player.hp - hpBeforeHeal;
+            const actualHeal = healHero(player, healAmt);
             player.healBoostTimer = 1500;
             cooldowns.heal.current = cooldowns.heal.max;
-            spawnFloatingText(player.x, player.y - 60, `+${healAmt} HP`, '#00ff66', 15);
+            spawnFloatingText(player.x, player.y - 60, `+${Math.round(actualHeal)} HP`, '#00ff66', 15);
             visualExplosions.push({ x: player.x, y: player.y, radius: 55, duration: 300, color: '#00e676' });
         }
 
@@ -2812,6 +2856,10 @@
                 if (canBuyItem(bot, nextItem) && buyItem(bot, nextItem.id)) bot.buildOrderIndex += 1;
             }
 
+            if (bot.grievedTimer > 0) {
+                bot.grievedTimer = Math.max(0, bot.grievedTimer - dt);
+                if (bot.grievedTimer === 0) bot.grievedFactor = 0;
+            }
             if (bot.isSlowed && (bot.slowTimer -= dt) <= 0) {
                 bot.isSlowed = false;
             }
@@ -2928,7 +2976,7 @@
                         moveBotToward(1920, 480, spd, true, false);
                     }
                 } else {
-                    bot.hp = Math.min(bot.maxHp, bot.hp + 0.35 * dt);
+                    healHero(bot, 0.35 * dt);
                 }
                 return;
             }
@@ -3151,6 +3199,10 @@
             const ff = dt / 16.67;
             for (const b of [allyTopBot, allyBotBot, enemyTopBot, enemyBotBot]) {
                 if (b.steerTimer > 0) b.steerTimer = Math.max(0, b.steerTimer - dt);
+                if (b.grievedTimer > 0) {
+                    b.grievedTimer = Math.max(0, b.grievedTimer - dt);
+                    if (b.grievedTimer === 0) b.grievedFactor = 0;
+                }
                 if (b.hp <= 0 || b.state === 'DEAD') {
                     if (b.state !== 'DEAD') {
                         const killer = getRecentHeroKiller(b);
@@ -3176,9 +3228,7 @@
                 grantXP(b, 1.5 * dt / 1000, false);
                 const teamNexus = b.team === 'ally' ? allyNexus : enemyNexus;
                 if (Math.hypot(b.x - teamNexus.x, b.y - teamNexus.y) <= 115) {
-                    const before = b.hp;
-                    b.hp = Math.min(b.maxHp, b.hp + 0.35 * dt);
-                    b.healingDone += b.hp - before;
+                    healHero(b, 0.35 * dt);
                 }
                 if (b.buildOrderIndex < BOT_BUILD_ORDER.length) {
                     const item = SHOP_ITEMS.find(entry => entry.id === BOT_BUILD_ORDER[b.buildOrderIndex]);
@@ -3205,8 +3255,7 @@
                     const homeDist = Math.hypot(home.x - b.x, home.y - b.y);
                     if (homeDist > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * slowMult * ff);
                     else {
-                        const healed = Math.min(b.maxHp - b.hp, dt * 0.18);
-                        b.hp += healed; b.healingDone += healed;
+                        healHero(b, dt * 0.18);
                         if (b.hp >= b.maxHp * 0.85 && !untankedTowerThreat) {
                             b.state = 'PUSHING';
                             snapToNearestWaypoint(b, b.path);
@@ -3216,7 +3265,7 @@
                 }
                 if (b.team === 'ally' && b.pingOrder === 'RETREAT' && b.pingTimer > 0) {
                     if (Math.hypot(home.x - b.x, b.y - home.y) > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * slowMult * ff);
-                    else { const healed = Math.min(b.maxHp - b.hp, dt * 0.18); b.hp += healed; b.healingDone += healed; }
+                    else healHero(b, dt * 0.18);
                     continue;
                 }
                 const targets = b.team === 'ally' ? [...enemyBots] : [player, ...allyBots];
@@ -3390,14 +3439,16 @@
             enemyNexus.announceCd = Math.max(0, enemyNexus.announceCd - deltaTime);
 
             [player, bot].forEach(hero => {
+                if (hero.grievedTimer > 0) {
+                    hero.grievedTimer = Math.max(0, hero.grievedTimer - deltaTime);
+                    if (hero.grievedTimer === 0) hero.grievedFactor = 0;
+                }
                 if (hero.state === 'DEAD' || hero.hp <= 0) return;
                 hero.gold += 0.35 * dtSec;
                 hero.totalGold += 0.35 * dtSec;
                 grantXP(hero, 1.5 * dtSec, false);
                 if (hero.epRecovery > 0 && hero.hp < hero.maxHp) {
-                    const before = hero.hp;
-                    hero.hp = Math.min(hero.maxHp, hero.hp + (hero.epRecovery / 0.25) * 2 * dtSec);
-                    hero.healingDone += hero.hp - before;
+                    healHero(hero, (hero.epRecovery / 0.25) * 2 * dtSec);
                 }
             });
 
@@ -3447,9 +3498,7 @@
                     }
                 }
                 if (player.hp > 0 && player.hp < player.maxHp && Math.hypot(player.x - allyNexus.x, player.y - allyNexus.y) <= 115) {
-                    const before = player.hp;
-                    player.hp = Math.min(player.maxHp, player.hp + 0.35 * deltaTime);
-                    player.healingDone += player.hp - before;
+                    healHero(player, 0.35 * deltaTime);
                 }
                 if (player.attackFacingTimer > 0) player.attackFacingTimer -= deltaTime;
                 if (activeAim.skillId === 's3') {
@@ -3607,7 +3656,7 @@
                     if (target.hp <= 0 || target.state === 'DEAD' || (target === player && target.isInvincible)) continue;
                     if (Math.hypot(bp.x - target.x, bp.y - target.y) < target.radius + bp.radius) {
                         const damageSource = owner === bot ? 'bot_skill' : `hero_skill:${owner.id}`;
-                        dealDamage(target, bp.dmg, damageSource, target === player);
+                                                    dealDamage(target, bp.dmg, damageSource, target === player, 'energy');
                         visualExplosions.push({ x: bp.x, y: bp.y, radius: 40, duration: 220 });
                         if (owner.team === 'enemy') triggerStructureAggro(owner, target);
                         botProjectiles.splice(i, 1); hit = true; break;
@@ -3620,7 +3669,8 @@
                 f.duration -= deltaTime;
                 if (f.duration > 0) {
                     const itemScaleMult = 1 + (player.bonusAtk * 0.025) + (player.energyPower / 40) * 0.18;
-                    const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * itemScaleMult;
+                    const wandMult = player.items.includes('wand_watoomb') ? 1.35 : 1;
+                    const s2Dps = (18 + player.skillRanks.s2 * 12 + (player.level - 1) * 2) * 0.65 * itemScaleMult * wandMult;
                     const s2TickDmg = s2Dps * (deltaTime / 1000);
                     f.textTimer = (f.textTimer || 0) - deltaTime;
                     const showTickNumber = f.textTimer <= 0;
@@ -3628,14 +3678,14 @@
                     for (const enemy of enemyBots) {
                         if (enemy.state !== 'DEAD' && Math.hypot(enemy.x - f.x, enemy.y - f.y) < f.radius + enemy.radius) {
                             enemy.isSlowed = true; enemy.slowTimer = 500;
-                            dealDamage(enemy, s2TickDmg, 'player', false);
+                            dealDamage(enemy, s2TickDmg, 'player', false, 'energy');
                             if (showTickNumber) spawnFloatingText(enemy.x, enemy.y - enemy.radius - 12, `-${Math.max(1, Math.round(s2Dps * 0.35))}`, '#ffeb3b', 14);
                             triggerStructureAggro(player, enemy);
                         }
                     }
                     for (let m of minions) {
                         if (m.team === 'enemy' && m.hp > 0 && Math.hypot(m.x - f.x, m.y - f.y) < f.radius + m.radius) {
-                            dealDamage(m, s2TickDmg, 'player', false);
+                            dealDamage(m, s2TickDmg, 'player', false, 'energy');
                             if (showTickNumber) spawnFloatingText(m.x, m.y - m.radius - 12, `-${Math.max(1, Math.round(s2Dps * 0.35))}`, '#ffeb3b', 14);
                         }
                     }
@@ -3656,7 +3706,7 @@
                             if (Math.hypot(cx - m.x, cy - m.y) < m.radius + p.radius) {
                                 p.hitEntities.push(m);
                                 p.minionsPassed = Math.min(2, (p.minionsPassed || 0) + 1);
-                                dealDamage(m, getS3Damage(true, p.chargePct), 'player', true);
+                                dealDamage(m, getS3Damage(true, p.chargePct), 'player', true, 'energy');
                                 visualExplosions.push({ x: cx, y: cy, radius: 55, duration: 260 });
                             }
                         }
@@ -3666,7 +3716,7 @@
                             p.hitEntities.push(enemy);
                             const passThroughMult = 1 + Math.min(2, p.minionsPassed || 0) * 0.20;
                             const ultCritMult = p.isMaxCharge ? 1.50 : 1.0;
-                            dealDamage(enemy, getS3Damage(false, p.chargePct) * passThroughMult * ultCritMult, 'player', true);
+                            dealDamage(enemy, getS3Damage(false, p.chargePct) * passThroughMult * ultCritMult, 'player', true, 'energy');
                             if (p.isMaxCharge || p.minionsPassed > 0) {
                                 const bonusText = p.isMaxCharge
                                     ? (p.minionsPassed > 0 ? `💥 PIERCE x${p.minionsPassed} CRIT!` : '💥 MAX CRIT!')
@@ -3683,7 +3733,7 @@
                     for (let st of structures) {
                         if (st.team === 'enemy' && st.hp > 0 && !p.hitEntities.includes(st) && Math.hypot(cx - st.x, cy - st.y) < st.radius + p.radius) {
                             p.hitEntities.push(st);
-                            dealDamage(st, getS3Damage(false, p.chargePct) * 0.5, 'player', true);
+                            dealDamage(st, getS3Damage(false, p.chargePct) * 0.5, 'player', true, 'energy');
                         }
                     }
                 }
