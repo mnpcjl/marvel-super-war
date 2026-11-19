@@ -499,6 +499,8 @@
         .shop-item { grid-template-columns: 38px 1fr; }
         .shop-item-icon { position: relative; }
         .shop-item-cost { color: #ffd54f; font-size: 8px; font-weight: 900; }
+        .shop-item-tier { color: #ffd54f; font-size: 7px; font-weight: 900; }
+        .shop-item-recipe { grid-column: 2; color: #c6d0dc; font-size: 9px; letter-spacing: 2px; }
         .shop-bottom-bar { margin-top: 10px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.055); }
         .shop-bottom-inventory { display: flex; gap: 5px; margin: 0; }
         .shop-bottom-inventory .inventory-slot { width: 30px; height: 30px; font-size: 17px; cursor: pointer; color: #fff; padding: 0; }
@@ -809,7 +811,7 @@
             xp: 0, xpToNext: 140, gold: 0, totalGold: 0, kills: 0, deaths: 0, assists: 0,
             isInvincible: false, invincibleTimer: 0,
             passiveActive: false, passiveTimer: 0,
-            attackStunTimer: 0, attackInterval: 0, attackFacingTimer: 0,
+            attackStunTimer: 0, attackInterval: 0, attackFacingTimer: 0, atkCount: 0,
             state: 'ALIVE', respawnTimer: 0, recallTimer: 0,
             lastDamagedBy: null,
             lastHeroHitTimer: 0,
@@ -849,18 +851,25 @@
         const minions = [];
 
         const SHOP_ITEMS = [
-            { id: 'core', cat: 'ENERGY', name: 'Energy Core', icon: '🔮', cost: 85, desc: '+25% EP Recovery (+2 HP/s)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 0, unique: false },
-            { id: 'shoes', cat: 'SPEED', name: 'Light Running Shoes', icon: '👟', cost: 200, desc: 'Passive - Fast: +25 Movement Speed', spd: 0.35, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
-            { id: 'pistol', cat: 'PHYSICS', name: 'SHIELD Pistol', icon: '🔫', cost: 200, desc: '+10% Attack Speed', spd: 0, atk: 0, aspd: 0.10, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
-            { id: 'gear', cat: 'DEFENSE', name: 'SHIELD Combat Gear', icon: '🛡️', cost: 200, desc: '+45 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 45, hp: 0, unique: false },
-            { id: 'blade', cat: 'PHYSICS', name: 'Army Blade', icon: '🗡️', cost: 235, desc: '+20 Physical Attack (+8 Base ATK)', spd: 0, atk: 8, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
-            { id: 'blood', cat: 'DEFENSE', name: 'Bloodstone', icon: '♦️', cost: 265, desc: '+300 Stamina (+210 Max HP)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 210, unique: false },
-            { id: 'hammer', cat: 'PHYSICS', name: "Warrior's Hammer", icon: '🔨', cost: 270, desc: '+8% Critical Rate (1.75x Crit Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
-            { id: 'rune', cat: 'ENERGY', name: 'Mystic Rune', icon: '📜', cost: 290, desc: '+40 Energy Power (+18% Skill Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 40, epRec: 0, def: 0, hp: 0, unique: false },
-            { id: 'shotgun', cat: 'JUNGLE', name: "Deadpool's Shotgun", icon: '💥', cost: 200, desc: '+15% Damage to Minions & Monsters', spd: 0, atk: 5, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false },
-            { id: 'badge', cat: 'SUPPORT', name: 'SHIELD Badge', icon: '🎖️', cost: 200, desc: '+150 Stamina (HP) & +3 HP/s Regen', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 150, unique: false }
+            { id: 'core', cat: 'ENERGY', name: 'Energy Core', icon: '🔮', cost: 85, desc: '+25% EP Recovery (+2 HP/s)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'shoes', cat: 'SPEED', name: 'Light Running Shoes', icon: '👟', cost: 200, desc: 'Passive - Fast: +25 Movement Speed', spd: 0.35, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'pistol', cat: 'PHYSICS', name: 'SHIELD Pistol', icon: '🔫', cost: 200, desc: '+10% Attack Speed', spd: 0, atk: 0, aspd: 0.10, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'gear', cat: 'DEFENSE', name: 'SHIELD Combat Gear', icon: '🛡️', cost: 200, desc: '+45 Physical Defense', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 45, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'blade', cat: 'PHYSICS', name: 'Army Blade', icon: '🗡️', cost: 235, desc: '+20 Physical Attack (+8 Base ATK)', spd: 0, atk: 8, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'blood', cat: 'DEFENSE', name: 'Bloodstone', icon: '♦️', cost: 265, desc: '+300 Stamina (+210 Max HP)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 210, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'hammer', cat: 'PHYSICS', name: "Warrior's Hammer", icon: '🔨', cost: 270, desc: '+8% Critical Rate (1.75x Crit Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'rune', cat: 'ENERGY', name: 'Mystic Rune', icon: '📜', cost: 290, desc: '+40 Energy Power (+18% Skill Dmg)', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 40, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'shotgun', cat: 'JUNGLE', name: "Deadpool's Shotgun", icon: '💥', cost: 200, desc: '+15% Damage to Minions & Monsters', spd: 0, atk: 5, aspd: 0, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'badge', cat: 'SUPPORT', name: 'SHIELD Badge', icon: '🎖️', cost: 200, desc: '+150 Stamina (HP) & +3 HP/s Regen', spd: 0, atk: 0, aspd: 0, crit: 0, energyPow: 0, epRec: 0.25, def: 0, hp: 150, unique: false, tier: 1, buildsFrom: [] },
+            { id: 'ebony_blade', cat: 'PHYSICS', name: 'Ebony Blade', icon: '⚔️', cost: 520, desc: '+16 Base ATK, +8% Crit Rate', spd: 0, atk: 16, aspd: 0, crit: 0.08, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['blade'] },
+            { id: 'sonic_rifle', cat: 'PHYSICS', name: 'Sonic Rifle', icon: '🔊', cost: 480, desc: '+22% Attack Speed, +0.15 Speed', spd: 0.15, atk: 0, aspd: 0.22, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['pistol'] },
+            { id: 'precision_scope', cat: 'PHYSICS', name: 'Precision Scope', icon: '🎯', cost: 540, desc: '+16% Crit Rate, +6 Base ATK', spd: 0, atk: 6, aspd: 0, crit: 0.16, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: false, tier: 2, buildsFrom: ['hammer'] },
+            { id: 'stormbreaker', cat: 'PHYSICS', name: 'Stormbreaker', icon: '🪓', cost: 1150, desc: '+32 Base ATK, +15% Crit · Passive: Every 3rd basic attack deals +35% bonus damage', spd: 0, atk: 32, aspd: 0, crit: 0.15, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['ebony_blade', 'blade'] },
+            { id: 'mjolnir', cat: 'PHYSICS', name: 'Mjolnir', icon: '🔨', cost: 1080, desc: '+40% ASPD, +14 Base ATK, +0.25 Speed · Passive: 25% chance on basic attack to zap 2 nearby enemies for 35 dmg', spd: 0.25, atk: 14, aspd: 0.40, crit: 0, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['sonic_rifle', 'pistol'] },
+            { id: 'godslayer', cat: 'PHYSICS', name: 'Godslayer', icon: '💠', cost: 1180, desc: '+26 Base ATK, +25% Crit · Passive: Critical hits deal 2.0x damage instead of 1.75x', spd: 0, atk: 26, aspd: 0, crit: 0.25, energyPow: 0, epRec: 0, def: 0, hp: 0, unique: true, tier: 3, buildsFrom: ['precision_scope', 'ebony_blade'] }
         ];
         const RECOMMENDED_BUILD = ['shoes', 'blade', 'pistol', 'hammer', 'blood', 'gear'];
+        const BOT_BUILD_ORDER = ['shoes', 'blade', 'pistol', 'hammer', 'blood', 'ebony_blade', 'sonic_rifle', 'precision_scope', 'blade', 'stormbreaker', 'pistol', 'mjolnir', 'blade', 'ebony_blade', 'godslayer'];
         let activeShopCategory = 'RECOMMENDED';
 
         function generateDensePath(points, spacing) {
@@ -909,7 +918,7 @@
             dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
             id: 'ultron', name: 'Ultron AI', icon: '🤖', laneIndex: 1,
             homeX: 1920, homeY: 480, recentDamagers: {}, pingOrder: null, pingTimer: 0,
-            steerDir: 1, steerTimer: 0
+            steerDir: 1, steerTimer: 0, buildOrderIndex: 0
         };
 
         function createBotHero(id, name, icon, team, laneIndex, bodyColor, trimColor, capeColor, homeX, homeY) {
@@ -926,7 +935,7 @@
                 attackCd: 0, attackInterval: 900, respawnTimer: 0, state: 'PUSHING', waypointIdx: 4,
                 recentDamagers: {}, pingOrder: null, pingTimer: 0, lastDamagedBy: null, lastHeroHitTimer: 0,
                 vx: 0, vy: 0, angle: 0, skillCd: 2800, revealedTimer: 0,
-                steerDir: 1, steerTimer: 0
+                steerDir: 1, steerTimer: 0, buildOrderIndex: 0
             };
         }
         const allyTopBot = createBotHero('thor', 'Thor AI', '⚡', 'ally', 0, '#1565c0', '#82b1ff', '#c62828', 380, 1940);
@@ -1021,6 +1030,7 @@
         const slowFields = [];
         const beamTracers = [];
         const basicAtkTracers = [];
+        const lightningTracers = [];
         const botAtkTracers = [];
         const visualExplosions = [];
         const floatingTexts = [];
@@ -1268,33 +1278,60 @@
             spawnFloatingText(entity.x, entity.y - 30, `+${amount}g`, '#ffd54f', 12);
         }
 
+        function getUpgradePlan(entity, item) {
+            const consumedIndices = [];
+            const available = entity.items.map((id, index) => ({ id, index }));
+            let discount = 0;
+            for (const componentId of item.buildsFrom || []) {
+                const matchIndex = available.findIndex(entry => entry.id === componentId);
+                if (matchIndex < 0) continue;
+                const [component] = available.splice(matchIndex, 1);
+                consumedIndices.push(component.index);
+                const componentItem = SHOP_ITEMS.find(entry => entry.id === componentId);
+                if (componentItem) discount += componentItem.cost;
+            }
+            return {
+                consumedIndices,
+                discount,
+                effectiveCost: Math.max(0, item.cost - discount)
+            };
+        }
+
         function canBuyItem(entity, item) {
-            if (!item || entity.items.length >= 6 || entity.gold < item.cost) return false;
+            if (!item) return false;
             if (item.unique && entity.items.includes(item.id)) return false;
-            return true;
+            const plan = getUpgradePlan(entity, item);
+            return entity.gold >= plan.effectiveCost && entity.items.length - plan.consumedIndices.length < 6;
+        }
+
+        function recomputeHeroStats(entity) {
+            const ownedItems = entity.items.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean);
+            const innateSpeed = entity === player ? 2.75 : entity === bot ? 2.55 : 2.45;
+            entity.baseSpeed = innateSpeed + ownedItems.reduce((sum, item) => sum + item.spd, 0);
+            entity.basicAtkDmg = 10 + (entity.level - 1) * 3.5 + ownedItems.reduce((sum, item) => sum + item.atk, 0);
+            entity.bonusAtk = ownedItems.reduce((sum, item) => sum + item.atk, 0);
+            entity.aspdBonus = ownedItems.reduce((sum, item) => sum + item.aspd, 0);
+            entity.critRate = Math.min(1, ownedItems.reduce((sum, item) => sum + item.crit, 0));
+            entity.energyPower = ownedItems.reduce((sum, item) => sum + item.energyPow, 0);
+            entity.epRecovery = ownedItems.reduce((sum, item) => sum + item.epRec, 0);
+            entity.defense = ownedItems.reduce((sum, item) => sum + item.def, 0);
+            entity.maxHp = 550 + (entity.level - 1) * 65 + ownedItems.reduce((sum, item) => sum + item.hp, 0);
+            entity.hp = Math.min(entity.hp, entity.maxHp);
+            if (!entity.passiveActive) entity.speed = entity.baseSpeed;
         }
 
         function buyItem(entity, itemId) {
             const item = SHOP_ITEMS.find(entry => entry.id === itemId);
-            if (entity === bot && (bot.state === 'DEAD' || bot.hp <= 0)) return false;
+            if ((entity === bot || allBots.includes(entity)) && (entity.state === 'DEAD' || entity.hp <= 0)) return false;
             if (!canBuyItem(entity, item)) return false;
-
-            entity.gold -= item.cost;
+            const plan = getUpgradePlan(entity, item);
+            const oldMaxHp = entity.maxHp;
+            entity.gold -= plan.effectiveCost;
+            for (const index of plan.consumedIndices.sort((a, b) => b - a)) entity.items.splice(index, 1);
             entity.items.push(item.id);
-            entity.baseSpeed += item.spd;
-            if (!entity.passiveActive) entity.speed = entity.baseSpeed;
-            entity.basicAtkDmg += item.atk;
-            entity.bonusAtk += item.atk;
-            entity.aspdBonus += item.aspd;
-            entity.critRate = Math.min(1.0, entity.critRate + item.crit);
-            entity.energyPower += item.energyPow;
-            entity.epRecovery += item.epRec;
-            entity.defense += item.def;
-            if (item.hp > 0) {
-                entity.maxHp += item.hp;
-                if (entity.state !== 'DEAD' && entity.hp > 0) {
-                    entity.hp = Math.min(entity.maxHp, entity.hp + item.hp);
-                }
+            recomputeHeroStats(entity);
+            if (entity.state !== 'DEAD' && entity.hp > 0 && entity.maxHp > oldMaxHp) {
+                entity.hp = Math.min(entity.maxHp, entity.hp + entity.maxHp - oldMaxHp);
             }
 
             if (entity === player) {
@@ -1314,19 +1351,7 @@
             player.items.splice(slotIndex, 1);
             const refund = Math.floor(item.cost * 0.60);
             player.gold += refund;
-            player.baseSpeed = Math.max(1.5, player.baseSpeed - item.spd);
-            if (!player.passiveActive) player.speed = player.baseSpeed;
-            player.basicAtkDmg = Math.max(1, player.basicAtkDmg - item.atk);
-            player.bonusAtk = Math.max(0, player.bonusAtk - item.atk);
-            player.aspdBonus = Math.max(0, player.aspdBonus - item.aspd);
-            player.critRate = Math.max(0, player.critRate - item.crit);
-            player.energyPower = Math.max(0, player.energyPower - item.energyPow);
-            player.epRecovery = Math.max(0, player.epRecovery - item.epRec);
-            player.defense = Math.max(0, player.defense - item.def);
-            if (item.hp > 0) {
-                player.maxHp = Math.max(100, player.maxHp - item.hp);
-                player.hp = Math.min(player.hp, player.maxHp);
-            }
+            recomputeHeroStats(player);
             selectedInventoryIndex = -1;
             spawnFloatingText(player.x, player.y - 80, `🪙 Sold ${item.icon} +${refund}g`, '#ffd54f', 14);
             lastShopRenderKey = '';
@@ -1366,7 +1391,8 @@
                 if (candidate && canBuyItem(player, candidate)) nextItem = candidate;
             }
             if (nextItem) {
-                quickBuy.innerHTML = `<span class="qb-icon">${nextItem.icon}</span><span class="qb-text"><span class="qb-title">${nextItem.name}</span><span class="qb-price">🪙 ${nextItem.cost}</span></span>`;
+                const plan = getUpgradePlan(player, nextItem);
+                quickBuy.innerHTML = `<span class="qb-icon">${nextItem.icon}</span><span class="qb-text"><span class="qb-title">${nextItem.name}</span><span class="qb-price">🪙 ${plan.effectiveCost}</span></span>`;
                 quickBuy.dataset.itemId = nextItem.id;
                 quickBuy.classList.add('visible');
             } else {
@@ -1390,9 +1416,12 @@
                     ? RECOMMENDED_BUILD.map(id => SHOP_ITEMS.find(item => item.id === id)).filter(Boolean)
                     : SHOP_ITEMS.filter(item => item.cat === activeShopCategory);
                 grid.innerHTML = categoryItems.map(item => {
+                    const plan = getUpgradePlan(player, item);
                     const canBuy = canBuyItem(player, item);
-                    const disabledLabel = player.items.length >= 6 ? 'FULL' : `BUY ${item.cost}g`;
-                    return `<div class="shop-item"><div class="shop-item-icon">${item.icon}<div class="shop-item-cost">🪙 ${item.cost}</div></div><div class="shop-item-cat">${item.cat}</div><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div><button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? `BUY ${item.cost}g` : disabledLabel}</button></div>`;
+                    const label = plan.consumedIndices.length ? `UPGRADE ${plan.effectiveCost}g` : `BUY ${plan.effectiveCost}g`;
+                    const disabledLabel = player.items.length - plan.consumedIndices.length >= 6 ? 'FULL' : `BUY ${plan.effectiveCost}g`;
+                    const recipe = (item.buildsFrom || []).map(id => SHOP_ITEMS.find(component => component.id === id)).filter(Boolean).map(component => component.icon).join(' + ');
+                    return `<div class="shop-item"><div class="shop-item-icon">${item.icon}<div class="shop-item-cost">🪙 ${item.cost}</div></div><div class="shop-item-cat">${item.cat} <span class="shop-item-tier">T${item.tier}</span></div><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div>${recipe ? `<div class="shop-item-recipe" title="Builds from ${item.buildsFrom.join(', ')}">${recipe}</div>` : ''}<button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? label : disabledLabel}</button></div>`;
                 }).join('');
             }
             updateScoreboardUI();
@@ -1807,7 +1836,7 @@
             player.angle = -Math.PI / 4;
             player.hp = 550; player.maxHp = 550; player.level = 1;
             player.xp = 0; player.xpToNext = 140; player.gold = 0; player.totalGold = 0;
-            player.kills = 0; player.deaths = 0; player.assists = 0; player.basicAtkDmg = 10;
+            player.kills = 0; player.deaths = 0; player.assists = 0; player.basicAtkDmg = 10; player.atkCount = 0;
             player.baseSpeed = 2.75; player.speed = 2.75;
             player.items = []; player.aspdBonus = 0; player.critRate = 0; player.energyPower = 0; player.bonusAtk = 0;
             player.epRecovery = 0; player.defense = 0;
@@ -1859,7 +1888,7 @@
             bot.xp = 0; bot.xpToNext = 140; bot.gold = 0; bot.totalGold = 0;
             bot.kills = 0; bot.deaths = 0; bot.assists = 0; bot.basicAtkDmg = 10;
             bot.baseSpeed = 2.55; bot.speed = 2.55;
-            bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0; bot.bonusAtk = 0;
+            bot.items = []; bot.aspdBonus = 0; bot.critRate = 0; bot.energyPower = 0; bot.bonusAtk = 0; bot.buildOrderIndex = 0;
             bot.epRecovery = 0; bot.defense = 0;
             bot.dmgToHeroes = 0; bot.dmgToTowers = 0; bot.dmgTaken = 0; bot.healingDone = 0;
             bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
@@ -1875,7 +1904,7 @@
                 b.x = b.homeX; b.y = b.homeY; b.hp = 550; b.maxHp = 550; b.level = 1;
                 b.xp = 0; b.xpToNext = 140; b.gold = 0; b.totalGold = 0;
                 b.kills = 0; b.deaths = 0; b.assists = 0; b.basicAtkDmg = 10;
-                b.baseSpeed = 2.45; b.speed = 2.45; b.items = []; b.aspdBonus = 0; b.critRate = 0;
+                b.baseSpeed = 2.45; b.speed = 2.45; b.items = []; b.aspdBonus = 0; b.critRate = 0; b.buildOrderIndex = 0;
                 b.energyPower = 0; b.bonusAtk = 0; b.epRecovery = 0; b.defense = 0;
                 b.dmgToHeroes = 0; b.dmgToTowers = 0; b.dmgTaken = 0; b.healingDone = 0;
                 b.attackCd = 0; b.state = 'PUSHING'; b.respawnTimer = 0; b.waypointIdx = 4;
@@ -1886,7 +1915,7 @@
             minions.length = 0;
  projectiles.length = 0; botProjectiles.length = 0;
             towerShots.length = 0; slowFields.length = 0; beamTracers.length = 0;
-            basicAtkTracers.length = 0; botAtkTracers.length = 0; visualExplosions.length = 0;
+            basicAtkTracers.length = 0; lightningTracers.length = 0; botAtkTracers.length = 0; visualExplosions.length = 0;
             floatingTexts.length = 0;
             minimapPings.length = 0;
             pingState.active = false; pingState.touchId = null; pingState.selected = null;
@@ -2308,15 +2337,29 @@
             player.attackInterval = Math.max(180, 380 / (1 + player.aspdBonus));
             let offY = (validTargets[0].type === 'tower') ? -20 : 0;
 
+            player.atkCount += 1;
+            const hasStormbreaker = player.items.includes('stormbreaker');
+            const stormbreakerHit = hasStormbreaker && player.atkCount % 3 === 0;
             const isEmpowered = player.empoweredAtks > 0 && player.empoweredTimer > 0;
-            const dmgMult = isEmpowered ? 1.8 : 1.0;
+            const dmgMult = (isEmpowered ? 1.8 : 1.0) * (stormbreakerHit ? 1.35 : 1.0);
             if (isEmpowered) player.empoweredAtks -= 1;
             const isCrit = !structures.includes(target) && Math.random() < player.critRate;
-            const critMult = isCrit ? 1.75 : 1.0;
+            const critMult = isCrit ? (player.items.includes('godslayer') ? 2.0 : 1.75) : 1.0;
             if (isCrit) spawnFloatingText(target.x, target.y - target.radius - 28, '💥 CRIT!', '#ff5252', 15);
+            if (stormbreakerHit) spawnFloatingText(target.x, target.y - target.radius - 44, '⚡ STORMBREAKER!', '#45f3ff', 13);
 
             basicAtkTracers.push({ target: target, offsetY: offY, duration: 140, empowered: isEmpowered });
             dealDamage(target, player.basicAtkDmg * dmgMult * critMult, 'player', true);
+            if (player.items.includes('mjolnir') && Math.random() < 0.25) {
+                const nearbyEnemies = [...enemyBots, ...minions.filter(m => m.team === 'enemy' && m.hp > 0)]
+                    .filter(enemy => enemy !== target && enemy.hp > 0 && enemy.state !== 'DEAD' && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= 180)
+                    .sort((a, b) => Math.hypot(a.x - target.x, a.y - target.y) - Math.hypot(b.x - target.x, b.y - target.y))
+                    .slice(0, 2);
+                nearbyEnemies.forEach(enemy => {
+                    lightningTracers.push({ x1: target.x, y1: target.y, x2: enemy.x, y2: enemy.y, duration: 180 });
+                    dealDamage(enemy, 35, 'player', true);
+                });
+            }
         }
 
         function consumeS3Charge() {
@@ -2681,7 +2724,10 @@
                 return;
             }
 
-            if (bot.steerTimer <= 0) bot.steerTimer = 500;
+            if (bot.steerTimer <= 0) {
+                bot.steerDir *= -1;
+                bot.steerTimer = 500;
+            }
             const steerAngle = moveAng + bot.steerDir * (Math.PI / 2);
             const steerX = Math.cos(steerAngle) * spd;
             const steerY = Math.sin(steerAngle) * spd;
@@ -2695,10 +2741,6 @@
                 const slideY = canMoveTo(bot.x, bot.y + steerY, bot.radius, false);
                 if (slideX) bot.x += steerX;
                 if (slideY) bot.y += steerY;
-                if (!slideX && !slideY && bot.steerTimer <= 0) {
-                    bot.steerDir *= -1;
-                    bot.steerTimer = 500;
-                }
             }
         }
 
@@ -2763,10 +2805,9 @@
                 return;
             }
 
-            if (bot.items.length < 6) {
-                const nextItemId = RECOMMENDED_BUILD[bot.items.length];
-                const nextItem = SHOP_ITEMS.find(item => item.id === nextItemId);
-                if (canBuyItem(bot, nextItem)) buyItem(bot, nextItem.id);
+            if (bot.buildOrderIndex < BOT_BUILD_ORDER.length) {
+                const nextItem = SHOP_ITEMS.find(item => item.id === BOT_BUILD_ORDER[bot.buildOrderIndex]);
+                if (canBuyItem(bot, nextItem) && buyItem(bot, nextItem.id)) bot.buildOrderIndex += 1;
             }
 
             if (bot.isSlowed && (bot.slowTimer -= dt) <= 0) {
@@ -3088,7 +3129,10 @@
             if (moveY) b.y += sy;
             if (moveX || moveY) return true;
 
-            if (b.steerTimer <= 0) b.steerTimer = 500;
+            if (b.steerTimer <= 0) {
+                b.steerDir *= -1;
+                b.steerTimer = 500;
+            }
             const steer = angle + b.steerDir * (Math.PI / 2);
             const px = Math.cos(steer) * step, py = Math.sin(steer) * step;
             if (canMoveTo(b.x + px, b.y + py, b.radius, false)) {
@@ -3099,10 +3143,6 @@
             const slideY = canMoveTo(b.x, b.y + py, b.radius, false);
             if (slideX) b.x += px;
             if (slideY) b.y += py;
-            if (!slideX && !slideY && b.steerTimer <= 0) {
-                b.steerDir *= -1;
-                b.steerTimer = 500;
-            }
             return slideX || slideY;
         }
         function updateExtraBots(dt) {
@@ -3138,9 +3178,9 @@
                     b.hp = Math.min(b.maxHp, b.hp + 0.35 * dt);
                     b.healingDone += b.hp - before;
                 }
-                if (b.items.length < 6) {
-                    const item = SHOP_ITEMS.find(entry => entry.id === RECOMMENDED_BUILD[b.items.length]);
-                    if (canBuyItem(b, item)) buyItem(b, item.id);
+                if (b.buildOrderIndex < BOT_BUILD_ORDER.length) {
+                    const item = SHOP_ITEMS.find(entry => entry.id === BOT_BUILD_ORDER[b.buildOrderIndex]);
+                    if (canBuyItem(b, item) && buyItem(b, item.id)) b.buildOrderIndex += 1;
                 }
                 if (b.attackCd > 0) b.attackCd -= dt;
                 if (b.skillCd > 0) b.skillCd -= dt;
@@ -3150,6 +3190,7 @@
                     b.pingOrder = null;
                 } else if (b.pingTimer <= 0) b.pingOrder = null;
                 if (b.slowTimer > 0 && (b.slowTimer -= dt) <= 0) b.isSlowed = false;
+                const slowMult = b.isSlowed ? 0.55 : 1;
                 const home = b.team === 'ally' ? allyNexus : enemyNexus;
                 if (b.hp < b.maxHp * 0.35) b.state = 'RETREATING';
                 else if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85) {
@@ -3161,16 +3202,19 @@
                 if (b.hp < b.maxHp * 0.35 || untankedTowerThreat) b.state = 'RETREATING';
                 if (b.state === 'RETREATING') {
                     const homeDist = Math.hypot(home.x - b.x, home.y - b.y);
-                    if (homeDist > 75) moveExtraBot(b, home.x, home.y, (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff);
+                    if (homeDist > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * slowMult * ff);
                     else {
                         const healed = Math.min(b.maxHp - b.hp, dt * 0.18);
                         b.hp += healed; b.healingDone += healed;
-                        if (b.hp >= b.maxHp * 0.85 && !untankedTowerThreat) b.state = 'PUSHING';
+                        if (b.hp >= b.maxHp * 0.85 && !untankedTowerThreat) {
+                            b.state = 'PUSHING';
+                            snapToNearestWaypoint(b, b.path);
+                        }
                     }
                     continue;
                 }
                 if (b.team === 'ally' && b.pingOrder === 'RETREAT' && b.pingTimer > 0) {
-                    if (Math.hypot(home.x - b.x, b.y - home.y) > 75) moveExtraBot(b, home.x, home.y, (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff);
+                    if (Math.hypot(home.x - b.x, b.y - home.y) > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * slowMult * ff);
                     else { const healed = Math.min(b.maxHp - b.hp, dt * 0.18); b.hp += healed; b.healingDone += healed; }
                     continue;
                 }
@@ -3197,7 +3241,7 @@
                         b.skillCd = 5500;
                     }
                     if (bestDist > b.autoAtkRange + (target.radius || 0) - 12) {
-                        const step = (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff;
+                        const step = b.baseSpeed * slowMult * ff;
                         moveExtraBot(b, target.x, target.y, step);
                     } else if (b.attackCd <= 0) {
                         botAtkTracers.push({ x1: b.x, y1: b.y, x2: target.x, y2: target.y, duration: 110, color: b.team === 'ally' ? 'rgba(100,181,246,.9)' : 'rgba(255,82,82,.9)' });
@@ -3208,12 +3252,19 @@
                 }
                 if (b.state === 'RETREATING' || (b.pingOrder === 'RETREAT' && b.pingTimer > 0)) {
                     const dHome = Math.hypot(home.x - b.x, home.y - b.y);
-                    if (dHome > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * ff);
-                    else { const healed = Math.min(b.maxHp - b.hp, dt * 0.18); b.hp += healed; b.healingDone += healed; }
+                    if (dHome > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * slowMult * ff);
+                    else {
+                        const healed = Math.min(b.maxHp - b.hp, dt * 0.18);
+                        b.hp += healed; b.healingDone += healed;
+                        if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85 && !untankedTowerThreat) {
+                            b.state = 'PUSHING';
+                            snapToNearestWaypoint(b, b.path);
+                        }
+                    }
                     continue;
                 }
                 if (b.pingOrder === 'ASSIST_PLAYER' && b.pingTimer > 0 && Math.hypot(player.x - b.x, player.y - b.y) > 180) {
-                    moveExtraBot(b, player.x, player.y, (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff);
+                    moveExtraBot(b, player.x, player.y, b.baseSpeed * slowMult * ff);
                     continue;
                 }
                 if (b.pingOrder === 'ASSIST_PLAYER' && b.pingTimer > 0) {
@@ -3241,7 +3292,7 @@
                 const node = path[Math.min(path.length - 1, b.waypointIdx)];
                 if (Math.hypot(node.x - b.x, node.y - b.y) < 35 && b.waypointIdx < path.length - 1) b.waypointIdx++;
                 const destination = path[Math.min(path.length - 1, b.waypointIdx)];
-                const step = (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff;
+                const step = b.baseSpeed * slowMult * ff;
                 moveExtraBot(b, destination.x, destination.y, step);
             }
         }
@@ -3557,6 +3608,7 @@
 
             for (let i = beamTracers.length - 1; i >= 0; i--) if ((beamTracers[i].duration -= deltaTime) <= 0) beamTracers.splice(i, 1);
             for (let i = basicAtkTracers.length - 1; i >= 0; i--) if ((basicAtkTracers[i].duration -= deltaTime) <= 0) basicAtkTracers.splice(i, 1);
+            for (let i = lightningTracers.length - 1; i >= 0; i--) if ((lightningTracers[i].duration -= deltaTime) <= 0) lightningTracers.splice(i, 1);
             for (let i = botAtkTracers.length - 1; i >= 0; i--) if ((botAtkTracers[i].duration -= deltaTime) <= 0) botAtkTracers.splice(i, 1);
             for (let i = visualExplosions.length - 1; i >= 0; i--) if ((visualExplosions[i].duration -= deltaTime) <= 0) visualExplosions.splice(i, 1);
 
@@ -3896,6 +3948,10 @@
                 ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(b.target.x, b.target.y + b.offsetY);
                 ctx.strokeStyle = b.empowered ? '#45f3ff' : '#ffffff'; ctx.lineWidth = b.empowered ? 3 : 1.5; ctx.stroke();
+            });
+            lightningTracers.forEach(line => {
+                ctx.beginPath(); ctx.moveTo(line.x1, line.y1); ctx.lineTo(line.x2, line.y2);
+                ctx.strokeStyle = 'rgba(69, 243, 255, 0.95)'; ctx.lineWidth = 4; ctx.shadowColor = '#45f3ff'; ctx.shadowBlur = 12; ctx.stroke(); ctx.shadowBlur = 0;
             });
             botAtkTracers.forEach(b => {
                 ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2);
