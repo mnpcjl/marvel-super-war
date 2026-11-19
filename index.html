@@ -47,6 +47,7 @@
             transition: transform 0.12s ease-out, opacity 0.2s, filter 0.2s, box-shadow 0.2s;
         }
         .skill-btn:active { transform: scale(0.92); }
+        .skill-btn.on-cooldown, .tactical-spell-btn.on-cooldown { filter: brightness(0.55) !important; }
         .btn-icon { font-size: 15px; line-height: 1; margin-bottom: 1px; filter: drop-shadow(0 0 4px rgba(255,255,255,0.4)); }
         #s1Btn { bottom: 24px; right: 178px; }
         #s2Btn { bottom: 112px; right: 145px; }
@@ -271,7 +272,7 @@
             display: none; align-items: center; justify-content: center; pointer-events: auto; padding: 12px;
         }
         .game-over-overlay.active { display: flex; }
-        .postmatch-card { width: min(980px, 98vw); max-height: 96vh; overflow: auto; padding: 14px; border-radius: 14px; background: linear-gradient(145deg, #172233, #080c14); border: 1px solid rgba(69,243,255,.55); box-shadow: 0 0 32px rgba(0,0,0,.8); }
+        .postmatch-card { width: min(980px, 98vw); max-height: 96vh; overflow: auto; padding: 18px; border-radius: 14px; background: linear-gradient(145deg, #172233, #080c14); border: 1px solid rgba(69,243,255,.55); box-shadow: 0 0 32px rgba(0,0,0,.8); }
         .postmatch-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
         .postmatch-header h1 { margin: 0; font-size: 26px; letter-spacing: 2px; }
         .postmatch-header h1.victory { color: #45f3ff; text-shadow: 0 0 18px #45f3ff; }
@@ -284,26 +285,29 @@
         .postmatch-team h2 { margin: 0 0 7px; font-size: 12px; }
         .postmatch-team.blue h2 { color: #45f3ff; }
         .postmatch-team.red h2 { color: #ff6b81; }
-        .postmatch-row { padding: 7px 5px; margin: 4px 0; border-radius: 6px; background: rgba(0,0,0,.24); font-size: 9px; }
+        .postmatch-row { padding: 10px 8px; margin: 4px 0; border-radius: 6px; background: rgba(0,0,0,.24); font-size: 11px; }
         .postmatch-row-top { display: flex; align-items: center; justify-content: space-between; gap: 5px; font-weight: 800; }
         .postmatch-build { display: flex; gap: 3px; margin-top: 5px; }
-        .postmatch-build span { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; background: rgba(255,213,79,.1); }
+        .postmatch-build span { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 4px; background: rgba(255,213,79,.1); }
         .mvp-badge { padding: 2px 4px; border-radius: 4px; background: #ffd54f; color: #201600; font-size: 7px; }
         .mvp-badge.loser { background: #b388ff; color: #160c2b; }
         .postmatch-combat { margin-top: 5px; display: grid; gap: 3px; }
-        .postmatch-stat { display: grid; grid-template-columns: 68px 1fr 40px; align-items: center; gap: 4px; color: #cbd5e1; font-size: 7px; }
-        .postmatch-stat-bg { height: 5px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; }
+        .postmatch-stat { display: grid; grid-template-columns: 68px 1fr 40px; align-items: center; gap: 4px; color: #cbd5e1; font-size: 9px; }
+        .postmatch-stat-bg { height: 7px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; }
         .postmatch-stat-fill { height: 100%; border-radius: inherit; }
         .postmatch-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
         .postmatch-toggle, .restart-btn { border-radius: 7px; padding: 8px 12px; cursor: pointer; font-weight: 900; }
         .postmatch-toggle { border: 1px solid #64b5f6; background: rgba(33,150,243,.16); color: #e3f2fd; }
         .restart-btn { background: #263238; color: #45f3ff; border: 2px solid #45f3ff; padding: 9px 24px; font-size: 12px; letter-spacing: 1px; }
         .restart-btn:active { transform: scale(0.95); }
+        @media (max-width: 720px) {
+            .postmatch-teams { grid-template-columns: 1fr; }
+        }
         @media (max-width: 600px) {
-            .postmatch-card { padding: 8px; }
+            .postmatch-card { padding: 10px; }
             .postmatch-teams { gap: 5px; }
-            .postmatch-row { padding: 5px 3px; font-size: 7px; }
-            .postmatch-build span { width: 16px; height: 16px; font-size: 10px; }
+            .postmatch-row { padding: 8px 6px; font-size: 9px; }
+            .postmatch-build span { width: 20px; height: 20px; font-size: 10px; }
             .postmatch-header h1 { font-size: 18px; }
         }
 
@@ -816,7 +820,8 @@
             skillRanks: { s1: 0, s2: 0, s3: 0 },
             damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }, damageEvents: [],
             dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
-            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0
+            items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
+            deathRecapSnapshot: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }
         };
 
         const walls = [
@@ -903,7 +908,8 @@
             items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
             dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
             id: 'ultron', name: 'Ultron AI', icon: '🤖', laneIndex: 1,
-            homeX: 1920, homeY: 480, recentDamagers: {}, pingOrder: null, pingTimer: 0
+            homeX: 1920, homeY: 480, recentDamagers: {}, pingOrder: null, pingTimer: 0,
+            steerDir: 1, steerTimer: 0
         };
 
         function createBotHero(id, name, icon, team, laneIndex, bodyColor, trimColor, capeColor, homeX, homeY) {
@@ -919,7 +925,8 @@
                 dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
                 attackCd: 0, attackInterval: 900, respawnTimer: 0, state: 'PUSHING', waypointIdx: 4,
                 recentDamagers: {}, pingOrder: null, pingTimer: 0, lastDamagedBy: null, lastHeroHitTimer: 0,
-                vx: 0, vy: 0, angle: 0, skillCd: 2800, revealedTimer: 0
+                vx: 0, vy: 0, angle: 0, skillCd: 2800, revealedTimer: 0,
+                steerDir: 1, steerTimer: 0
             };
         }
         const allyTopBot = createBotHero('thor', 'Thor AI', '⚡', 'ally', 0, '#1565c0', '#82b1ff', '#c62828', 380, 1940);
@@ -1409,7 +1416,8 @@
 
         let showPostMatchStats = false;
         function matchRating(hero) {
-            return hero.kills * 3 + hero.assists * 1.5 - hero.deaths * 1.2 + hero.totalGold / 250 + hero.dmgToHeroes / 500 + hero.dmgToTowers / 700;
+            const rawScore = hero.kills * 3 + hero.assists * 1.5 - hero.deaths * 1.2 + hero.totalGold / 250 + hero.dmgToHeroes / 500 + hero.dmgToTowers / 700;
+            return Math.max(0, Math.min(20, rawScore));
         }
         function renderPostMatch() {
             const blue = [[player, 'Vision', '💎'], [allyTopBot, 'Thor AI', '⚡'], [allyBotBot, 'Iron Man AI', '🛡️']];
@@ -1814,6 +1822,7 @@
             player.empoweredTimer = 0;
             player.dmgToHeroes = 0; player.dmgToTowers = 0; player.dmgTaken = 0; player.healingDone = 0;
             player.damageEvents = [];
+            player.deathRecapSnapshot = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
             player.skillPoints = 1;
             player.skillRanks = { s1: 0, s2: 0, s3: 0 };
             player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
@@ -2657,8 +2666,40 @@
             const targetVy = Math.sin(moveAng) * spd;
             bot.vx += (targetVx - bot.vx) * 0.22;
             bot.vy += (targetVy - bot.vy) * 0.22;
-            if (canMoveTo(bot.x + bot.vx, bot.y, bot.radius, false)) bot.x += bot.vx;
-            if (canMoveTo(bot.x, bot.y + bot.vy, bot.radius, false)) bot.y += bot.vy;
+
+            const directX = canMoveTo(bot.x + bot.vx, bot.y + bot.vy, bot.radius, false);
+            if (directX) {
+                bot.x += bot.vx;
+                bot.y += bot.vy;
+                return;
+            }
+            const movedX = canMoveTo(bot.x + bot.vx, bot.y, bot.radius, false);
+            const movedY = canMoveTo(bot.x, bot.y + bot.vy, bot.radius, false);
+            if (movedX || movedY) {
+                if (movedX) bot.x += bot.vx;
+                if (movedY) bot.y += bot.vy;
+                return;
+            }
+
+            if (bot.steerTimer <= 0) bot.steerTimer = 500;
+            const steerAngle = moveAng + bot.steerDir * (Math.PI / 2);
+            const steerX = Math.cos(steerAngle) * spd;
+            const steerY = Math.sin(steerAngle) * spd;
+            if (canMoveTo(bot.x + steerX, bot.y + steerY, bot.radius, false)) {
+                bot.x += steerX;
+                bot.y += steerY;
+                bot.vx = steerX;
+                bot.vy = steerY;
+            } else {
+                const slideX = canMoveTo(bot.x + steerX, bot.y, bot.radius, false);
+                const slideY = canMoveTo(bot.x, bot.y + steerY, bot.radius, false);
+                if (slideX) bot.x += steerX;
+                if (slideY) bot.y += steerY;
+                if (!slideX && !slideY && bot.steerTimer <= 0) {
+                    bot.steerDir *= -1;
+                    bot.steerTimer = 500;
+                }
+            }
         }
 
         function isBotSafeToRecall() {
@@ -2734,6 +2775,7 @@
             if (bot.attackCd > 0) bot.attackCd -= dt;
             if (bot.skillCd > 0) bot.skillCd -= dt;
             if (bot.attackStunTimer > 0) bot.attackStunTimer -= dt;
+            if (bot.steerTimer > 0) bot.steerTimer = Math.max(0, bot.steerTimer - dt);
             if (bot.damageRecoilTimer > 0) bot.damageRecoilTimer -= dt;
             if (bot.recallCooldown > 0) bot.recallCooldown -= dt;
             if (bot.homeguardTimer > 0) bot.homeguardTimer -= dt;
@@ -2775,7 +2817,7 @@
                 bot.state = 'RETREATING';
             } else if (bot.state === 'RETREATING' && bot.hp >= bot.maxHp * 0.85 && !towerTargetingBot) {
                 bot.state = 'PUSHING';
-                bot.waypointIdx = 4;
+                snapToNearestWaypoint(bot, laneManager.enemyMidPath);
             }
 
             if (towerTargetingBot) {
@@ -2972,6 +3014,7 @@
                     bot.attackCd = Math.max(380, bot.attackInterval / (1 + bot.aspdBonus));
                 }
             } else {
+                if (bot.state !== 'PUSHING') snapToNearestWaypoint(bot, laneManager.enemyMidPath);
                 bot.state = 'PUSHING';
                 for (let st of structures) {
                     if (st.team === 'ally' && st.hp > 0) {
@@ -3020,9 +3063,21 @@
                 .sort((a, b) => victim.recentDamagers[b === player ? 'vision' : b.id] - victim.recentDamagers[a === player ? 'vision' : a.id])[0] || null;
         }
 
+        function snapToNearestWaypoint(hero, path) {
+            let nearestIdx = 0;
+            let nearestDist = Infinity;
+            for (let i = 0; i < path.length; i++) {
+                const distance = Math.hypot(path[i].x - hero.x, path[i].y - hero.y);
+                if (distance < nearestDist) {
+                    nearestDist = distance;
+                    nearestIdx = i;
+                }
+            }
+            hero.waypointIdx = Math.max(4, nearestIdx);
+        }
+
         function moveExtraBot(b, tx, ty, step) {
             const dx = tx - b.x, dy = ty - b.y;
-            const distance = Math.hypot(dx, dy) || 1;
             const angle = Math.atan2(dy, dx);
             b.angle = angle;
             const sx = Math.cos(angle) * step, sy = Math.sin(angle) * step;
@@ -3032,17 +3087,29 @@
             if (moveX) b.x += sx;
             if (moveY) b.y += sy;
             if (moveX || moveY) return true;
-            for (const turn of [Math.PI / 2, -Math.PI / 2]) {
-                const steer = angle + turn;
-                const px = Math.cos(steer) * step, py = Math.sin(steer) * step;
-                if (canMoveTo(b.x + px, b.y + py, b.radius, false)) { b.x += px; b.y += py; b.angle = steer; return true; }
+
+            if (b.steerTimer <= 0) b.steerTimer = 500;
+            const steer = angle + b.steerDir * (Math.PI / 2);
+            const px = Math.cos(steer) * step, py = Math.sin(steer) * step;
+            if (canMoveTo(b.x + px, b.y + py, b.radius, false)) {
+                b.x += px; b.y += py; b.angle = steer;
+                return true;
             }
-            return false;
+            const slideX = canMoveTo(b.x + px, b.y, b.radius, false);
+            const slideY = canMoveTo(b.x, b.y + py, b.radius, false);
+            if (slideX) b.x += px;
+            if (slideY) b.y += py;
+            if (!slideX && !slideY && b.steerTimer <= 0) {
+                b.steerDir *= -1;
+                b.steerTimer = 500;
+            }
+            return slideX || slideY;
         }
         function updateExtraBots(dt) {
             const ff = dt / 16.67;
             for (const b of [allyTopBot, allyBotBot, enemyTopBot, enemyBotBot]) {
-                                    if (b.hp <= 0 || b.state === 'DEAD') {
+                if (b.steerTimer > 0) b.steerTimer = Math.max(0, b.steerTimer - dt);
+                if (b.hp <= 0 || b.state === 'DEAD') {
                     if (b.state !== 'DEAD') {
                         const killer = getRecentHeroKiller(b);
                         b.state = 'DEAD'; b.deaths += 1; b.respawnTimer = (7 + b.level * 2.2) * 1000;
@@ -3078,17 +3145,23 @@
                 if (b.attackCd > 0) b.attackCd -= dt;
                 if (b.skillCd > 0) b.skillCd -= dt;
                 if (b.pingTimer > 0) b.pingTimer -= dt;
-                if (b.pingTimer <= 0) b.pingOrder = null;
+                if (b.pingTimer <= 0 && b.pingOrder === 'ASSIST_PLAYER') {
+                    snapToNearestWaypoint(b, b.path);
+                    b.pingOrder = null;
+                } else if (b.pingTimer <= 0) b.pingOrder = null;
                 if (b.slowTimer > 0 && (b.slowTimer -= dt) <= 0) b.isSlowed = false;
                 const home = b.team === 'ally' ? allyNexus : enemyNexus;
                 if (b.hp < b.maxHp * 0.35) b.state = 'RETREATING';
-                else if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85) b.state = 'PUSHING';
+                else if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85) {
+                    b.state = 'PUSHING';
+                    snapToNearestWaypoint(b, b.path);
+                }
                 const untankedTowerThreat = structures.some(st => st.team !== b.team && st.hp > 0 && st.currentTarget === b &&
                     !minions.some(m => m.team === b.team && m.hp > 0 && Math.hypot(m.x - st.x, m.y - st.y) <= st.range));
                 if (b.hp < b.maxHp * 0.35 || untankedTowerThreat) b.state = 'RETREATING';
                 if (b.state === 'RETREATING') {
                     const homeDist = Math.hypot(home.x - b.x, home.y - b.y);
-                    if (homeDist > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * ff);
+                    if (homeDist > 75) moveExtraBot(b, home.x, home.y, (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff);
                     else {
                         const healed = Math.min(b.maxHp - b.hp, dt * 0.18);
                         b.hp += healed; b.healingDone += healed;
@@ -3097,7 +3170,7 @@
                     continue;
                 }
                 if (b.team === 'ally' && b.pingOrder === 'RETREAT' && b.pingTimer > 0) {
-                    if (Math.hypot(home.x - b.x, home.y - b.y) > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * ff);
+                    if (Math.hypot(home.x - b.x, b.y - home.y) > 75) moveExtraBot(b, home.x, home.y, (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff);
                     else { const healed = Math.min(b.maxHp - b.hp, dt * 0.18); b.hp += healed; b.healingDone += healed; }
                     continue;
                 }
@@ -3116,6 +3189,7 @@
                     }
                 }
                 if (target) {
+                    b.state = 'ATTACKING';
                     b.angle = Math.atan2(target.y - b.y, target.x - b.x);
                     if (target.team !== b.team && bestDist <= 500 && b.skillCd <= 0) {
                         botProjectiles.push({ x: b.x, y: b.y, dx: Math.cos(b.angle) * 9, dy: Math.sin(b.angle) * 9,
@@ -3139,8 +3213,17 @@
                     continue;
                 }
                 if (b.pingOrder === 'ASSIST_PLAYER' && b.pingTimer > 0 && Math.hypot(player.x - b.x, player.y - b.y) > 180) {
-                    moveExtraBot(b, player.x, player.y, b.baseSpeed * ff);
+                    moveExtraBot(b, player.x, player.y, (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff);
                     continue;
+                }
+                if (b.pingOrder === 'ASSIST_PLAYER' && b.pingTimer > 0) {
+                    snapToNearestWaypoint(b, b.path);
+                    b.pingOrder = null;
+                    b.pingTimer = 0;
+                }
+                if (b.state === 'ATTACKING') {
+                    b.state = 'PUSHING';
+                    snapToNearestWaypoint(b, b.path);
                 }
                 const enemyStructure = structures.find(st => st.team !== b.team && st.hp > 0 &&
                     Math.hypot(st.x - b.x, st.y - b.y) <= b.autoAtkRange + st.radius &&
@@ -3158,7 +3241,7 @@
                 const node = path[Math.min(path.length - 1, b.waypointIdx)];
                 if (Math.hypot(node.x - b.x, node.y - b.y) < 35 && b.waypointIdx < path.length - 1) b.waypointIdx++;
                 const destination = path[Math.min(path.length - 1, b.waypointIdx)];
-                const a = Math.atan2(destination.y - b.y, destination.x - b.x), step = b.baseSpeed * ff;
+                const step = (b.isSlowed ? b.baseSpeed * 0.55 : b.baseSpeed) * ff;
                 moveExtraBot(b, destination.x, destination.y, step);
             }
         }
@@ -3193,20 +3276,13 @@
                 recapPanel.classList.toggle('active', recapExpanded);
                 document.getElementById('recapTimer').innerText = `RESPAWN ${Math.ceil(player.respawnTimer / 1000)}s`;
                 document.getElementById('recapArrow').innerText = recapExpanded ? '▲' : '▼';
-                const entries = [
+                                    const entries = [
                     { key: 'botBasic', label: 'recapBotBasicLabel', bar: 'recapBotBasicBar' },
                     { key: 'botSkill', label: 'recapBotSkillLabel', bar: 'recapBotSkillBar' },
                     { key: 'tower', label: 'recapTowerLabel', bar: 'recapTowerBar' },
                     { key: 'minion', label: 'recapMinionLabel', bar: 'recapMinionBar' }
                 ];
-                            const recentDamage = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
-                player.damageEvents = player.damageEvents.filter(event => performance.now() - event.time <= 12000);
-                            player.damageEvents.forEach(event => {
-                    if (event.source === 'bot_basic' || event.source === 'bot' || event.source.startsWith('hero_basic:')) recentDamage.botBasic += event.amount;
-                    else if (event.source === 'bot_skill' || event.source.startsWith('hero_skill:')) recentDamage.botSkill += event.amount;
-                    else if (event.source === 'enemy_tower') recentDamage.tower += event.amount;
-                    else if (event.source === 'enemy_minion') recentDamage.minion += event.amount;
-                });
+                const recentDamage = player.deathRecapSnapshot || { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
                 const totalDamage = Math.max(1, Object.values(recentDamage).reduce((sum, value) => sum + value, 0));
                 entries.forEach(entry => {
                     const damage = recentDamage[entry.key];
@@ -3392,6 +3468,7 @@
             }
 
             ['s1', 's2', 'heal', 'blink'].forEach(key => {
+                document.getElementById(`${key}Btn`).classList.toggle('on-cooldown', cooldowns[key].current > 0);
                 if (cooldowns[key].current > 0) {
                     cooldowns[key].current = Math.max(0, cooldowns[key].current - deltaTime);
                     document.getElementById(`${key}CD`).style.height = `${(cooldowns[key].current / cooldowns[key].max) * 100}%`;
@@ -3426,6 +3503,7 @@
                 }
                 document.getElementById('s3AmmoBadge').innerText = s3.charges;
                 document.getElementById('s3AmmoBadge').style.background = s3.charges > 0 ? '#ffc107' : '#e94560';
+                document.getElementById('s3Btn').classList.toggle('on-cooldown', s3.current > 0 || (s3.charges === 0 && s3.rechargeTimer > 0));
                 if (s3.charges === 0 && s3.rechargeTimer > 0) {
                     document.getElementById('s3CD').style.height = `${(s3.rechargeTimer / s3.rechargeMax) * 100}%`;
                     document.getElementById('s3Num').innerText = Math.ceil(s3.rechargeTimer / 1000);
@@ -3591,6 +3669,7 @@
                     else if (event.source === 'enemy_tower') player.damageLog.tower += event.amount;
                     else if (event.source === 'enemy_minion') player.damageLog.minion += event.amount;
                 });
+                player.deathRecapSnapshot = { ...player.damageLog };
                 const heroKiller = getRecentHeroKiller(player);
                 if (heroKiller) {
                     heroKiller.kills += 1; grantXP(heroKiller, 180, false); grantGold(heroKiller, 140);
@@ -3906,7 +3985,7 @@
                 ctx.beginPath(); ctx.moveTo(-9, -11); ctx.lineTo(-31, -19); ctx.lineTo(-31, 19); ctx.lineTo(-9, 11);
                 ctx.fillStyle = hero.capeColor; ctx.fill();
                 ctx.beginPath(); ctx.arc(0, 0, hero.radius, 0, Math.PI * 2);
-                ctx.fillStyle = hero.bodyColor; ctx.strokeStyle = hero.trimColor; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
+                ctx.fillStyle = hero.isSlowed ? '#0288d1' : hero.bodyColor; ctx.strokeStyle = hero.trimColor; ctx.lineWidth = 3; ctx.fill(); ctx.stroke();
                 ctx.fillStyle = '#fff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(hero.icon, 0, 4);
                 ctx.restore();
                 drawHeroHealthAndLevel(hero, hero.team === 'ally');
