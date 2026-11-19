@@ -70,7 +70,6 @@
             100% { box-shadow: 0 0 8px rgba(69,243,255,0.25); filter: brightness(1); }
         }
         .skill-ready-shine { animation: skillReadyShine 600ms ease-out; }
-        .skill-btn:has(.cd-overlay[style*="height: "]) { --cooldown-dim: 1; }
         .hotkey { display: none; font-size: 7px; color: #aaa; margin-top: 1px; }
         body.show-hotkeys .hotkey { display: inline; }
         body.hide-emojis .btn-icon { display: none; }
@@ -141,7 +140,6 @@
         #pingRetreat { left: 54px; top: 92px; }
         #pingAssemble { left: 16px; top: 54px; }
         #pingMissing { left: 92px; top: 54px; }
-        .cancel-zone { top: 18%; right: 155px; width: 50px; height: 50px; }
         #settingsPopover {
             position: absolute; top: 44px; right: 16px; z-index: 70; display: none; flex-direction: column; gap: 6px;
             padding: 8px 10px; border: 1px solid rgba(69,243,255,0.5); border-radius: 8px;
@@ -229,7 +227,6 @@
         }
         .gold-icon { font-size: 13px; }
         .gold-amount { color: #ffd54f; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; }
-        .shop-tag { font-size: 8px; font-weight: 800; color: #90a4ae; background: rgba(255,255,255,0.08); padding: 2px 5px; border-radius: 6px; }
         .enemy-respawn-badge, .ally-respawn-badge {
             position: absolute; top: 10px;
             min-height: 30px; width: max-content; max-width: 27vw; padding: 0 6px;
@@ -420,12 +417,6 @@
         .recap-bar-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
         .recap-bar-fill { height: 100%; width: 0%; border-radius: 3px; }
 
-        .mini-inventory-row {
-            position: absolute;
-            top: 198px; left: 20px; width: 130px;
-            display: flex; gap: 2px; z-index: 40;
-            pointer-events: none;
-        }
         .inventory-slot {
             width: 19px; height: 19px; border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
@@ -456,28 +447,29 @@
         }
         .shop-modal.active { display: flex; }
         .shop-card {
-            width: min(620px, 96vw); max-height: 92vh; overflow-y: auto;
-            padding: 14px; border-radius: 14px;
+            width: min(760px, 96vw); max-height: 92vh; padding: 0; overflow: hidden;
+            border-radius: 14px;
             background: linear-gradient(145deg, rgba(21, 29, 43, 0.98), rgba(8, 12, 20, 0.99));
             border: 1.5px solid rgba(255, 213, 79, 0.7);
             box-shadow: 0 0 28px rgba(255, 213, 79, 0.22), 0 12px 40px rgba(0, 0, 0, 0.7);
         }
-        .shop-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-        .shop-title { flex: 1; color: #ffd54f; font-size: 14px; font-weight: 900; letter-spacing: 0.6px; }
+        .shop-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex: 0 0 auto; }
+        .shop-title { flex: 1; color: #ffd54f; font-size: 12px; font-weight: 900; letter-spacing: 0.6px; }
         .shop-gold, .shop-slots { font-size: 10px; font-weight: 800; color: #fff; }
         .shop-close {
             width: 30px; height: 30px; border: 1px solid #ff6b81; border-radius: 7px;
             background: rgba(90, 15, 30, 0.8); color: #fff; font-weight: 900; cursor: pointer;
         }
-        .shop-stats { display: flex; flex-wrap: wrap; gap: 5px; padding: 7px; margin-bottom: 10px;
-            border-radius: 8px; background: rgba(255,255,255,0.05); font-size: 9px; color: #d9e3f0; }
-        .shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+        .shop-grid {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;
+            flex: 1 1 auto; min-height: 0; overflow-y: auto; align-content: start; padding-right: 2px;
+        }
         .shop-item {
-            display: grid; grid-template-columns: 32px 1fr; gap: 2px 7px; align-items: center;
-            min-height: 72px; padding: 7px; border-radius: 8px;
+            display: grid; grid-template-columns: 38px 1fr; gap: 2px 7px; align-items: center;
+            min-height: 54px; padding: 5px 6px; border-radius: 8px;
             background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1);
         }
-        .shop-item-icon { grid-row: span 3; font-size: 22px; text-align: center; }
+        .shop-item-icon { grid-row: span 3; position: relative; font-size: 22px; text-align: center; }
         .shop-item-cat { color: #64b5f6; font-size: 7px; font-weight: 900; letter-spacing: 0.7px; }
         .shop-item-name { color: #fff; font-size: 9px; font-weight: 900; }
         .shop-item-desc { color: #aeb9c7; font-size: 8px; }
@@ -487,77 +479,39 @@
             color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer;
         }
         .shop-buy:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
-        .shop-card { width: min(760px, 96vw); padding: 0; overflow: hidden; }
-        .shop-layout { display: grid; grid-template-columns: 142px minmax(0, 1fr); min-height: min(520px, 86vh); }
-        .shop-sidebar { padding: 12px 8px; background: rgba(0,0,0,0.28); border-right: 1px solid rgba(255,213,79,0.2); }
-        .shop-sidebar-gold { color: #ffd54f; font-size: 11px; font-weight: 900; padding: 4px 7px 10px; }
-        .shop-tab { width: 100%; min-height: 36px; margin: 2px 0; padding: 5px 7px; text-align: left; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #c6d0dc; font-size: 9px; font-weight: 800; cursor: pointer; }
+        .shop-layout { display: grid; grid-template-columns: 128px minmax(0, 1fr); height: 100%; min-height: 0; overflow: hidden; }
+        .shop-sidebar {
+            padding: 8px 6px; background: rgba(0, 0, 0, 0.32);
+            border-right: 1px solid rgba(255, 213, 79, 0.2);
+            overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
+        }
+        .shop-sidebar-gold { color: #ffd54f; font-size: 11px; font-weight: 900; padding: 4px 6px 7px; }
+        .shop-tab { width: 100%; min-height: 28px; margin: 0; padding: 4px 6px; text-align: left; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #c6d0dc; font-size: 8.5px; font-weight: 800; cursor: pointer; }
         .shop-tab.active { color: #ffd54f; background: rgba(255,213,79,0.12); border-color: rgba(255,213,79,0.5); }
-        .shop-main { min-width: 0; display: flex; flex-direction: column; padding: 12px; }
-        .shop-header { flex: 0 0 auto; }
-        .shop-grid { flex: 1; align-content: start; overflow-y: auto; min-height: 100px; }
-        .shop-item { grid-template-columns: 38px 1fr; }
-        .shop-item-icon { position: relative; }
+        .shop-main { min-width: 0; height: 100%; min-height: 0; display: flex; flex-direction: column; padding: 8px 10px; overflow: hidden; }
+        .shop-main > .shop-header { margin-bottom: 6px; }
         .shop-item-cost { color: #ffd54f; font-size: 8px; font-weight: 900; }
         .shop-item-tier { color: #ffd54f; font-size: 7px; font-weight: 900; }
         .shop-item-recipe { grid-column: 2; color: #c6d0dc; font-size: 9px; letter-spacing: 2px; }
-        .shop-bottom-bar { margin-top: 10px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.055); }
-        .shop-bottom-inventory { display: flex; gap: 5px; margin: 0; }
+        .shop-bottom-bar {
+            flex: 0 0 auto; margin-top: 6px; padding: 6px 8px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06); display: flex;
+            align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+        }
+        .shop-bottom-inventory { display: flex; align-items: center; gap: 5px; margin: 0; }
         .shop-bottom-inventory .inventory-slot { width: 30px; height: 30px; font-size: 17px; cursor: pointer; color: #fff; padding: 0; }
         .shop-bottom-inventory .inventory-slot.selected-slot { border-color: #ffd54f; box-shadow: 0 0 9px rgba(255, 213, 79, 0.8); }
         .shop-bottom-stats { display: flex; flex-wrap: wrap; gap: 7px; color: #d9e3f0; font-size: 8px; width: 100%; }
         .sell-item-btn { min-height: 30px; padding: 4px 8px; border: 1px solid #ffd54f; border-radius: 6px; background: rgba(255, 193, 7, 0.18); color: #ffd54f; font-size: 8px; font-weight: 900; cursor: pointer; white-space: nowrap; }
         .sell-item-btn:disabled { border-color: #59616b; color: #7e8791; background: rgba(60, 65, 70, 0.35); cursor: default; }
-        #shopModal .shop-card {
-            width: min(720px, 95vw); height: min(340px, 88vh); max-height: 88vh;
-            padding: 0; overflow: hidden; display: flex; flex-direction: column;
-        }
-        #shopModal .shop-layout {
-            display: grid; grid-template-columns: 128px minmax(0, 1fr);
-            height: 100%; min-height: 0; overflow: hidden;
-        }
-        #shopModal .shop-sidebar {
-            padding: 8px 6px; background: rgba(0, 0, 0, 0.32);
-            border-right: 1px solid rgba(255, 213, 79, 0.2);
-            overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
-        }
-        #shopModal .shop-tab { width: 100%; min-height: 28px; margin: 0; padding: 4px 6px; font-size: 8.5px; }
-        #shopModal .shop-sidebar-gold { padding: 4px 6px 7px; }
-        #shopModal .shop-main {
-            min-width: 0; height: 100%; min-height: 0; display: flex;
-            flex-direction: column; padding: 8px 10px; overflow: hidden;
-        }
-        #shopModal .shop-header { margin-bottom: 6px; }
-        #shopModal .shop-title { font-size: 12px; }
-        #shopModal .shop-grid {
-            flex: 1 1 auto; min-height: 0; overflow-y: auto;
-            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 6px; align-content: start; padding-right: 2px;
-        }
-        #shopModal .shop-item { min-height: 54px; padding: 5px 6px; grid-template-columns: 38px 1fr; }
-        #shopModal .shop-bottom-bar {
-            flex: 0 0 auto; margin-top: 6px; padding: 6px 8px; border-radius: 8px;
-            background: rgba(255, 255, 255, 0.06); display: flex;
-            align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
-        }
-        #shopModal .shop-bottom-inventory { align-items: center; }
+        #shopModal .shop-card { width: min(720px, 95vw); height: min(340px, 88vh); max-height: 88vh; display: flex; flex-direction: column; }
         @media (max-height: 400px) {
-            #shopModal .shop-header { margin-bottom: 3px; }
-            #shopModal .shop-main { padding-top: 5px; padding-bottom: 5px; }
-            #shopModal .shop-bottom-bar { margin-top: 3px; padding: 4px 6px; gap: 4px; }
-            #shopModal .shop-bottom-inventory { gap: 3px; }
-            #shopModal .shop-bottom-inventory .inventory-slot { width: 25px; height: 25px; font-size: 14px; }
-            #shopModal .shop-bottom-stats { gap: 3px 6px; font-size: 7px; }
-        }
-        @media (max-width: 520px) {
-            #shopModal .shop-layout { grid-template-columns: 104px minmax(0, 1fr); }
-            #shopModal .shop-main { padding: 6px; }
-            #shopModal .shop-title { font-size: 10px; }
-            #shopModal .shop-grid { grid-template-columns: 1fr; }
-            #shopModal .shop-item { min-height: 50px; }
-            #shopModal .shop-bottom-bar { gap: 5px; padding: 5px; }
-            #shopModal .shop-bottom-inventory .inventory-slot { width: 25px; height: 25px; font-size: 14px; }
-            #shopModal .sell-item-btn { padding: 3px 5px; font-size: 7px; }
+            .shop-main > .shop-header { margin-bottom: 3px; }
+            .shop-main { padding-top: 5px; padding-bottom: 5px; }
+            .shop-bottom-bar { margin-top: 3px; padding: 4px 6px; gap: 4px; }
+            .shop-bottom-inventory { gap: 3px; }
+            .shop-bottom-inventory .inventory-slot { width: 25px; height: 25px; font-size: 14px; }
+            .shop-bottom-stats { gap: 3px 6px; font-size: 7px; }
         }
         #kdaBar { position: absolute; top: 10px; right: 16px; height: 30px; z-index: 45; display: flex; align-items: center; gap: 7px; padding: 0 8px; border: 1px solid rgba(69,243,255,0.45); border-radius: 8px; background: rgba(11,14,22,0.92); font-size: 11px; font-weight: 900; pointer-events: auto; }
         #scoreboardBtn, #settingsBtn { height: 23px; padding: 0 7px; border: 1px solid #64b5f6; border-radius: 5px; background: rgba(33,150,243,0.2); color: #e3f2fd; font-weight: 900; cursor: pointer; }
@@ -567,24 +521,21 @@
         .scoreboard-team { padding: 12px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); }
         .scoreboard-team.ally { border-color: rgba(69,243,255,0.55); }
         .scoreboard-team.enemy { border-color: rgba(255,69,96,0.55); }
-        .scoreboard-team h3 { margin: 0 0 10px; font-size: 12px; }
-        .scoreboard-team.ally h3 { color: #45f3ff; }
-        .scoreboard-team.enemy h3 { color: #ff6b81; }
-        .scoreboard-hero { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; margin: 6px 0; }
         .scoreboard-items { display: flex; gap: 4px; margin-top: 8px; }
         .scoreboard-items .inventory-slot { width: 25px; height: 25px; }
         .scoreboard-hero-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; font-weight: 800; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; white-space: nowrap; }
         .sb-gold { color: #ffd54f; }
         @media (max-width: 520px) {
+            .shop-layout { grid-template-columns: 104px minmax(0, 1fr); }
+            .shop-main { padding: 6px; }
+            .shop-title { font-size: 10px; }
+            .shop-grid { grid-template-columns: 1fr; }
+            .shop-item { min-height: 50px; }
+            .shop-bottom-bar { gap: 5px; padding: 5px; }
+            .shop-bottom-inventory .inventory-slot { width: 25px; height: 25px; font-size: 14px; }
+            .sell-item-btn { padding: 3px 5px; font-size: 7px; }
             .scoreboard-teams { grid-template-columns: 1fr; }
             .scoreboard-hero-row { gap: 8px; font-size: 10px; }
-        }
-        @media (max-width: 520px) {
-            .shop-card { padding: 9px; }
-            .shop-title { font-size: 11px; }
-            .shop-stats { font-size: 8px; }
-            .shop-grid { gap: 5px; }
-            .shop-item { padding: 5px; }
         }
 
         #orientation-warning {
@@ -820,7 +771,7 @@
             empoweredTimer: 0,
             skillPoints: 1,
             skillRanks: { s1: 0, s2: 0, s3: 0 },
-            damageLog: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }, damageEvents: [],
+            damageEvents: [],
             dmgToHeroes: 0, dmgToTowers: 0, dmgTaken: 0, healingDone: 0,
             items: [], aspdBonus: 0, critRate: 0, energyPower: 0, bonusAtk: 0, epRecovery: 0, defense: 0,
             deathRecapSnapshot: { botBasic: 0, botSkill: 0, tower: 0, minion: 0 }
@@ -1206,10 +1157,6 @@
             if (actual > 0 && (target === player || allBots.includes(target))) target.dmgTaken = (target.dmgTaken || 0) + actual;
             if (target === player && actual > 0) {
                 const now = performance.now();
-                if (source === 'bot_basic' || source === 'bot' || source.startsWith('hero_basic:')) player.damageLog.botBasic += actual;
-                else if (source === 'bot_skill' || source.startsWith('hero_skill:')) player.damageLog.botSkill += actual;
-                else if (source === 'enemy_tower') player.damageLog.tower += actual;
-                else if (source === 'enemy_minion') player.damageLog.minion += actual;
                 player.damageEvents.push({ time: now, source, amount: actual });
                 player.damageEvents = player.damageEvents.filter(event => now - event.time <= 12000);
             }
@@ -1434,7 +1381,6 @@
                     return `<div class="shop-item"><div class="shop-item-icon">${item.icon}<div class="shop-item-cost">🪙 ${item.cost}</div></div><div class="shop-item-cat">${item.cat} <span class="shop-item-tier">T${item.tier}</span></div><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div>${recipe ? `<div class="shop-item-recipe" title="Builds from ${item.buildsFrom.join(', ')}">${recipe}</div>` : ''}<button class="shop-buy" type="button" data-item-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? label : disabledLabel}</button></div>`;
                 }).join('');
             }
-            updateScoreboardUI();
         }
 
         function updateScoreboardUI() {
@@ -1864,9 +1810,6 @@
             player.deathRecapSnapshot = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
             player.skillPoints = 1;
             player.skillRanks = { s1: 0, s2: 0, s3: 0 };
-            player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
-            player.damageEvents = [];
-            player.dmgToHeroes = 0; player.dmgToTowers = 0; player.dmgTaken = 0; player.healingDone = 0;
             player.recentDamagers = {};
 
             cooldowns.s1.current = 0; cooldowns.s2.current = 0;
@@ -1904,11 +1847,10 @@
             bot.state = 'PUSHING'; bot.waypointIdx = 4; bot.respawnTimer = 0; bot.lockedTarget = null;
             bot.isSlowed = false; bot.attackCd = 0; bot.skillCd = 2000; bot.attackStunTimer = 0;
             bot.isRecalling = false; bot.recallProgress = 0; bot.recallCooldown = 0; bot.damageRecoilTimer = 0;
-                        bot.lastDamagedBy = null;
+            bot.lastDamagedBy = null;
             bot.lastHeroHitTimer = 0;
             bot.revealedTimer = 0;
             bot.recentDamagers = {};
-            bot.recallCooldown = 0;
             bot.homeguardTimer = 0;
             for (const b of [allyTopBot, allyBotBot, enemyTopBot, enemyBotBot]) {
                 b.x = b.homeX; b.y = b.homeY; b.hp = 550; b.maxHp = 550; b.level = 1;
@@ -1955,7 +1897,6 @@
             document.getElementById('deathDimOverlay').classList.remove('active');
             document.getElementById('enemyRespawnBadge').classList.remove('active');
             document.getElementById('allyRespawnBadge').classList.remove('active');
-            document.getElementById('postMatchStatsToggle').dataset.stats = 'false';
             updateSkillUpgradeUI();
             updateShopUI();
             document.getElementById('gameOverOverlay').classList.remove('active');
@@ -2774,25 +2715,6 @@
         function updateBot(dt) {
             if (bot.hp <= 0 || bot.state === 'DEAD') {
                 if (bot.state !== 'DEAD') triggerBotDeath();
-                if (bot.state !== 'DEAD') {
-                    if (bot.lastDamagedBy === 'player' || bot.lastHeroHitTimer > 0) {
-                        player.kills += 1;
-                        grantXP(player, 180, true);
-                        grantGold(player, 140);
-                        spawnFloatingText(bot.x, bot.y - 90, 'KILL!', '#ffd54f', 22);
-                        showAnnouncement('💎', 'ally', '⚔️ KO!', '🤖', 'enemy', '#45f3ff');
-                    } else {
-                        showAnnouncement('⚔️', 'ally', '⚔️ EXECUTED', '🤖', 'enemy', '#45f3ff');
-                    }
-                    bot.lastHeroHitTimer = 0;
-                    bot.deaths += 1;
-                    bot.state = 'DEAD';
-                    bot.lockedTarget = null;
-                    bot.respawnTimer = (7 + bot.level * 2.2) * 1000;
-                    bot.isRecalling = false;
-                    bot.recallProgress = 0;
-                    visualExplosions.push({ x: bot.x, y: bot.y, radius: 65, duration: 300 });
-                }
                 bot.respawnTimer -= dt;
                 if (bot.respawnTimer <= 0) {
                     bot.hp = bot.maxHp;
@@ -3202,8 +3124,7 @@
                 if (b.slowTimer > 0 && (b.slowTimer -= dt) <= 0) b.isSlowed = false;
                 const slowMult = b.isSlowed ? 0.55 : 1;
                 const home = b.team === 'ally' ? allyNexus : enemyNexus;
-                if (b.hp < b.maxHp * 0.35) b.state = 'RETREATING';
-                else if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85) {
+                if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85) {
                     b.state = 'PUSHING';
                     snapToNearestWaypoint(b, b.path);
                 }
@@ -3257,19 +3178,6 @@
                         botAtkTracers.push({ x1: b.x, y1: b.y, x2: target.x, y2: target.y, duration: 110, color: b.team === 'ally' ? 'rgba(100,181,246,.9)' : 'rgba(255,82,82,.9)' });
                         dealDamage(target, b.basicAtkDmg, `hero_basic:${b.id}`, target === player);
                         b.attackCd = Math.max(380, b.attackInterval / (1 + b.aspdBonus));
-                    }
-                    continue;
-                }
-                if (b.state === 'RETREATING' || (b.pingOrder === 'RETREAT' && b.pingTimer > 0)) {
-                    const dHome = Math.hypot(home.x - b.x, home.y - b.y);
-                    if (dHome > 75) moveExtraBot(b, home.x, home.y, b.baseSpeed * slowMult * ff);
-                    else {
-                        const healed = Math.min(b.maxHp - b.hp, dt * 0.18);
-                        b.hp += healed; b.healingDone += healed;
-                        if (b.state === 'RETREATING' && b.hp >= b.maxHp * 0.85 && !untankedTowerThreat) {
-                            b.state = 'PUSHING';
-                            snapToNearestWaypoint(b, b.path);
-                        }
                     }
                     continue;
                 }
@@ -3399,8 +3307,7 @@
             const dtSec = deltaTime / 1000;
             player.lastHeroHitTimer = Math.max(0, player.lastHeroHitTimer - deltaTime);
             bot.lastHeroHitTimer = Math.max(0, bot.lastHeroHitTimer - deltaTime);
-            bot.revealedTimer = Math.max(0, bot.revealedTimer - deltaTime);
-            for (const hero of [enemyTopBot, enemyBotBot]) hero.revealedTimer = Math.max(0, hero.revealedTimer - deltaTime);
+            for (const hero of enemyBots) hero.revealedTimer = Math.max(0, hero.revealedTimer - deltaTime);
 
             if (announceTimer > 0) {
                 announceTimer -= deltaTime;
@@ -3412,26 +3319,17 @@
             allyNexus.announceCd = Math.max(0, allyNexus.announceCd - deltaTime);
             enemyNexus.announceCd = Math.max(0, enemyNexus.announceCd - deltaTime);
 
-            if (player.state !== 'DEAD' && player.hp > 0) {
-                player.gold += 0.35 * dtSec;
-                player.totalGold += 0.35 * dtSec;
-                grantXP(player, 1.5 * dtSec, false);
-                if (player.epRecovery > 0 && player.hp > 0 && player.hp < player.maxHp) {
-                    const before = player.hp;
-                    player.hp = Math.min(player.maxHp, player.hp + (player.epRecovery / 0.25) * 2 * dtSec);
-                    player.healingDone += player.hp - before;
+            [player, bot].forEach(hero => {
+                if (hero.state === 'DEAD' || hero.hp <= 0) return;
+                hero.gold += 0.35 * dtSec;
+                hero.totalGold += 0.35 * dtSec;
+                grantXP(hero, 1.5 * dtSec, false);
+                if (hero.epRecovery > 0 && hero.hp < hero.maxHp) {
+                    const before = hero.hp;
+                    hero.hp = Math.min(hero.maxHp, hero.hp + (hero.epRecovery / 0.25) * 2 * dtSec);
+                    hero.healingDone += hero.hp - before;
                 }
-            }
-            if (bot.state !== 'DEAD' && bot.hp > 0) {
-                bot.gold += 0.35 * dtSec;
-                bot.totalGold += 0.35 * dtSec;
-                grantXP(bot, 1.5 * dtSec, false);
-                if (bot.epRecovery > 0 && bot.hp > 0 && bot.hp < bot.maxHp) {
-                    const before = bot.hp;
-                    bot.hp = Math.min(bot.maxHp, bot.hp + (bot.epRecovery / 0.25) * 2 * dtSec);
-                    bot.healingDone += bot.hp - before;
-                }
-            }
+            });
 
             for (let i = minimapPings.length - 1; i >= 0; i--) {
                 minimapPings[i].timer -= deltaTime;
@@ -3454,10 +3352,9 @@
                     player.state = 'ALIVE'; player.hp = player.maxHp;
                     player.angle = -Math.PI / 4;
                     recapExpanded = false;
-                                            player.lastHeroHitTimer = 0;
-                        player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
-                        player.damageEvents = [];
-                        player.x = allyNexus.x; player.y = allyNexus.y;
+                    player.lastHeroHitTimer = 0;
+                    player.damageEvents = [];
+                    player.x = allyNexus.x; player.y = allyNexus.y;
                     player.recallTimer = 0; player.dx = 0; player.dy = 0;
                     player.isInvincible = false; player.passiveActive = false;
                     player.speed = player.baseSpeed;
@@ -3726,17 +3623,19 @@
             updateBot(deltaTime);
             updateExtraBots(deltaTime);
 
-                        if (player.hp <= 0 && player.state !== 'DEAD') {
+            if (player.hp <= 0 && player.state !== 'DEAD') {
                 const deathTime = performance.now();
                 player.damageEvents = player.damageEvents.filter(event => deathTime - event.time <= 12000);
-                player.damageLog = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
+                const recap = { botBasic: 0, botSkill: 0, tower: 0, minion: 0 };
                 player.damageEvents.forEach(event => {
-                    if (event.source === 'bot_basic' || event.source === 'bot' || event.source.startsWith('hero_basic:')) player.damageLog.botBasic += event.amount;
-                    else if (event.source === 'bot_skill' || event.source.startsWith('hero_skill:')) player.damageLog.botSkill += event.amount;
-                    else if (event.source === 'enemy_tower') player.damageLog.tower += event.amount;
-                    else if (event.source === 'enemy_minion') player.damageLog.minion += event.amount;
+                    let category = null;
+                    if (event.source === 'bot_basic' || event.source === 'bot' || event.source.startsWith('hero_basic:')) category = 'botBasic';
+                    else if (event.source === 'bot_skill' || event.source.startsWith('hero_skill:')) category = 'botSkill';
+                    else if (event.source === 'enemy_tower') category = 'tower';
+                    else if (event.source === 'enemy_minion') category = 'minion';
+                    if (category) recap[category] += event.amount;
                 });
-                player.deathRecapSnapshot = { ...player.damageLog };
+                player.deathRecapSnapshot = recap;
                 const heroKiller = getRecentHeroKiller(player);
                 if (heroKiller) {
                     heroKiller.kills += 1; grantXP(heroKiller, 180, false); grantGold(heroKiller, 140);
